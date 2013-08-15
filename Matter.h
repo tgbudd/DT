@@ -4,9 +4,10 @@
 #include <string>
 
 #include "triangulation.h"
+#include "Decoration.h"
 #include "Edge.h"
 
-class Matter
+class Matter : public Decoration
 {
 public:
 	Matter() {}
@@ -16,10 +17,13 @@ public:
 		return true;
 	}
 	virtual void Initialize() = 0;
-	virtual double BoltzmannChangeUnderFlipMove(const Edge * const ) const = 0;
-	virtual void UpdateAfterFlipMove(const Edge * const) = 0;
+	double BoltzmannChangeUnderFlipMove(const Edge * const ) const { 
+		return 1.0; 
+	}
+	virtual void UpdateAfterFlipMove(const Edge * const) {}
 	virtual void DoSweep() = 0;
 	std::string PrintState() const { return ""; }
+	bool ReplacesFlipMove() { return false; }
 
 private:
 	const Triangulation * triangulation_;

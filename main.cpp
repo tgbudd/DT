@@ -1,23 +1,31 @@
 #include <iostream>
 
 #include "triangulation.h"
-#include "PottsModel.h"
+//#include "PottsModel.h"
+#include "CohomologyBasis.h"
+#include "ThetaModel.h"
 
 int main()
 {
 	Triangulation triangulation;
-	PottsModel * potts = new PottsModel(&triangulation,2);
-	potts->setInteraction(3.0);
+	CohomologyBasis cohomologybasis(&triangulation);
+	ThetaModel thetamodel(&triangulation,&cohomologybasis);
+	
+	//PottsModel * potts = new PottsModel(&triangulation,2);
+	//potts->setInteraction(3.0);
 
-	triangulation.AddMatter( potts );  // Add an Ising model
+	triangulation.AddDecoration( &cohomologybasis );  
+	triangulation.AddMatter( &thetamodel );
 
 	triangulation.LoadRegularLattice(5,6);
-	potts->Initialize();
-	
+
+	cohomologybasis.Initialize(5,6);
+	thetamodel.Initialize();
+
 	while(true)
 	{
-		triangulation.DoSweep(1000);
-		std::cout << potts->PrintState() << "\n";
+		triangulation.DoSweep(10);
+		std::cout << thetamodel.PrintState() << "\n";
 	}
 
 	return 0;

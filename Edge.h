@@ -8,7 +8,7 @@ class Edge
 {
 public:
 	Edge() : adjacent_(NULL) {}
-	Edge(Triangle * parent) : parent_(parent), adjacent_(NULL) {}
+	Edge(Triangle * parent, int id) : parent_(parent), adjacent_(NULL), id_(id) {}
 
 	~Edge(void);
 
@@ -46,6 +46,10 @@ public:
 		opposite_ = opposite;
 	}
 
+	const int & getId() const {
+		return id_;
+	}
+
 	bool IsFlipMovePossible() const;
 	void DoFlipMove();
 
@@ -55,6 +59,8 @@ private:
 	Edge *next_,		// points towards next edge in the triangle (edges are directed anti-clockwise)
 		 *previous_,	// points towards previous edge
 		 *adjacent_;	// points towards the edge in the neighbouring triangle
+
+	int id_;			// position within the triangle
 
 	Triangle *parent_;
 

@@ -61,17 +61,26 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CohomologyBasis.h" />
+    <ClInclude Include="Decoration.h" />
     <ClInclude Include="Edge.h" />
+    <ClInclude Include="LoopLength.h" />
     <ClInclude Include="Matter.h" />
+    <ClInclude Include="Observable.h" />
     <ClInclude Include="PottsModel.h" />
+    <ClInclude Include="ThetaModel.h" />
     <ClInclude Include="Triangle.h" />
     <ClInclude Include="triangulation.h" />
+    <ClInclude Include="utilities.h" />
     <ClInclude Include="Vertex.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CohomologyBasis.cpp" />
     <ClCompile Include="Edge.cpp" />
+    <ClCompile Include="LoopLength.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="PottsModel.cpp" />
+    <ClCompile Include="ThetaModel.cpp" />
     <ClCompile Include="Triangle.cpp" />
     <ClCompile Include="Triangulation.cpp" />
     <ClCompile Include="Vertex.cpp" />

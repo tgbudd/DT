@@ -18,6 +18,8 @@ public:
 	{
 		parent_ = parent;
 	}
+
+	int getDegree() const;
 private:
 	int id_;
 	Edge* parent_;

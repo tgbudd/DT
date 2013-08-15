@@ -8,12 +8,14 @@
 #include "boost/random/uniform_int_distribution.hpp"
 #include "boost/random/uniform_real_distribution.hpp"
 #include "boost/random/discrete_distribution.hpp"
+#include "boost/foreach.hpp"
 
 class Triangulation;
 class Triangle;
 class Vertex;
 class Matter;
 
+#include "utilities.h"
 #include "Triangle.h"
 #include "Vertex.h"
 #include "Matter.h"
@@ -41,7 +43,11 @@ public:
 	{
 		return triangles_[id];
 	}
-
+	
+	Vertex * const & getVertex(int id) const
+	{
+		return vertices_[id];
+	}
 	Triangle * const & getRandomTriangle()
 	{
 		return triangles_[RandomInteger(0,n_triangles_-1)];
@@ -70,9 +76,18 @@ public:
 
 	void AddMatter(Matter * matter)
 	{
+		decoration_.push_back(matter);
 		matter_.push_back(matter);
+		if( matter->ReplacesFlipMove() )
+		{
+			use_flipmove_ = false;
+		}
 	}
-
+	void AddDecoration(Decoration * decoration)
+	{
+		decoration_.push_back(decoration);
+	}
+	
 	void DoSweep();
 	void DoSweep(int);
 
@@ -87,6 +102,9 @@ private:
 
 	boost::random::mt19937 rng_;
 
-	std::list<Matter* > matter_;
+	std::list<Decoration* > decoration_;   // contains all additional structure that needs updating after a flip move
+	std::list<Matter* > matter_;	// subset of decoration_ that has its own moves and boltzmann weights
+
+	bool use_flipmove_;  // Defaults to true. May be set to false because some matter fields require a custom flip move.
 };
 

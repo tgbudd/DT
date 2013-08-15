@@ -7,7 +7,7 @@ Triangle::Triangle()
 {
 	for(int i=0;i<3;i++)
 	{
-		edges_[i] = new Edge(this);
+		edges_[i] = new Edge(this,i);
 	}
 	for(int i=0;i<3;i++)
 	{

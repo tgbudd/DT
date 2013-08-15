@@ -2,7 +2,7 @@
 #include "Edge.h"
 #include <time.h>
 
-Triangulation::Triangulation(void)
+Triangulation::Triangulation(void) : use_flipmove_(true)
 {
 	rng_.seed(static_cast<unsigned int>(time(NULL)));
 }
@@ -92,9 +92,9 @@ bool Triangulation::TryFlipMove()
 	}
 
 	randomEdge->DoFlipMove();
-	for(std::list<Matter *>::iterator matter = matter_.begin(); matter != matter_.end(); matter++ )
+	for(std::list<Decoration *>::iterator decoration = decoration_.begin(); decoration != decoration_.end(); decoration++ )
 	{
-		(*matter)->UpdateAfterFlipMove(randomEdge);
+		(*decoration)->UpdateAfterFlipMove(randomEdge);
 	}
 
 	return true;
