@@ -12,8 +12,8 @@ CohomologyBasis::~CohomologyBasis(void)
 
 void CohomologyBasis::Initialize()
 {
-	boost::array<int,2> zeroForm = {0,0};
-	boost::array<boost::array<int,2>,3> zeroTriangle = {zeroForm,zeroForm,zeroForm};
+	IntForm2D zeroForm = {0,0};
+	boost::array<IntForm2D,3> zeroTriangle = {zeroForm,zeroForm,zeroForm};
 	omega_.assign(triangulation_->NumberOfTriangles(),zeroTriangle);
 }
 

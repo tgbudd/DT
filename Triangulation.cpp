@@ -1,8 +1,11 @@
 #include "triangulation.h"
 #include "Edge.h"
+#include "Decoration.h"
+#include "Matter.h"
+#include "DominantMatter.h"
 #include <time.h>
 
-Triangulation::Triangulation(void) : use_flipmove_(true)
+Triangulation::Triangulation(void) : use_flipmove_(true) , dominantmatter_(NULL)
 {
 	rng_.seed(static_cast<unsigned int>(time(NULL)));
 }
@@ -14,6 +17,69 @@ Triangulation::~Triangulation(void)
 	{
 		delete triangles_[i];
 	}
+}
+
+Triangle * const & Triangulation::getTriangle(int id) const
+{
+	return triangles_[id];
+}
+
+Vertex * const & Triangulation::getVertex(int id) const
+{
+	return vertices_[id];
+}
+	
+Triangle * const & Triangulation::getRandomTriangle()
+{
+	return triangles_[RandomInteger(0,n_triangles_-1)];
+}
+
+Edge * const & Triangulation::getRandomEdge()
+{
+	return triangles_[RandomInteger(0,n_triangles_-1)]->getEdge(RandomInteger(0,2));
+}
+
+int Triangulation::RandomInteger(int min, int max)
+{
+	boost::random::uniform_int_distribution<> distribution(min, max);
+	return distribution(rng_);
+}
+
+bool Triangulation::SucceedWithProbability(double probability)
+{
+	if( probability < 0.0 )
+		return false;
+	if( probability > 1.0 )
+		return true;
+	double probabilities[] = {probability,1.0-probability};
+	boost::random::discrete_distribution<> distribution (probabilities);
+	return distribution(rng_) == 0;
+}
+
+double Triangulation::RandomReal()
+{
+	return RandomReal(0.0,1.0);
+}
+double Triangulation::RandomReal(double min, double max)
+{
+	boost::random::uniform_real_distribution<> distribution(min,max);
+	return distribution(rng_);
+}
+
+void Triangulation::setDominantMatter(DominantMatter * const & dominantmatter)
+{
+	dominantmatter_ = dominantmatter;
+}
+
+void Triangulation::AddMatter(Matter * matter)
+{
+	decoration_.push_back(matter);
+	matter_.push_back(matter);
+}
+
+void Triangulation::AddDecoration(Decoration * decoration)
+{
+	decoration_.push_back(decoration);
 }
 
 void Triangulation::LoadRegularLattice(int width, int height)
@@ -44,6 +110,12 @@ void Triangulation::LoadRegularLattice(int width, int height)
 
 void Triangulation::DoSweep()
 {
+	if( dominantmatter_ != NULL )
+	{
+		dominantmatter_->DoSweep();
+
+	}
+
 	// First perform a sweep of triangle flips
 	int SuccesfulMoves = 0;
 	while( SuccesfulMoves < n_triangles_ )
@@ -70,20 +142,26 @@ void Triangulation::DoSweep(int NumberOfSweeps)
 bool Triangulation::TryFlipMove()
 {
 	Edge * randomEdge = getRandomEdge();
+	return TryFlipMove(randomEdge);
+}
 
-	if( !randomEdge->IsFlipMovePossible() )
+/// <image url="$(SolutionDir)\images\FlipMove.png" scale="1.2" />
+
+bool Triangulation::TryFlipMove(Edge * edge)
+{
+	if( !edge->IsFlipMovePossible() )
 		return false;
 
 	for(std::list<Matter *>::iterator matter = matter_.begin(); matter != matter_.end(); matter++ )
 	{
-		if( !(*matter)->IsFlipMoveAllowed(randomEdge) )
+		if( !(*matter)->IsFlipMoveAllowed(edge) )
 			return false;
 	}
 
 	double BoltzmannChange = 1.0;
 	for(std::list<Matter *>::iterator matter = matter_.begin(); matter != matter_.end(); matter++ )
 	{
-		BoltzmannChange *= (*matter)->BoltzmannChangeUnderFlipMove(randomEdge);
+		BoltzmannChange *= (*matter)->BoltzmannChangeUnderFlipMove(edge);
 	}
 
 	if( !SucceedWithProbability(BoltzmannChange) )
@@ -91,10 +169,10 @@ bool Triangulation::TryFlipMove()
 		return false;
 	}
 
-	randomEdge->DoFlipMove();
+	edge->DoFlipMove();
 	for(std::list<Decoration *>::iterator decoration = decoration_.begin(); decoration != decoration_.end(); decoration++ )
 	{
-		(*decoration)->UpdateAfterFlipMove(randomEdge);
+		(*decoration)->UpdateAfterFlipMove(edge);
 	}
 
 	return true;

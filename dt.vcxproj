@@ -63,8 +63,9 @@
   <ItemGroup>
     <ClInclude Include="CohomologyBasis.h" />
     <ClInclude Include="Decoration.h" />
+    <ClInclude Include="DominantMatter.h" />
+    <ClInclude Include="DualCohomologyBasis.h" />
     <ClInclude Include="Edge.h" />
-    <ClInclude Include="LoopLength.h" />
     <ClInclude Include="Matter.h" />
     <ClInclude Include="Observable.h" />
     <ClInclude Include="PottsModel.h" />
@@ -76,8 +77,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CohomologyBasis.cpp" />
+    <ClCompile Include="DualCohomologyBasis.cpp" />
     <ClCompile Include="Edge.cpp" />
-    <ClCompile Include="LoopLength.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="PottsModel.cpp" />
     <ClCompile Include="ThetaModel.cpp" />

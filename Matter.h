@@ -23,7 +23,6 @@ public:
 	virtual void UpdateAfterFlipMove(const Edge * const) {}
 	virtual void DoSweep() = 0;
 	std::string PrintState() const { return ""; }
-	bool ReplacesFlipMove() { return false; }
 
 private:
 	const Triangulation * triangulation_;

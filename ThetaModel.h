@@ -3,31 +3,32 @@
 #include <vector>
 
 #include "triangulation.h"
-#include "matter.h"
-#include "CohomologyBasis.h"
+#include "DominantMatter.h"
+#include "DualCohomologyBasis.h"
 
 class ThetaModel :
-	public Matter
+	public DominantMatter
 {
 public:
 	//ThetaModel() : triangulation_(NULL) {}
-	ThetaModel(Triangulation * const triangulation, const CohomologyBasis * const cohomologybasis);
+	ThetaModel(Triangulation * const triangulation, const DualCohomologyBasis * const dualcohomologybasis);
 	~ThetaModel(void);
 
-	bool ReplacesFlipMove() {
-		return true;
-	}
-
 	void Initialize();
-	void UpdateAfterFlipMove(const Edge * const) {}
 	void DoSweep();
 
 	void setTheta(Edge * const & edge, double theta) {
+		BOOST_ASSERT( theta > 0.0 && theta < 2.0 * PI );
 		theta_[edge->getParent()->getId()][edge->getId()] = theta;
-		theta_[edge->getOpposite()->getParent()->getId()][edge->getOpposite()->getId()] = theta;
+		theta_[edge->getAdjacent()->getParent()->getId()][edge->getAdjacent()->getId()] = theta;
 	}
-
-	double getTheta(Edge * const & edge) {
+	void addToTheta(Edge * const & edge, double theta) {
+		double firsttheta = (theta_[edge->getParent()->getId()][edge->getId()] += theta);
+		BOOST_ASSERT( firsttheta > 0.0 && firsttheta < 2.0 * PI );
+		firsttheta = (theta_[edge->getAdjacent()->getParent()->getId()][edge->getAdjacent()->getId()] += theta);
+		BOOST_ASSERT( firsttheta > 0.0 && firsttheta < 2.0 * PI );
+	}
+	double getTheta(Edge * const & edge) const {
 		return theta_[edge->getParent()->getId()][edge->getId()]; 
 	}
 
@@ -35,10 +36,16 @@ private:
 	std::vector<boost::array<double,3> > theta_;
 		
 	Triangulation * const triangulation_;
-	const CohomologyBasis * const cohomologybasis_;
+	const DualCohomologyBasis * const dualcohomologybasis_;
 
+	bool TryThetaMove();
+	bool TryThetaMove(Edge * edge);
 
-	bool TestCutCondition();
+	bool TestCutCondition(Edge *, Edge *, const DualCohomologyBasis::IntForm2D &, double theta) const;
 
+	Edge * previousEdge(Edge * edge);  // functions of which pointers are used in the thetamove
+	Edge * nextEdge(Edge * edge);
+
+	bool TestVertexSum(Vertex *);
 };
 

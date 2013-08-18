@@ -6,5 +6,7 @@ class LoopLength :
 public:
 	LoopLength(void);
 	~LoopLength(void);
+
+	void Measure() {}
 };
 

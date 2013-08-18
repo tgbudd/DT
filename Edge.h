@@ -4,6 +4,8 @@
 #include "Triangle.h"
 #include "Vertex.h"
 
+/// <image url="$(SolutionDir)\images\Edge.png" scale="1" />
+
 class Edge
 {
 public:

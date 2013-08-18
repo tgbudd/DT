@@ -10,16 +10,14 @@
 #include "boost/random/discrete_distribution.hpp"
 #include "boost/foreach.hpp"
 
-class Triangulation;
+#include "utilities.h"
+
 class Triangle;
 class Vertex;
 class Matter;
-
-#include "utilities.h"
-#include "Triangle.h"
-#include "Vertex.h"
-#include "Matter.h"
-
+class DominantMatter;
+class Decoration;
+class Edge;
 
 class Triangulation
 {
@@ -39,59 +37,27 @@ public:
 		return n_vertices_;
 	}
 
-	Triangle * const & getTriangle(int id) const
-	{
-		return triangles_[id];
-	}
+	Triangle * const & getTriangle(int id) const;
 	
-	Vertex * const & getVertex(int id) const
-	{
-		return vertices_[id];
-	}
-	Triangle * const & getRandomTriangle()
-	{
-		return triangles_[RandomInteger(0,n_triangles_-1)];
-	}
-	Edge * const & getRandomEdge()
-	{
-		return triangles_[RandomInteger(0,n_triangles_-1)]->getEdge(RandomInteger(0,2));
-	}
+	Vertex * const & getVertex(int id) const;
+
+	Triangle * const & getRandomTriangle();
+	Edge * const & getRandomEdge();
 
 
-	int RandomInteger(int min, int max)
-	{
-		boost::random::uniform_int_distribution<> distribution(min, max);
-		return distribution(rng_);
-	}
-	bool SucceedWithProbability(double probability)
-	{
-		if( probability < 0.0 )
-			return false;
-		if( probability > 1.0 )
-			return true;
-		double probabilities[] = {probability,1.0-probability};
-		boost::random::discrete_distribution<> distribution (probabilities);
-		return distribution(rng_) == 0;
-	}
-
-	void AddMatter(Matter * matter)
-	{
-		decoration_.push_back(matter);
-		matter_.push_back(matter);
-		if( matter->ReplacesFlipMove() )
-		{
-			use_flipmove_ = false;
-		}
-	}
-	void AddDecoration(Decoration * decoration)
-	{
-		decoration_.push_back(decoration);
-	}
+	int RandomInteger(int min, int max);
+	bool SucceedWithProbability(double probability);
+	double RandomReal();
+	double RandomReal(double min, double max);
+	void setDominantMatter(DominantMatter * const & dominantmatter);
+	void AddMatter(Matter * matter);
+	void AddDecoration(Decoration * decoration);
 	
 	void DoSweep();
 	void DoSweep(int);
 
 	bool TryFlipMove();
+	bool TryFlipMove(Edge * edge);
 
 private:
 	void DetermineVertices();
@@ -102,6 +68,7 @@ private:
 
 	boost::random::mt19937 rng_;
 
+	DominantMatter* dominantmatter_;   // matter may be present in the system that replaces the standard flip move
 	std::list<Decoration* > decoration_;   // contains all additional structure that needs updating after a flip move
 	std::list<Matter* > matter_;	// subset of decoration_ that has its own moves and boltzmann weights
 
