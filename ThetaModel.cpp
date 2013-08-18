@@ -59,7 +59,6 @@ bool ThetaModel::TryThetaMove(Edge * moveEdge)
 	Edge * (ThetaModel::*next)(Edge *) = &ThetaModel::nextEdge;
 	Edge * (ThetaModel::*previous)(Edge *) = &ThetaModel::previousEdge;
 	bool mirror = (triangulation_->RandomInteger(0,1) == 0);
-	mirror = false;
 	if( mirror )
 	{
 		std::swap(next,previous);
@@ -172,12 +171,19 @@ bool ThetaModel::TryThetaMove(Edge * moveEdge)
 			setTheta(otherEdge->getNext(),otherEdgePreviousTheta-dTheta+moveEdgeTheta);
 			setTheta(moveEdge->getPrevious(),dTheta - moveEdgeTheta);
 			setTheta(otherEdge,getTheta(kiteEdge));
+			setTheta(moveEdge,getTheta(moveEdge->getAdjacent()));
 		}
 	}
 
+	BOOST_ASSERT(0.00001 > fabs(getTheta(kiteEdge)-getTheta(kiteEdge->getAdjacent())));
+	BOOST_ASSERT(0.00001 > fabs(getTheta(moveEdge)-getTheta(moveEdge->getAdjacent())));
+	BOOST_ASSERT(0.00001 > fabs(getTheta(moveEdge->getPrevious())-getTheta(moveEdge->getPrevious()->getAdjacent())));
+
+
 	BOOST_ASSERT(TestVertexSum(kiteEdge->getNext()->getOpposite()));
 	BOOST_ASSERT(TestVertexSum(kiteEdge->getPrevious()->getOpposite()));
-
+	BOOST_ASSERT(TestVertexSum(moveEdge->getNext()->getOpposite()));
+	BOOST_ASSERT( TestVertexSum(mirror ? moveEdge->getPrevious()->getOpposite() : otherEdge->getPrevious()->getOpposite()) );
 	return true;
 }
 

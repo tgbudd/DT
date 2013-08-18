@@ -23,6 +23,7 @@ public:
 		theta_[edge->getAdjacent()->getParent()->getId()][edge->getAdjacent()->getId()] = theta;
 	}
 	void addToTheta(Edge * const & edge, double theta) {
+		BOOST_ASSERT( 1.0e-7 > fabs(theta_[edge->getParent()->getId()][edge->getId()] - theta_[edge->getAdjacent()->getParent()->getId()][edge->getAdjacent()->getId()]) );
 		double firsttheta = (theta_[edge->getParent()->getId()][edge->getId()] += theta);
 		BOOST_ASSERT( firsttheta > 0.0 && firsttheta < 2.0 * PI );
 		firsttheta = (theta_[edge->getAdjacent()->getParent()->getId()][edge->getAdjacent()->getId()] += theta);

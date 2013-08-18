@@ -113,15 +113,15 @@ void Triangulation::DoSweep()
 	if( dominantmatter_ != NULL )
 	{
 		dominantmatter_->DoSweep();
-
-	}
-
-	// First perform a sweep of triangle flips
-	int SuccesfulMoves = 0;
-	while( SuccesfulMoves < n_triangles_ )
+	} else
 	{
-		if( TryFlipMove() )
-			SuccesfulMoves++;
+		// Perform a sweep of triangle flips
+		int SuccesfulMoves = 0;
+		while( SuccesfulMoves < n_triangles_ )
+		{
+			if( TryFlipMove() )
+				SuccesfulMoves++;
+		}
 	}
 
 	// Then perform a sweep for each matter field

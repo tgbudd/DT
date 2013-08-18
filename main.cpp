@@ -20,7 +20,7 @@ int main()
 	while(true)
 	{
 		triangulation.DoSweep(2);
-		std::cout << thetamodel.PrintState() << "\n";
+		std::cout << "state: " << thetamodel.PrintState() << "\n";
 	}
 
 	return 0;
