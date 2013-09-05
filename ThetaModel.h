@@ -42,7 +42,7 @@ private:
 	bool TryThetaMove();
 	bool TryThetaMove(Edge * edge);
 
-	bool TestCutCondition(Edge *, Edge *, const DualCohomologyBasis::IntForm2D &, double theta) const;
+	bool TestCutCondition(Edge *, Edge *, const IntForm2D &, double theta) const;
 
 	Edge * previousEdge(Edge * edge);  // functions of which pointers are used in the thetamove
 	Edge * nextEdge(Edge * edge);

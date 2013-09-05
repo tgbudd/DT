@@ -216,4 +216,5 @@ void Triangulation::DetermineVertices()
 			}
 		}
 	}
+	n_vertices_ = vertices_.size();
 }

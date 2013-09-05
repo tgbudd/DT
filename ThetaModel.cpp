@@ -90,7 +90,7 @@ bool ThetaModel::TryThetaMove(Edge * moveEdge)
 	{
 		// Construct the integral of omega which is needed by TestCutCondition to distinguish contractible
 		// paths from non-contractible ones.
-		DualCohomologyBasis::IntForm2D integral = {0,0};
+		IntForm2D integral = {0,0};
 		for(int i=0;i<2;i++)
 		{
 			integral[i] -= dualcohomologybasis_->getOmega((this->*next)(kiteEdge),i);
@@ -106,7 +106,7 @@ bool ThetaModel::TryThetaMove(Edge * moveEdge)
 		}
 	} else
 	{
-		DualCohomologyBasis::IntForm2D integral = {0,0};
+		IntForm2D integral = {0,0};
 		for(int i=0;i<2;i++)
 		{
 			integral[i] -= dualcohomologybasis_->getOmega((this->*previous)(kiteEdge),i);
@@ -216,7 +216,7 @@ bool ThetaModel::TestVertexSum(Vertex * vertex)
 struct triangleNode
 {
 	Triangle* triangle;
-	DualCohomologyBasis::IntForm2D integral;
+	IntForm2D integral;
 };
 bool operator<(const triangleNode &leftNode, const triangleNode &rightNode) {
 	if (leftNode.triangle != rightNode.triangle) return leftNode.triangle < rightNode.triangle;
@@ -232,7 +232,7 @@ bool operator<(const std::pair<triangleNode,double> &leftNode, const std::pair<t
 	return false;
 }
 
-bool ThetaModel::TestCutCondition(Edge * fromEdge, Edge * toEdge, const DualCohomologyBasis::IntForm2D & integral, double totalTheta) const
+bool ThetaModel::TestCutCondition(Edge * fromEdge, Edge * toEdge, const IntForm2D & integral, double totalTheta) const
 {
 	// Return false if there exists a contractible path in the dual graph from
 	// fromEdge->getParent() to toEdge->getParent() avoiding the dual edge fromEdge
