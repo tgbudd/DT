@@ -6,7 +6,7 @@ HarmonicEmbedding::HarmonicEmbedding(Triangulation * const triangulation, const 
 	: triangulation_(triangulation), cohomologybasis_(cohomologybasis)
 {
 	accuracy_ = 1.0e-8;
-	maxiterations_ = 120;
+	maxiterations_ = 2000;
 }
 
 bool HarmonicEmbedding::FindEmbedding()

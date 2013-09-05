@@ -155,3 +155,14 @@ private:
 	const ShortestLoop * const shortestloop_;
 	const Embedding * const embedding_;
 };
+
+class FundamentalDomainDrawer : public ComponentDrawer
+{
+public:
+	FundamentalDomainDrawer() {}
+	void Draw(BitmapDrawer & drawer)
+	{
+		drawer.domainLineSegment(0.0,0.0,1.0,0.0);
+		drawer.domainLineSegment(0.0,0.0,0.0,1.0);
+	}
+};

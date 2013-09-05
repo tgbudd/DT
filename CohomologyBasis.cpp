@@ -108,12 +108,23 @@ IntForm2D CohomologyBasis::Integrate(const std::list<Edge *> & path) const
 	return integral;
 }
 
-void CohomologyBasis::Simplify()
+void CohomologyBasis::Simplify(bool StayInSameClass)
 {
 	ShortestLoop shortestloop(triangulation_,this);
 	shortestloop.FindGenerators();
 	std::vector<std::list<Edge*> > generators = shortestloop.getGenerators();
-	std::vector<IntForm2D> integrals = shortestloop.getGeneratorIntegrals();
+	std::vector<IntForm2D> integrals;
+	if( StayInSameClass )
+	{
+		integrals = shortestloop.getGeneratorIntegrals();
+	} else
+	{
+		integrals.resize(2);
+		integrals[0][0] = 1;
+		integrals[0][1] = 0;
+		integrals[1][0] = 0;
+		integrals[1][1] = 1;
+	}
 
 	DualCohomologyBasis dualbasis(triangulation_,generators,integrals);
 

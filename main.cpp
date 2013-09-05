@@ -2,80 +2,26 @@
 
 #include "triangulation.h"
 #include "CohomologyBasis.h"
-#include "DualCohomologyBasis.h"
 #include "HarmonicEmbedding.h"
 #include "BitmapDrawer.h"
 #include "ShortestLoop.h"
 
 int main()
 {
-	/*Triangulation triangulation;
-	DualCohomologyBasis dualcohomologybasis(&triangulation);
-	ThetaModel thetamodel(&triangulation,&dualcohomologybasis);
-	
-	triangulation.AddDecoration( &dualcohomologybasis );  
-	triangulation.setDominantMatter( &thetamodel );
-
-	triangulation.LoadRegularLattice(5,6);
-	dualcohomologybasis.Initialize(5,6);
-	thetamodel.Initialize();
-
-	while(true)
-	{
-		triangulation.DoSweep(2);
-		std::cout << "state: " << thetamodel.PrintState() << "\n";
-	}*/
-
 	Triangulation triangulation;
 	CohomologyBasis cohomologybasis( &triangulation );
 	triangulation.AddDecoration( &cohomologybasis );  
 
-	triangulation.LoadRegularLattice(7,10);
-	cohomologybasis.Initialize(7,10);
+	triangulation.LoadRegularLattice(175,175);
+	cohomologybasis.Initialize(175,175);
 
-	triangulation.DoSweep(20);
-
-	BOOST_ASSERT(cohomologybasis.CheckClosedness());
-	DualCohomologyBasis dualcohom(cohomologybasis);
-	BOOST_ASSERT(dualcohom.CheckClosedness());
-	CohomologyBasis cohomologybasis2( &triangulation, dualcohom );
-	BOOST_ASSERT(cohomologybasis2.CheckClosedness());
-
-	ShortestLoop shortestloop( &triangulation, &cohomologybasis);
-
-	shortestloop.FindGenerators();
-	std::vector<std::list<Edge*> > generators = shortestloop.getGenerators();
-	std::vector<IntForm2D> integrals = shortestloop.getGeneratorIntegrals();
-
-	std::vector<IntForm2D> integrals2,integrals3;
-	for(int i=0;i<2;i++)
+	for(int i=0;i<10;i++)
 	{
-		integrals2.push_back(cohomologybasis.Integrate(generators[i]));
-		integrals3.push_back(cohomologybasis2.Integrate(generators[i]));
+		triangulation.DoSweep(1);
+		cohomologybasis.Simplify(false);
+		BOOST_ASSERT( cohomologybasis.CheckClosedness() );
+		std::cout << i << "\n";
 	}
-
-	BOOST_ASSERT(integrals2[0][0] == integrals[0][0]);
-	BOOST_ASSERT(integrals2[0][1] == integrals[0][1]);
-	BOOST_ASSERT(integrals2[1][0] == integrals[1][0]);
-	BOOST_ASSERT(integrals2[1][1] == integrals[1][1]);
-	BOOST_ASSERT(integrals3[0][0] == integrals[0][0]);
-	BOOST_ASSERT(integrals3[0][1] == integrals[0][1]);
-	BOOST_ASSERT(integrals3[1][0] == integrals[1][0]);
-	BOOST_ASSERT(integrals3[1][1] == integrals[1][1]);
-
-	cohomologybasis2.Simplify();
-	std::vector<IntForm2D> integrals4;
-	for(int i=0;i<2;i++)
-	{
-		integrals4.push_back(cohomologybasis2.Integrate(generators[i]));
-	}
-	int det = integrals[0][0] * integrals[1][1] - integrals[1][0] * integrals[0][1];
-	BOOST_ASSERT(integrals4[0][0] == integrals[0][0]);
-	BOOST_ASSERT(integrals4[0][1] == integrals[0][1]);
-	BOOST_ASSERT(integrals4[1][0] == integrals[1][0]);
-	BOOST_ASSERT(integrals4[1][1] == integrals[1][1]);
-	BOOST_ASSERT(cohomologybasis2.CheckClosedness());
-
 	HarmonicEmbedding harmonicembedding( &triangulation, &cohomologybasis );
 
 	if( harmonicembedding.FindEmbedding() )
@@ -87,12 +33,20 @@ int main()
 	}
 
 	TriangulationDrawer tridrawer( &triangulation, &harmonicembedding );
-	BitmapDrawer bitmap(1024,768,4);
-	bitmap.SetPeriodicDomain(harmonicembedding.CalculateModuli(),0.4);
+	FundamentalDomainDrawer funddrawer;
+
+	BitmapDrawer bitmap(1000,1000,4);
+	
+	bitmap.SetPeriodicDomain(harmonicembedding.CalculateModuli(),0.5);
+	bitmap.setPenWidth(8);
+	bitmap.setPenColor(200,20,20);
+	funddrawer.Draw(bitmap);
 	bitmap.setPenWidth(5);
-	bitmap.setPenColor(180,180,180);
+	bitmap.setPenColor(30,30,100);
 	tridrawer.Draw(bitmap);
 
+
+	/*ShortestLoop shortestloop(&triangulation,&cohomologybasis);
 	ShortestLoopDrawer loopdrawer(&shortestloop,&harmonicembedding);
 	shortestloop.FindGenerators();
 	shortestloop.FindShortestLoop();
@@ -100,7 +54,7 @@ int main()
 	bitmap.setPenColor(0,140,10);
 	loopdrawer.DrawGenerators(bitmap);
 	bitmap.setPenColor(10,10,110);
-	loopdrawer.Draw(bitmap);
+	loopdrawer.Draw(bitmap);*/
 
 	bitmap.SaveImage("test.bmp");
 

@@ -33,9 +33,12 @@ void ShortestLoop::FindGenerators()
 	Vertex * startVertex = triangulation_->getVertex(0);
 
 	generators_.push_back(FindShortestLoop(startVertex));
+	TrimLoop(generators_.back());
 	BOOST_ASSERT(CheckPathIsLoop(generators_.back()));
 	generator_integrals_.push_back(cohomologybasis_->Integrate(generators_.back()));
+
 	generators_.push_back(FindShortestLoop(startVertex,generator_integrals_.back()));
+	TrimLoop(generators_.back());
 	BOOST_ASSERT(CheckPathIsLoop(generators_.back()));
 	generator_integrals_.push_back(cohomologybasis_->Integrate(generators_.back()));
 
@@ -171,4 +174,13 @@ bool ShortestLoop::CheckPathIsLoop(const std::list<Edge*> & path) const
 		previousVertex = (*edgeIt)->getPrevious()->getOpposite();
 	}
 	return true;
+}
+
+void ShortestLoop::TrimLoop( std::list<Edge*> & path )
+{
+	while( !path.empty() && path.front()->getAdjacent() == path.back() )
+	{
+		path.pop_front();
+		path.pop_back();
+	}
 }

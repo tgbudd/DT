@@ -87,7 +87,7 @@ public:
 
 	IntForm2D Integrate(const std::list<Edge *> & path) const;
 
-	void Simplify();
+	void Simplify(bool StayInSameClass = false);
 protected:
 	std::vector<boost::array<IntForm2D,3> > omega_;		// two closed one-forms on the triangulation
 	void ClearOmega();

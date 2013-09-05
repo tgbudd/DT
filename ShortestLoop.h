@@ -53,5 +53,7 @@ private:
 	};
 
 	std::vector<VertexNode> visit;
+
+	void TrimLoop( std::list<Edge*> & path );
 };
 
