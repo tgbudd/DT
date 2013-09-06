@@ -1,4 +1,6 @@
 #include <iostream>
+#include <sstream>
+#include <iomanip>
 
 #include "triangulation.h"
 #include "CohomologyBasis.h"
@@ -6,44 +8,77 @@
 #include "BitmapDrawer.h"
 #include "ShortestLoop.h"
 
+
 int main()
 {
+
 	Triangulation triangulation;
 	CohomologyBasis cohomologybasis( &triangulation );
 	triangulation.AddDecoration( &cohomologybasis );  
 
-	triangulation.LoadRegularLattice(175,175);
-	cohomologybasis.Initialize(175,175);
+	triangulation.LoadRegularLattice(30,40);
+	cohomologybasis.Initialize(30,40);
 
-	for(int i=0;i<10;i++)
-	{
-		triangulation.DoSweep(1);
-		cohomologybasis.Simplify(false);
-		BOOST_ASSERT( cohomologybasis.CheckClosedness() );
-		std::cout << i << "\n";
-	}
 	HarmonicEmbedding harmonicembedding( &triangulation, &cohomologybasis );
 
-	if( harmonicembedding.FindEmbedding() )
-	{
-		std::cout << "Embedding found\n";
-	} else
-	{
-		std::cout << "Embedding not found\n";
-	}
+	
+	// add harmonic embedding as decoration to keep track of the embedding after flip moves
+	triangulation.AddDecoration( &harmonicembedding );
 
+	/*HotEdgesDrawer hotedgesdrawer( &harmonicembedding );
+	triangulation.AddDecoration( &hotedgesdrawer );
+	hotedgesdrawer.setNumberOfEdges(120);
+	hotedgesdrawer.setColor(0.9,0.6,0.6);
+	*/
+
+	TextDrawer textdrawer("lucida");
+	textdrawer.setColor(200,0,0);
 	TriangulationDrawer tridrawer( &triangulation, &harmonicembedding );
 	FundamentalDomainDrawer funddrawer;
 
-	BitmapDrawer bitmap(1000,1000,4);
+	BitmapDrawer bitmap(1280,720,2);
+
+	harmonicembedding.FindEmbedding();
+
+	for(int i=0;i<14;i++)
+	{
+		//harmonicembedding.setMaxIterations(20);
+		if( i % 20 == 1 )
+		{
+			cohomologybasis.Simplify(true);
+		}
+		harmonicembedding.FindEmbedding();
+
+		bitmap.Clear();
+
+		bitmap.SetPeriodicDomain(harmonicembedding.CalculateModuli(),0.55);
+		bitmap.setPenWidth(25);
+		bitmap.setPenColor(170,170,170);
+		funddrawer.Draw(bitmap);
+		//hotedgesdrawer.Draw(bitmap);
+		bitmap.setPenWidth(5);
+		bitmap.setPenColor(0,0,70);
+		tridrawer.Draw(bitmap);
+
+		textdrawer.DrawText("Pure gravity\n2400 triangles\n2000 moves/s",bitmap,20,20,0.9);
+
+		std::ostringstream os;
+		os << "D:\\temp\\dt\\output\\test-" << std::setw( 4 ) << std::setfill( '0' ) << i << ".bmp";
+		bitmap.SaveImage(os.str());
+		std::cout << os.str() << " saved\n";
+
+		int SuccesfulMoves = 0;
+		while( SuccesfulMoves < 100 )
+		{
+			if( triangulation.TryFlipMove() )
+				SuccesfulMoves++;
+		}
+
+	}
+
+
 	
-	bitmap.SetPeriodicDomain(harmonicembedding.CalculateModuli(),0.5);
-	bitmap.setPenWidth(8);
-	bitmap.setPenColor(200,20,20);
-	funddrawer.Draw(bitmap);
-	bitmap.setPenWidth(5);
-	bitmap.setPenColor(30,30,100);
-	tridrawer.Draw(bitmap);
+
 
 
 	/*ShortestLoop shortestloop(&triangulation,&cohomologybasis);
@@ -56,7 +91,6 @@ int main()
 	bitmap.setPenColor(10,10,110);
 	loopdrawer.Draw(bitmap);*/
 
-	bitmap.SaveImage("test.bmp");
 
 	return 0;
 }

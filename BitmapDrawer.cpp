@@ -15,7 +15,7 @@ void TriangulationDrawer::Draw(BitmapDrawer & drawer)
 			Vector2D start = embedding_->getCoordinate(edge->getNext()->getOpposite());
 			Vector2D form = embedding_->getForm(edge);
 
-			drawer.domainLineSegment(start[0],start[1],start[0] - form[0],start[1] - form[1]);
+			drawer.domainLineSegment(start[0],start[1],start[0] + form[0],start[1] + form[1]);
 		}
 	}
 }
@@ -40,6 +40,6 @@ void ShortestLoopDrawer::DrawPath(BitmapDrawer & drawer, const std::list<Edge*> 
 	{
 		Vector2D start = embedding_->getCoordinate((*edgeIt)->getNext()->getOpposite());
 		Vector2D form = embedding_->getForm(*edgeIt);
-		drawer.domainLineSegment(start[0],start[1],start[0] - form[0],start[1] - form[1]);
+		drawer.domainLineSegment(start[0],start[1],start[0] + form[0],start[1] + form[1]);
 	}
 }

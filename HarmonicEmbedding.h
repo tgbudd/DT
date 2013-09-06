@@ -61,7 +61,14 @@ public:
 	bool FindEmbedding();
 
 	std::pair< double, double > CalculateModuli();
+
+	void setMaxIterations(int iterations)
+	{
+		maxiterations_ = iterations;
+	}
 private:
+	void LoadInitialCoordinates( std::vector<double> & coordinates, int i, Vertex * startVertex ) const;
+
 	Triangulation * triangulation_;
 	const CohomologyBasis * const cohomologybasis_;
 

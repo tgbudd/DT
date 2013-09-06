@@ -3,16 +3,28 @@
 #include <vector>
 
 #include "triangulation.h"
+#include "Decoration.h"
 #include "Vertex.h"
 #include "Edge.h"
+#include "utilities.h"
 
-typedef boost::array<double,2> Vector2D;
 
-class Embedding
+class Embedding : public Decoration
 {
 public:
 	Embedding() {}
 	~Embedding() {}
+
+	void Initialize() {}
+
+	void UpdateAfterFlipMove(const Edge * const edge) 
+	{
+		setFormToMinusAdjacent(edge);
+		setFormToMinusAdjacent(edge->getPrevious()->getAdjacent()->getNext());
+		Vector2D newform = NegateVector2D(AddVectors2D(getForm(edge),getForm(edge->getNext())));
+		setForm(edge->getPrevious(),newform);
+		setForm(edge->getPrevious()->getAdjacent(),NegateVector2D(newform));
+	}
 
 	virtual bool FindEmbedding() = 0;
 
@@ -36,7 +48,7 @@ public:
 	{
 		coordinate_[vertex][i] = coor;
 	}
-	const Vector2D & getForm(Edge * const & edge) const
+	const Vector2D & getForm(const Edge * const & edge) const
 	{
 		return form_[edge->getParent()->getId()][edge->getId()];
 	}
@@ -44,17 +56,22 @@ public:
 	{
 		return form_[triangle][edge];
 	}
-	void setForm(Edge * const & edge, const Vector2D & coor )
+	void setForm(const Edge * const & edge, const Vector2D & coor )
 	{
 		 form_[edge->getParent()->getId()][edge->getId()] = coor;
 	}
-	void setForm(Edge * const & edge, int i, double coor )
+	void setForm(const Edge * const & edge, int i, double coor )
 	{
 		 form_[edge->getParent()->getId()][edge->getId()][i] = coor;
 	}
 	void setForm(int triangle, int edge, int i, double coor )
 	{
 		 form_[triangle][edge][i] = coor;
+	}
+	void setFormToMinusAdjacent(const Edge * const & edge)
+	{
+		Edge * adj = edge->getAdjacent();
+		form_[edge->getParent()->getId()][edge->getId()] = NegateVector2D(form_[adj->getParent()->getId()][adj->getId()] );
 	}
 	void setSize(int NumberOfTriangles,int NumberOfVertices)
 	{
