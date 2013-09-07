@@ -68,6 +68,7 @@
     <ClInclude Include="bitmap_image.h" />
     <ClInclude Include="CohomologyBasis.h" />
     <ClInclude Include="ConjugateGradient.h" />
+    <ClInclude Include="ConnectivityRestrictor.h" />
     <ClInclude Include="Decoration.h" />
     <ClInclude Include="DominantMatter.h" />
     <ClInclude Include="DualCohomologyBasis.h" />

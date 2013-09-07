@@ -1,3 +1,14 @@
+/* 
+Source file used to make the video dt-1500t-acc.avi on youtube 
+(http://www.youtube.com/watch?v=c3NdgSIe030). The bitmaps were converted 
+to an uncompressed avi using EasyBMPtoAVI with command:
+
+EasyBMPtoAVI -start output/test-0000.bmp -end output/test-0699.bmp -framerate 10 -output out1.avi
+
+This avi-file was then encoded in h264-codec using avidemux (including a vertical flip filter, because
+for some reason they end up upside down.
+*/
+
 #include <iostream>
 #include <sstream>
 #include <iomanip>
@@ -7,7 +18,6 @@
 #include "HarmonicEmbedding.h"
 #include "BitmapDrawer.h"
 #include "ShortestLoop.h"
-#include "ConnectivityRestrictor.h"
 
 
 int main()
@@ -16,15 +26,12 @@ int main()
 	Triangulation triangulation;
 	CohomologyBasis cohomologybasis( &triangulation );
 	triangulation.AddDecoration( &cohomologybasis );  
-	ConnectivityRestrictor connect( &triangulation, &cohomologybasis, ConnectivityRestrictor::NO_CONTRACTIBLE_DOUBLE_EDGES );
-	triangulation.AddMatter( &connect );
 
-	triangulation.LoadRegularLattice(8,6);
+	triangulation.LoadRegularLattice(30,25);
 	cohomologybasis.Initialize(30,25);
 
 	HarmonicEmbedding harmonicembedding( &triangulation, &cohomologybasis );
 
-	
 	// add harmonic embedding as decoration to keep track of the embedding after flip moves
 	triangulation.AddDecoration( &harmonicembedding );
 

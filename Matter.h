@@ -11,7 +11,6 @@ class Matter : public Decoration
 {
 public:
 	Matter() {}
-	Matter(const Triangulation * const triangulation) : triangulation_(triangulation) {}
 	~Matter(void) {}
 	bool IsFlipMoveAllowed(const Edge * const) {
 		return true;
@@ -25,7 +24,7 @@ public:
 	std::string PrintState() const { return ""; }
 
 private:
-	const Triangulation * triangulation_;
+	//const Triangulation * triangulation_;
 
 };
 

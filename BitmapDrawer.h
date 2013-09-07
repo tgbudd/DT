@@ -270,25 +270,47 @@ private:
 
 class TextDrawer {
 public:
-	TextDrawer(std::string fontfile)
+	TextDrawer(std::string fontfile, int upscale=1)
 	{
-		LoadFont(fontfile);
+		LoadFont(fontfile,upscale);
 	}
 	TextDrawer() {}
 	~TextDrawer() {}
 	
-	void LoadFont(std::string fontfile)
+	void LoadFont(std::string fontfile,int upscale)
 	{
 		std::ostringstream osbitmap, osdata;
 		osbitmap << fontfile << ".bmp";
 		osdata << fontfile << ".dat";
-		font_bitmap_ = bitmap_image(osbitmap.str());
+		if (upscale > 1)
+		{
+			bitmap_image tmpBitmap(osbitmap.str());
+			if( upscale > 2 )
+			{
+				bitmap_image tmpBitmap2;
+				tmpBitmap.upsample(tmpBitmap2);
+				tmpBitmap2.upsample(font_bitmap_);
+				upscale = 4;
+			} else
+			{
+				tmpBitmap.upsample(font_bitmap_);
+				upscale = 2;
+			}
+		} else
+		{
+			upscale = 1;
+			font_bitmap_ = bitmap_image(osbitmap.str());
+		}
 		std::ifstream datafile(osdata.str());
 		while( !datafile.eof() )
 		{
 			int code;
 			Character character;
 			datafile >> code >> character.x >> character.y >> character.width >> character.height;
+			character.x *= upscale;
+			character.y *= upscale;
+			character.width *= upscale;
+			character.height *= upscale;
 			characters_.insert(std::pair<char,Character>((char)code,character));
 		}
 	}
