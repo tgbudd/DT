@@ -49,9 +49,9 @@ public:
 	Matrix() {}
 	~Matrix() {}
 
-	virtual void MultiplyVector(const std::vector<double> & from, std::vector<double> & tp) const = 0;
+	virtual void MultiplyVector(const std::vector<double> & from, std::vector<double> & to) const = 0;
 
-	bool ConjugateGradientSolve( const std::vector<double> & b, std::vector<double> & x, double eps, int maxIterations = 100 ) 
+	bool ConjugateGradientSolve( const std::vector<double> & b, std::vector<double> & x, double eps, int maxIterations = 100 ) const
 	{
 		std::vector<double> g(b.size());
 		std::vector<double> r(b.size());

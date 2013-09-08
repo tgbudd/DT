@@ -15,7 +15,7 @@ public:
 	virtual void Initialize() = 0;
 
 	virtual void UpdateAfterFlipMove(const Edge * const) {}
-	std::string PrintState() const { return ""; }
+	virtual std::string PrintState() const { return ""; }
 
 private:
 	const Triangulation * triangulation_;

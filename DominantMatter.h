@@ -9,7 +9,7 @@ public:
 	DominantMatter() : triangulation_(NULL) {}
 	~DominantMatter() {}
 	virtual void DoSweep() = 0;
-	std::string PrintState() const { return ""; }
+	virtual std::string PrintState() const { return ""; }
 private:
 	Triangulation * const triangulation_;
 };

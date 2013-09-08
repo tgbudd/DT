@@ -75,6 +75,7 @@
     <ClInclude Include="Edge.h" />
     <ClInclude Include="Embedding.h" />
     <ClInclude Include="HarmonicEmbedding.h" />
+    <ClInclude Include="LaplacianDeterminant.h" />
     <ClInclude Include="Matter.h" />
     <ClInclude Include="Observable.h" />
     <ClInclude Include="PottsModel.h" />
@@ -91,6 +92,7 @@
     <ClCompile Include="DualCohomologyBasis.cpp" />
     <ClCompile Include="Edge.cpp" />
     <ClCompile Include="HarmonicEmbedding.cpp" />
+    <ClCompile Include="LaplacianDeterminant.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="PottsModel.cpp" />
     <ClCompile Include="ShortestLoop.cpp" />
