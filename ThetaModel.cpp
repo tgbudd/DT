@@ -67,8 +67,8 @@ bool ThetaModel::TryThetaMove(Edge * moveEdge)
 	
 	double moveEdgeTheta = getTheta(moveEdge);
 	//
-	boost::array<double,4> hyt = { -getTheta((this->*previous)(moveEdge)), -getTheta((this->*next)(kiteEdge)), moveEdgeTheta - PI,  getTheta((this->*previous)(kiteEdge))-PI};
-	boost::array<double,3> hut = { PI - getTheta((this->*previous)(moveEdge)), PI - getTheta((this->*next)(kiteEdge)), getTheta((this->*previous)(kiteEdge))};
+	//boost::array<double,4> hyt = { -getTheta((this->*previous)(moveEdge)), -getTheta((this->*next)(kiteEdge)), moveEdgeTheta - PI,  getTheta((this->*previous)(kiteEdge))-PI};
+	//boost::array<double,3> hut = { PI - getTheta((this->*previous)(moveEdge)), PI - getTheta((this->*next)(kiteEdge)), getTheta((this->*previous)(kiteEdge))};
 	//
 	double dThetaMin = std::max(
 		std::max( -getTheta((this->*previous)(moveEdge)), -getTheta((this->*next)(kiteEdge)) ),

@@ -1,5 +1,38 @@
 #include "BitmapDrawer.h"
 
+ColorScheme::ColorScheme( Scheme scheme ) : scheme_(scheme)
+{
+	if( scheme_ == TEMPERATURE_MAP )
+	{
+		double data[13][4] = {{0., 0.178927, 0.305394, 0.933501}, {0.0833333, 0.308746, 0.441842, 0.940894}, {0.166667, 0.453318, 0.567063, 0.950106}, {0.25, 0.642359, 0.720535, 0.964988}, {0.333333, 0.819984, 0.859297, 0.982692}, {0.416667, 0.935699, 0.951565, 0.993729}, {0.5, 0.984192, 0.987731, 0.911643}, {0.583333, 0.995282, 0.992317, 0.727853}, {0.666667, 0.992503, 0.986373, 0.425376}, {0.75, 0.955963, 0.863115, 0.283425}, {0.833333, 0.904227, 0.657999, 0.241797}, {0.916667, 0.858405, 0.449932, 0.203562}, {1., 0.817319, 0.134127, 0.164218}};
+		schemedata_.resize(13);
+		for(int i=0;i<13;i++)
+		{
+			schemedata_[i].first = data[i][0];
+			schemedata_[i].second[0] = data[i][1];
+			schemedata_[i].second[1] = data[i][2];
+			schemedata_[i].second[2] = data[i][3];
+		}
+	}
+}
+
+boost::array<unsigned char,3> ColorScheme::getColor( double x ) const
+{
+	boost::array<unsigned char,3> color;
+	for(int i=1;i<schemedata_.size();i++)
+	{
+		if( schemedata_[i].first > x )
+		{
+			for(int j=0;j<3;j++)
+			{
+				color[j] = (unsigned char)( 256.0 * ( (x-schemedata_[i-1].first) * schemedata_[i].second[j] + (schemedata_[i].first-x) * schemedata_[i-1].second[j] ) / (schemedata_[i].first - schemedata_[i-1].first) );
+			}
+			break;
+		}
+	}
+	return color;
+}
+
 void TriangulationDrawer::Draw(BitmapDrawer & drawer)
 {
 	for(int i=0;i<triangulation_->NumberOfTriangles();i++)
@@ -17,6 +50,28 @@ void TriangulationDrawer::Draw(BitmapDrawer & drawer)
 
 			drawer.domainLineSegment(start[0],start[1],start[0] + form[0],start[1] + form[1]);
 		}
+	}
+}
+
+void TriangulationDrawer::DrawShading(BitmapDrawer & drawer)
+{
+	ColorScheme scheme(ColorScheme::TEMPERATURE_MAP);
+
+	for(int i=0;i<triangulation_->NumberOfTriangles();i++)
+	{
+		Triangle * triangle = triangulation_->getTriangle(i);
+		std::vector<Vector2D> polygon;
+		polygon.push_back( embedding_->getCoordinate(triangle->getEdge(0)->getOpposite()) );
+		polygon.push_back( AddVectors2D(polygon.back(),embedding_->getForm(i,2)) );
+		polygon.push_back( AddVectors2D(polygon.back(),embedding_->getForm(i,0)) );
+
+		double area = SignedPolygonArea( polygon );
+		BOOST_ASSERT( area > -1.0e-8 );
+		double minlogarea = std::max(0.0,std::min(8.0,-log(area)));
+		boost::array<unsigned char,3> color = scheme.getColor( (minlogarea+1.0) / 10.0 );
+
+		drawer.setPenColor(color[0],color[1],color[2]);
+		drawer.domainPolygon( polygon );
 	}
 }
 

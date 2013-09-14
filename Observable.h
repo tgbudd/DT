@@ -11,8 +11,6 @@ public:
 	~Observable() {}
 
 	virtual void Measure() = 0;
-	virtual std::string OutputData() { return ""; }
-private:
-	const Triangulation * triangulation_;
+	virtual std::string OutputData() const { return ""; }
 };
 

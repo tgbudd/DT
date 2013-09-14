@@ -88,12 +88,13 @@ public:
 	IntForm2D Integrate(const std::list<Edge *> & path) const;
 
 	void Simplify(bool StayInSameClass = false);
+	void SetToDualOf(const DualCohomologyBasis & dualOmega);	// change the DualCohomologyBasis to an equivalent CohomologyBasis
+
 protected:
 	std::vector<boost::array<IntForm2D,3> > omega_;		// two closed one-forms on the triangulation
 	void ClearOmega();
 	Triangulation * triangulation_;
 private:
-	void SetToDualOf(const DualCohomologyBasis & dualOmega);	// change the DualCohomologyBasis to an equivalent CohomologyBasis
 
 	
 };

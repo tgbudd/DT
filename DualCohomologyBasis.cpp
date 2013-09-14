@@ -44,8 +44,11 @@ DualCohomologyBasis::DualCohomologyBasis(Triangulation * const triangulation, co
 
 void DualCohomologyBasis::SetToDualOf(const CohomologyBasis & cohom)
 {
+	omega_.resize(triangulation_->NumberOfTriangles());
+
 	// Take the dual form from triangles t to t' to be the form integrated from the 
 	// vertex at position 0 of t to the vertex at position 0 of t'.
+	
 	for(int triangleId1=0;triangleId1<triangulation_->NumberOfTriangles();triangleId1++)
 	{
 		Triangle * triangle1 = triangulation_->getTriangle(triangleId1);

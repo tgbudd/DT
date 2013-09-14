@@ -64,6 +64,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="BabyUniverseDistribution.h" />
     <ClInclude Include="BitmapDrawer.h" />
     <ClInclude Include="bitmap_image.h" />
     <ClInclude Include="CohomologyBasis.h" />
@@ -79,6 +80,7 @@
     <ClInclude Include="Matter.h" />
     <ClInclude Include="Observable.h" />
     <ClInclude Include="PottsModel.h" />
+    <ClInclude Include="PottsModelOnVertices.h" />
     <ClInclude Include="ShortestLoop.h" />
     <ClInclude Include="ThetaModel.h" />
     <ClInclude Include="Triangle.h" />
@@ -87,6 +89,7 @@
     <ClInclude Include="Vertex.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="BabyUniverseDistribution.cpp" />
     <ClCompile Include="BitmapDrawer.cpp" />
     <ClCompile Include="CohomologyBasis.cpp" />
     <ClCompile Include="DualCohomologyBasis.cpp" />
@@ -95,6 +98,7 @@
     <ClCompile Include="LaplacianDeterminant.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="PottsModel.cpp" />
+    <ClCompile Include="PottsModelOnVertices.cpp" />
     <ClCompile Include="ShortestLoop.cpp" />
     <ClCompile Include="ThetaModel.cpp" />
     <ClCompile Include="Triangle.cpp" />

@@ -12,6 +12,20 @@
 #include "ShortestLoop.h"
 #include "bitmap_image.h"
 
+class ColorScheme
+{
+public:
+	enum Scheme {
+		TEMPERATURE_MAP
+	};
+
+	ColorScheme( Scheme scheme );
+	boost::array<unsigned char,3> getColor( double x ) const;
+private:
+	Scheme scheme_;
+	std::vector<std::pair<double, boost::array<double,3> > > schemedata_;
+};
+
 class BitmapDrawer
 {
 public:
@@ -29,14 +43,16 @@ public:
 	{
 		image_.clear(255);
 	}
-	void SetPeriodicDomain(const std::pair<double,double> & modulus, double scale )
+	void SetPeriodicDomain(const std::pair<double,double> & modulus, double areafraction )
 	{
-		SetPeriodicDomain(modulus,scale,fullwidth_/2,fullheight_/2);
+		SetPeriodicDomain(modulus,areafraction,fullwidth_/2,fullheight_/2);
 	}
-	void SetPeriodicDomain(const std::pair<double,double> & modulus, double scale, int offsetX, int offsetY )
+	void SetPeriodicDomain(const std::pair<double,double> & modulus, double areafraction, int offsetX, int offsetY )
 	{
 		modulus_ = modulus;
-		scale_ = scale;
+
+		// Set scale_ such that the fundamental domain takes up fraction areascale of total area
+		scale_ = sqrt(areafraction * ((double)height_)/((double)width_) / modulus.second );
 		offsetX_ = offsetX;
 		offsetY_ = offsetY;
 		absolutescale_ = (int)(scale_ * fullwidth_);
@@ -184,7 +200,10 @@ public:
 		: triangulation_(triangulation), embedding_(embedding) {}
 
 	void Draw(BitmapDrawer & drawer);
+
+	void DrawShading(BitmapDrawer & drawer);
 private:
+
 	Triangulation * const triangulation_;
 	const Embedding * const embedding_;
 };
