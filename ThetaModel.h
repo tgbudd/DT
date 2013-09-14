@@ -32,10 +32,15 @@ public:
 	int getTheta(Edge * const & edge) const {
 		return theta_[edge->getParent()->getId()][edge->getId()]; 
 	}
+	int getTheta(int triangleId, int edgeId) const {
+		return theta_[triangleId][edgeId]; 
+	}
 	double getRealTheta(Edge * const & edge ) const {
 		return PI * (double)(getTheta(edge))/pi_in_units_;
 	}
-
+	double getRealTheta(int triangleId, int edgeId) const {
+		return PI * (double)(getTheta(triangleId,edgeId))/pi_in_units_;
+	}
 private:
 	std::vector<boost::array<int,3> > theta_;
 	const int pi_in_units_;	// use integer angles where pi_in_units corresponds to an angle of pi

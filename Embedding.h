@@ -1,32 +1,44 @@
 #pragma once
 
 #include <vector>
+#include <map>
+
+#include "boost/array.hpp"
 
 #include "triangulation.h"
 #include "Decoration.h"
+#include "CohomologyBasis.h"
+#include "ConjugateGradient.h"
 #include "Vertex.h"
 #include "Edge.h"
 #include "utilities.h"
 
 
+class LaplacianMatrix : public Matrix
+{
+public:
+	LaplacianMatrix (const Triangulation * const triangulation, const std::vector<boost::array<double,3> > & edge_measure);
+	void MultiplyVector(const std::vector<double> & from, std::vector<double> & to) const;
+private:
+	std::vector<std::map<int,double> > laplacianRules_;
+};
+
 class Embedding : public Decoration
 {
 public:
-	Embedding() {}
+	Embedding(const Triangulation * const triangulation, const CohomologyBasis * const cohomologybasis) : triangulation_(triangulation), cohomologybasis_(cohomologybasis) {
+		accuracy_ = 1.0e-6;
+		maxiterations_ = 2000;
+		edge_measure_.resize(triangulation->NumberOfTriangles());
+	}
 	~Embedding() {}
 
 	void Initialize() {}
+	void UpdateAfterFlipMove(const Edge * const edge); 
+	bool FindEmbedding();
+	virtual bool FindEdgeMeasure() = 0;
+	std::pair< double, double > CalculateModuli() const;
 
-	void UpdateAfterFlipMove(const Edge * const edge) 
-	{
-		setFormToMinusAdjacent(edge);
-		setFormToMinusAdjacent(edge->getPrevious()->getAdjacent()->getNext());
-		Vector2D newform = NegateVector2D(AddVectors2D(getForm(edge),getForm(edge->getNext())));
-		setForm(edge->getPrevious(),newform);
-		setForm(edge->getPrevious()->getAdjacent(),NegateVector2D(newform));
-	}
-
-	virtual bool FindEmbedding() = 0;
 
 	const Vector2D & getCoordinate(Vertex * const & vertex) const
 	{
@@ -84,7 +96,24 @@ public:
 			form_.resize(NumberOfTriangles );
 		}
 	}
+	void setMaxIterations(int iterations)
+	{
+		maxiterations_ = iterations;
+	}
+
+	void setEdgeMeasure(int triangle, int edge, double measure)
+	{
+		edge_measure_[triangle][edge] = measure;
+	}
 private:
+	void Coderivative( const std::vector<boost::array<double,3> > & oneform, std::vector<double> & result );
+	void LoadInitialCoordinates( std::vector<double> & coordinates, int i, Vertex * startVertex ) const;
+
+	const Triangulation * const triangulation_;
+	const CohomologyBasis * const cohomologybasis_;
 	std::vector<Vector2D> coordinate_;
 	std::vector<boost::array<Vector2D,3> > form_;
+	std::vector<boost::array<double,3> > edge_measure_;
+	double accuracy_;
+	int maxiterations_;
 };

@@ -67,6 +67,7 @@
     <ClInclude Include="BabyUniverseDistribution.h" />
     <ClInclude Include="BitmapDrawer.h" />
     <ClInclude Include="bitmap_image.h" />
+    <ClInclude Include="CirclePattern.h" />
     <ClInclude Include="CohomologyBasis.h" />
     <ClInclude Include="ConjugateGradient.h" />
     <ClInclude Include="ConnectivityRestrictor.h" />
@@ -91,9 +92,11 @@
   <ItemGroup>
     <ClCompile Include="BabyUniverseDistribution.cpp" />
     <ClCompile Include="BitmapDrawer.cpp" />
+    <ClCompile Include="CirclePattern.cpp" />
     <ClCompile Include="CohomologyBasis.cpp" />
     <ClCompile Include="DualCohomologyBasis.cpp" />
     <ClCompile Include="Edge.cpp" />
+    <ClCompile Include="Embedding.cpp" />
     <ClCompile Include="HarmonicEmbedding.cpp" />
     <ClCompile Include="LaplacianDeterminant.cpp" />
     <ClCompile Include="main.cpp" />

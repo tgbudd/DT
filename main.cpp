@@ -9,6 +9,7 @@
 #include "BabyUniverseDistribution.h"
 
 #include "HarmonicEmbedding.h"
+#include "CirclePattern.h"
 #include "BitmapDrawer.h"
 
 int main(int argc, char* argv[])
@@ -59,7 +60,9 @@ int main(int argc, char* argv[])
 
 	BitmapDrawer bitmap(600,400,2);
 	HarmonicEmbedding harmonicembedding( &triangulation, &cohomologybasis );
+	CirclePattern circlepattern( &triangulation, &cohomologybasis, &thetamodel );
 	TriangulationDrawer tridrawer( &triangulation, &harmonicembedding );
+	TriangulationDrawer tridrawer2( &triangulation, &circlepattern );
 
 	int i=0;
 	
@@ -91,6 +94,11 @@ int main(int argc, char* argv[])
 		bitmap.setPenWidth(4);
 		bitmap.setPenColor(0,0,0);
 		tridrawer.Draw(bitmap);
+		circlepattern.FindEmbedding();
+		bitmap.SetPeriodicDomain(circlepattern.CalculateModuli(),0.3);
+		bitmap.setPenColor(200,50,50);
+		tridrawer2.Draw(bitmap);
+
 		std::ostringstream os;
 		os << "D:\\temp\\dt\\output\\test-" << std::setw( 4 ) << std::setfill( '0' ) << i++ << ".bmp";
 		bitmap.SaveImage(os.str());

@@ -71,6 +71,9 @@ public:
 			setOmega(edge,x,-getOmega(edge->getAdjacent(),x));
 		}
 	}
+	int getOmega(int triangle, int edge, int x) const {
+		return omega_[triangle][edge][x];
+	}
 	int getOmega(const Edge * const & edge, int x) const {
 		return omega_[edge->getParent()->getId()][edge->getId()][x];
 	}
