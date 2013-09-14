@@ -47,9 +47,9 @@ int Triangulation::RandomInteger(int min, int max)
 
 bool Triangulation::SucceedWithProbability(double probability)
 {
-	if( probability < 0.0 )
+	if( probability < 1.0e-8 )
 		return false;
-	if( probability > 1.0 )
+	if( 1.0 - probability < 1.0e-8 )
 		return true;
 	double probabilities[] = {probability,1.0-probability};
 	boost::random::discrete_distribution<> distribution (probabilities);

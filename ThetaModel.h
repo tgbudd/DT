@@ -11,38 +11,42 @@ class ThetaModel :
 {
 public:
 	//ThetaModel() : triangulation_(NULL) {}
-	ThetaModel(Triangulation * const triangulation, const DualCohomologyBasis * const dualcohomologybasis);
+	ThetaModel(Triangulation * const triangulation, const DualCohomologyBasis * const dualcohomologybasis, int PiInUnits = 1800);
 	~ThetaModel(void);
 
 	void Initialize();
 	void DoSweep();
 
-	void setTheta(Edge * const & edge, double theta) {
-		BOOST_ASSERT( theta > 0.0 && theta < 2.0 * PI );
+	void setTheta(Edge * const & edge, int theta) {
+		BOOST_ASSERT( theta > 0 && theta < 2 * pi_in_units_ );
 		theta_[edge->getParent()->getId()][edge->getId()] = theta;
 		theta_[edge->getAdjacent()->getParent()->getId()][edge->getAdjacent()->getId()] = theta;
 	}
-	void addToTheta(Edge * const & edge, double theta) {
-		BOOST_ASSERT( 1.0e-7 > fabs(theta_[edge->getParent()->getId()][edge->getId()] - theta_[edge->getAdjacent()->getParent()->getId()][edge->getAdjacent()->getId()]) );
-		double firsttheta = (theta_[edge->getParent()->getId()][edge->getId()] += theta);
-		BOOST_ASSERT( firsttheta > 0.0 && firsttheta < 2.0 * PI );
+	void addToTheta(Edge * const & edge, int theta) {
+		BOOST_ASSERT( theta_[edge->getParent()->getId()][edge->getId()] == theta_[edge->getAdjacent()->getParent()->getId()][edge->getAdjacent()->getId()] );
+		int firsttheta = (theta_[edge->getParent()->getId()][edge->getId()] += theta);
+		BOOST_ASSERT( firsttheta > 0 && firsttheta < 2 * pi_in_units_ );
 		firsttheta = (theta_[edge->getAdjacent()->getParent()->getId()][edge->getAdjacent()->getId()] += theta);
-		BOOST_ASSERT( firsttheta > 0.0 && firsttheta < 2.0 * PI );
+		BOOST_ASSERT( firsttheta > 0 && firsttheta < 2 * pi_in_units_ );
 	}
-	double getTheta(Edge * const & edge) const {
+	int getTheta(Edge * const & edge) const {
 		return theta_[edge->getParent()->getId()][edge->getId()]; 
+	}
+	double getRealTheta(Edge * const & edge ) const {
+		return PI * (double)(getTheta(edge))/pi_in_units_;
 	}
 
 private:
-	std::vector<boost::array<double,3> > theta_;
-		
+	std::vector<boost::array<int,3> > theta_;
+	const int pi_in_units_;	// use integer angles where pi_in_units corresponds to an angle of pi
+
 	Triangulation * const triangulation_;
 	const DualCohomologyBasis * const dualcohomologybasis_;
 
 	bool TryThetaMove();
 	bool TryThetaMove(Edge * edge);
 
-	bool TestCutCondition(Edge *, Edge *, const IntForm2D &, double theta) const;
+	bool TestCutCondition(Edge *, Edge *, const IntForm2D &, int theta) const;
 
 	Edge * previousEdge(Edge * edge);  // functions of which pointers are used in the thetamove
 	Edge * nextEdge(Edge * edge);
