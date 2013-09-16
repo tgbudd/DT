@@ -1,8 +1,10 @@
-#pragma once
+#ifndef THETA_MODEL_H
+#define THETA_MODEL_H
 
 #include <vector>
+#include <map>
 
-#include "triangulation.h"
+#include "Triangulation.h"
 #include "DominantMatter.h"
 #include "DualCohomologyBasis.h"
 
@@ -10,7 +12,6 @@ class ThetaModel :
 	public DominantMatter
 {
 public:
-	//ThetaModel() : triangulation_(NULL) {}
 	ThetaModel(Triangulation * const triangulation, const DualCohomologyBasis * const dualcohomologybasis, int PiInUnits = 1800);
 	~ThetaModel(void);
 
@@ -41,6 +42,15 @@ public:
 	double getRealTheta(int triangleId, int edgeId) const {
 		return PI * (double)(getTheta(triangleId,edgeId))/pi_in_units_;
 	}
+	int getSize() const {
+		return static_cast<int>(theta_.size());
+	}
+
+	bool TryThetaMove();
+	void TryThetaMove(int n);
+	bool TestAllCutConditions() const; // for debugging
+
+	std::string ExportState() const;
 private:
 	std::vector<boost::array<int,3> > theta_;
 	const int pi_in_units_;	// use integer angles where pi_in_units corresponds to an angle of pi
@@ -48,14 +58,26 @@ private:
 	Triangulation * const triangulation_;
 	const DualCohomologyBasis * const dualcohomologybasis_;
 
-	bool TryThetaMove();
 	bool TryThetaMove(Edge * edge);
 
+	void CleanUpDistance(Triangle * triangle) const;
 	bool TestCutCondition(Edge *, Edge *, const IntForm2D &, int theta) const;
+	bool TestCutConditionOld(Edge *, Edge *, const IntForm2D &, int theta) const;
+	bool TestCutCondition(Edge *) const;
 
 	Edge * previousEdge(Edge * edge);  // functions of which pointers are used in the thetamove
 	Edge * nextEdge(Edge * edge);
 
 	bool TestVertexSum(Vertex *);
+
+	struct triangleNode
+	{
+		Triangle* triangle;
+		IntForm2D integral;
+		int distance;
+		bool operator<(const triangleNode & node) const { return distance > node.distance; }
+	};
+	mutable std::vector<std::map<IntForm2D,int> > distance_; // used in the Dijkstra algorithm of TestCutCondition
 };
 
+#endif

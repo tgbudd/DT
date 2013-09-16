@@ -1,4 +1,7 @@
-#include "triangulation.h"
+#include "boost/random/uniform_int.hpp"
+#include "boost/random/uniform_real.hpp"
+
+#include "Triangulation.h"
 #include "Edge.h"
 #include "Decoration.h"
 #include "Matter.h"
@@ -10,6 +13,10 @@ Triangulation::Triangulation(void) : use_flipmove_(true) , dominantmatter_(NULL)
 	rng_.seed(static_cast<unsigned int>(time(NULL)));
 }
 
+void Triangulation::SeedRandom(unsigned int seed)
+{
+	rng_.seed(seed);
+}
 
 Triangulation::~Triangulation(void)
 {
@@ -41,7 +48,7 @@ Edge * const & Triangulation::getRandomEdge()
 
 int Triangulation::RandomInteger(int min, int max)
 {
-	boost::random::uniform_int_distribution<> distribution(min, max);
+	boost::uniform_int<> distribution(min, max);
 	return distribution(rng_);
 }
 
@@ -51,9 +58,7 @@ bool Triangulation::SucceedWithProbability(double probability)
 		return false;
 	if( 1.0 - probability < 1.0e-8 )
 		return true;
-	double probabilities[] = {probability,1.0-probability};
-	boost::random::discrete_distribution<> distribution (probabilities);
-	return distribution(rng_) == 0;
+	return probability > RandomReal(0.0,1.0); 
 }
 
 double Triangulation::RandomReal()
@@ -62,7 +67,7 @@ double Triangulation::RandomReal()
 }
 double Triangulation::RandomReal(double min, double max)
 {
-	boost::random::uniform_real_distribution<> distribution(min,max);
+	boost::uniform_real<> distribution(min,max);
 	return distribution(rng_);
 }
 
@@ -206,7 +211,7 @@ void Triangulation::DetermineVertices()
 			if( edge->getOpposite() == NULL )
 			{
 				// Create new vertex and make this edge its parent
-				vertices_.push_back(new Vertex(vertices_.size(),edge));
+				vertices_.push_back(new Vertex(static_cast<int>(vertices_.size()),edge));
 
 				// Walk around the new vertex and make the appropriate edge point to the vertex
 				do {
@@ -216,5 +221,34 @@ void Triangulation::DetermineVertices()
 			}
 		}
 	}
-	n_vertices_ = vertices_.size();
+	n_vertices_ = static_cast<int>(vertices_.size());
+}
+
+void Triangulation::LoadFromAdjacencyList(const std::vector<boost::array<std::pair<int,int>,3 > > & adj)
+{
+	n_triangles_ = static_cast<int>(adj.size());
+
+	triangles_.reserve(n_triangles_);
+	for(int i=0;i<n_triangles_;i++)
+	{
+		triangles_.push_back(new Triangle());
+		triangles_.back()->setId(i);
+	}
+
+	for(int i=0, end=static_cast<int>(adj.size());i<end;i++)
+	{
+		for(int j=0;j<3;j++)
+		{
+			triangles_[i]->getEdge(j)->setAdjacent(triangles_[adj[i][j].first]->getEdge(adj[i][j].second));
+		}
+	}
+
+	DetermineVertices();
+}
+
+std::string Triangulation::OutputData() const
+{
+	std::ostringstream stream;
+	stream << "triangulation -> {numberoftriangles -> " << NumberOfTriangles() << "}";
+	return stream.str();
 }

@@ -1,10 +1,11 @@
-#pragma once
+#ifndef CIRCLE_PATTERN_H
+#define CIRCLE_PATTERN_H
 
 #include <map>
 
 #include "boost/array.hpp"
 
-#include "embedding.h"
+#include "Embedding.h"
 #include "ThetaModel.h"
 #include "CohomologyBasis.h"
 #include "ConjugateGradient.h"
@@ -46,3 +47,4 @@ private:
 	int max_newton_iterations_;
 };
 
+#endif

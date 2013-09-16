@@ -42,11 +42,11 @@ double LaplacianDeterminant::BoltzmannChangeUnderFlipMove(const Edge * const edg
 		righthandside_[triangles[2*(1-k)+1]->getId()] = 0.0;
 	
 		double total=0.0;
-		for(int i=0;i<solution_.size();i++)
+		for(int i=0;i<static_cast<int>(solution_.size());i++)
 		{
 			total+=solution_[i];
 		}
-		total = total / solution_.size();
+		total = total / static_cast<int>(solution_.size());
 		for(int i=0;i<4;i++)
 		{
 			y[k][i] = solution_[triangles[i]->getId()] - total;

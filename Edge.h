@@ -1,6 +1,7 @@
-#pragma once
+#ifndef DT_EDGE_H
+#define DT_EDGE_H
 
-#include "triangulation.h"
+#include "Triangulation.h"
 #include "Triangle.h"
 #include "Vertex.h"
 
@@ -69,3 +70,4 @@ private:
 	Vertex *opposite_;  // the vertex of parent_ opposite this edge
 };
 
+#endif

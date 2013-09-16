@@ -1,14 +1,18 @@
-#pragma once
+#ifndef BABY_UNIVERSE_DISTRIBUTION_H
+#define BABY_UNIVERSE_DISTRIBUTION_H
 
-#include "observable.h"
+#include "Observable.h"
 #include "CohomologyBasis.h"
+#include "DualCohomologyBasis.h"
 
 class BabyUniverseDistribution :
 	public Observable
 {
 public:
 	BabyUniverseDistribution(const Triangulation * const triangulation, const CohomologyBasis * const cohomologybasis, int MinbuNeckSize) 
-		: triangulation_(triangulation), cohomologybasis_(cohomologybasis), minbu_necksize_(MinbuNeckSize), measurements_(0) {}
+		: triangulation_(triangulation), cohomologybasis_(cohomologybasis), dualcohomologybasis_(NULL), minbu_necksize_(MinbuNeckSize), measurements_(0) {}
+	BabyUniverseDistribution(const Triangulation * const triangulation, const DualCohomologyBasis * const dualcohomologybasis, int MinbuNeckSize) 
+		: triangulation_(triangulation), cohomologybasis_(NULL), dualcohomologybasis_(dualcohomologybasis), minbu_necksize_(MinbuNeckSize), measurements_(0) {}
 	~BabyUniverseDistribution() {}
 
 	void FindMinbuNecksOfLength3(std::list<std::list<const Edge *> > & paths);
@@ -19,7 +23,16 @@ public:
 
 	void Measure() 
 	{
-		FindMinbuSizes(minbu_necksize_,sizes_);
+		if( cohomologybasis_ == NULL )
+		{
+			CohomologyBasis cohom(triangulation_,*dualcohomologybasis_);
+			cohomologybasis_ = &cohom;
+			FindMinbuSizes(minbu_necksize_,sizes_);
+			cohomologybasis_ = NULL;
+		} else
+		{
+			FindMinbuSizes(minbu_necksize_,sizes_);
+		}
 		measurements_++;
 	}
 
@@ -39,9 +52,12 @@ private:
 	int VolumeEnclosed(const std::list<const Edge *> & boundary) const;
 
 	const Triangulation * const triangulation_;
-	const CohomologyBasis * const cohomologybasis_;
+	const CohomologyBasis * cohomologybasis_;
+	const DualCohomologyBasis * dualcohomologybasis_;
 	std::vector<int> sizes_;
 	int minbu_necksize_;
 	int measurements_;
 };
+
+#endif
 

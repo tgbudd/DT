@@ -1,8 +1,9 @@
-#pragma once
+#ifndef DECORATION_H
+#define DECORATION_H
 
 #include <string>
 
-#include "triangulation.h"
+#include "Triangulation.h"
 #include "Edge.h"
 
 class Decoration
@@ -15,9 +16,12 @@ public:
 	virtual void Initialize() = 0;
 
 	virtual void UpdateAfterFlipMove(const Edge * const) {}
-	virtual std::string PrintState() const { return ""; }
+	virtual std::string ExportState() const { return ""; }
 
 private:
 	const Triangulation * triangulation_;
 
 };
+
+#endif
+

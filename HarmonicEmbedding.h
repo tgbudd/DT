@@ -1,7 +1,8 @@
-#pragma once
+#ifndef HARMONIC_EMBEDDING_H
+#define HARMONIC_EMBEDDING_H
 
-#include "triangulation.h"
-#include "embedding.h"
+#include "Triangulation.h"
+#include "Embedding.h"
 
 class HarmonicEmbedding :
 	public Embedding
@@ -14,3 +15,4 @@ private:
 	const Triangulation * const triangulation_;
 };
 
+#endif

@@ -2,7 +2,7 @@
 #include "ShortestLoop.h"
 #include "DualCohomologyBasis.h"
 
-CohomologyBasis::CohomologyBasis(Triangulation * const triangulation) : triangulation_(triangulation)
+CohomologyBasis::CohomologyBasis(const Triangulation * const triangulation) : triangulation_(triangulation)
 {
 }
 
@@ -11,7 +11,7 @@ CohomologyBasis::~CohomologyBasis(void)
 {
 }
 
-CohomologyBasis::CohomologyBasis(Triangulation * const triangulation, const DualCohomologyBasis & dualcohomologybasis) : triangulation_(triangulation)
+CohomologyBasis::CohomologyBasis(const Triangulation * const triangulation, const DualCohomologyBasis & dualcohomologybasis) : triangulation_(triangulation)
 {
 	omega_.resize(triangulation_->NumberOfTriangles());
 	SetToDualOf(dualcohomologybasis);
@@ -125,9 +125,7 @@ void CohomologyBasis::Simplify(bool StayInSameClass)
 		integrals[1][0] = 0;
 		integrals[1][1] = 1;
 	}
-
 	DualCohomologyBasis dualbasis(triangulation_,generators,integrals);
-
 	SetToDualOf(dualbasis);
 }
 

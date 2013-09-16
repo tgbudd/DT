@@ -1,5 +1,7 @@
-#pragma once
-#include "matter.h"
+#ifndef POTTS_MODEL_ON_VERTICES
+#define POTTS_MODEL_ON_VERTICES
+
+#include "Matter.h"
 /*class PottsModelOnVertices :
 	public Matter
 {
@@ -12,3 +14,4 @@ private:
 	std::vector<int> state_;
 };*/
 
+#endif

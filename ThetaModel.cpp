@@ -31,6 +31,16 @@ void ThetaModel::Initialize()
 	
 }
 
+void ThetaModel::TryThetaMove(int n)
+{
+	int SuccesfulMoves = 0;
+	while( SuccesfulMoves < n)
+	{
+		if( TryThetaMove() )
+			SuccesfulMoves++;
+	}
+}
+
 void ThetaModel::DoSweep()
 {
 	int SuccesfulMoves = 0;
@@ -127,7 +137,7 @@ bool ThetaModel::TryThetaMove(Edge * moveEdge)
 		{
 			integral[i] -= dualcohomologybasis_->getOmega((this->*previous)(kiteEdge),i);
 			integral[i] += dualcohomologybasis_->getOmega(kiteEdge,i);
-			integral[i] += dualcohomologybasis_->getOmega((this->*next)(moveEdge),i);
+			integral[i] += dualcohomologybasis_->getOmega(moveEdge,i);
 		}
 
 		if( !TestCutCondition( moveEdge->getAdjacent(),
@@ -192,18 +202,28 @@ bool ThetaModel::TryThetaMove(Edge * moveEdge)
 		}
 	}
 
-	/* TESTS
+	/*// TESTS
 	BOOST_ASSERT(getTheta(kiteEdge) == getTheta(kiteEdge->getAdjacent()));
 	BOOST_ASSERT(getTheta(moveEdge) == getTheta(moveEdge->getAdjacent()));
 	BOOST_ASSERT(getTheta(moveEdge->getPrevious()) == getTheta(moveEdge->getPrevious()->getAdjacent()));
-
-
+	
 	BOOST_ASSERT(TestVertexSum(kiteEdge->getNext()->getOpposite()));
 	BOOST_ASSERT(TestVertexSum(kiteEdge->getPrevious()->getOpposite()));
 	BOOST_ASSERT(TestVertexSum(moveEdge->getNext()->getOpposite()));
 	BOOST_ASSERT( TestVertexSum(mirror ? moveEdge->getPrevious()->getOpposite() : otherEdge->getPrevious()->getOpposite()) );
-	*/
 	
+	BOOST_ASSERT( TestCutCondition(kiteEdge) == TestCutCondition(kiteEdge->getAdjacent()) );
+
+	BOOST_ASSERT( TestCutCondition(kiteEdge) );
+	BOOST_ASSERT( TestCutCondition(moveEdge) );
+	BOOST_ASSERT( TestCutCondition(moveEdge->getNext()) );
+	BOOST_ASSERT( TestCutCondition(moveEdge->getPrevious()) );
+	BOOST_ASSERT( TestCutCondition(otherEdge) );
+	BOOST_ASSERT( TestCutCondition(otherEdge->getNext()) );
+	BOOST_ASSERT( TestCutCondition(otherEdge->getPrevious()) );
+	BOOST_ASSERT( TestCutCondition(kiteEdge->getNext()) );
+	BOOST_ASSERT( TestCutCondition(kiteEdge->getPrevious()) );*/
+
 	return true;
 }
 
@@ -233,25 +253,6 @@ bool ThetaModel::TestVertexSum(Vertex * vertex)
 }
 
 
-struct triangleNode
-{
-	Triangle* triangle;
-	IntForm2D integral;
-};
-bool operator<(const triangleNode &leftNode, const triangleNode &rightNode) {
-	if (leftNode.triangle != rightNode.triangle) return leftNode.triangle < rightNode.triangle;
-	if(leftNode.integral[0] != rightNode.integral[0] ) return leftNode.integral[0] < rightNode.integral[0];
-	if(leftNode.integral[1] != rightNode.integral[1] ) return leftNode.integral[1] < rightNode.integral[1];
-	return false;
-}
-bool operator<(const std::pair<triangleNode,int> &leftNode, const std::pair<triangleNode,int> &rightNode) {
-	if (leftNode.second != rightNode.second) return leftNode.second > rightNode.second;
-	if (leftNode.first.triangle != rightNode.first.triangle) return leftNode.first.triangle > rightNode.first.triangle;
-	if(leftNode.first.integral[0] != rightNode.first.integral[0] ) return leftNode.first.integral[0] > rightNode.first.integral[0];
-	if(leftNode.first.integral[1] != rightNode.first.integral[1] ) return leftNode.first.integral[1] > rightNode.first.integral[1];
-	return false;
-}
-
 bool ThetaModel::TestCutCondition(Edge * fromEdge, Edge * toEdge, const IntForm2D & integral, int totalTheta) const
 {
 	// Return false if there exists a contractible path in the dual graph from
@@ -259,50 +260,117 @@ bool ThetaModel::TestCutCondition(Edge * fromEdge, Edge * toEdge, const IntForm2
 	// and having total theta smaller than totalTheta.
 
 	// Perform a Dijkstra algorithm on the (universal covering of) the dual graph	
-	std::priority_queue<std::pair<triangleNode,int> > q;
-	std::map<triangleNode,int> visited;
+	if( distance_.empty() )
+	{
+		distance_.resize(triangulation_->NumberOfTriangles());
+	}
+
+	std::priority_queue<triangleNode> q;
 	triangleNode startNode;
 	startNode.triangle = fromEdge->getParent();
 	startNode.integral = integral;
-	q.push(std::pair<triangleNode,int>(startNode,0));
-	visited.insert(std::pair<triangleNode,int>(startNode,0));
+	startNode.distance = 0;
+	q.push(startNode);
+	distance_[startNode.triangle->getId()].insert(std::pair<IntForm2D,int>(startNode.integral,startNode.distance));
 
 	while( !q.empty() )
 	{
-		std::pair<triangleNode,int> node = q.top();
+		triangleNode node = q.top();
 		q.pop();
+
+		if( node.distance > distance_[node.triangle->getId()][node.integral] )
+			continue;
 
 		for(int i=0;i<3;i++)
 		{
-			Edge * edge = node.first.triangle->getEdge(i);
+			Edge * edge = node.triangle->getEdge(i);
 			if( edge == fromEdge )
 				continue;
 
-			std::pair<triangleNode,int> nextNode(node);			
-			nextNode.first.triangle = edge->getAdjacent()->getParent();
-			nextNode.second += getTheta(edge);
-			if( nextNode.second < totalTheta )	// we only need to search nodes that are closer than totalTheta from the start
+			triangleNode nextNode(node);			
+			nextNode.triangle = edge->getAdjacent()->getParent();
+			nextNode.distance += getTheta(edge);
+			if( nextNode.distance <= totalTheta )	// we only need to search nodes that are closer than totalTheta from the start
 			{
-				nextNode.first.integral[0] += dualcohomologybasis_->getOmega(edge,0);
-				nextNode.first.integral[1] += dualcohomologybasis_->getOmega(edge,1);
-				if( nextNode.first.triangle == toEdge->getParent() && nextNode.first.integral[0] == 0 && nextNode.first.integral[1] == 0 )
+				nextNode.integral = AddForms( nextNode.integral, dualcohomologybasis_->getOmega(edge) );
+				if( nextNode.triangle == toEdge->getParent() && FormIsZero(nextNode.integral) )
 				{
-					// found a path with total theta smaller than totalTheta
+					// found a path with total theta smaller than (or equal to) totalTheta
+					CleanUpDistance(startNode.triangle);
 					return false;
 				}
-				std::pair<std::map<triangleNode,int>::iterator, bool> returnValue = visited.insert(nextNode);
+				std::pair<std::map<IntForm2D,int>::iterator,bool> returnValue = distance_[nextNode.triangle->getId()].insert(std::pair<IntForm2D,int>(nextNode.integral,nextNode.distance));
 				if( returnValue.second )
 				{
 					q.push(nextNode);
 				}else
 				{
-					if( nextNode.second < returnValue.first->second )
+					if( nextNode.distance < returnValue.first->second )
 					{
-						returnValue.first->second = nextNode.second;
+						returnValue.first->second = nextNode.distance;
+						q.push(nextNode);
 					}
 				}
 			}
 		}
 	}
+	CleanUpDistance(startNode.triangle);
 	return true;
+}
+
+void ThetaModel::CleanUpDistance(Triangle * triangle) const
+{
+	// The non-empty maps in distance_ make up a connected subset of the triangulation, therefore to
+	// clean up perform a breadth-first search.
+
+	std::queue<Triangle *> q;
+	q.push(triangle);
+
+	while( !q.empty() )
+	{
+		Triangle * currentTriangle = q.front();
+		q.pop();
+
+		distance_[currentTriangle->getId()].clear();
+
+		for(int i=0;i<3;i++)
+		{
+			Triangle * nbrTriangle = currentTriangle->getEdge(i)->getAdjacent()->getParent();
+			if( !distance_[nbrTriangle->getId()].empty() )
+			{
+				q.push(nbrTriangle);
+			}
+		}
+	}
+}
+
+bool ThetaModel::TestAllCutConditions() const
+{
+	for(int i=0,end=triangulation_->NumberOfTriangles();i<end;i++)
+	{
+		Triangle * triangle = triangulation_->getTriangle(i);
+		for(int j=0;j<3;j++)
+		{
+			Edge * edge = triangle->getEdge(j);
+			if( edge->getAdjacent()->getParent() < triangle )
+				continue;
+			if( !TestCutCondition(edge) )
+				return false;
+		}
+	}
+	return true;
+}
+
+bool ThetaModel::TestCutCondition(Edge * edge) const
+{
+	IntForm2D integral = dualcohomologybasis_->getOmega(edge);
+	return TestCutCondition(edge->getAdjacent(),edge,integral,-1 + 2*pi_in_units_ - getTheta(edge));
+}
+
+std::string ThetaModel::ExportState() const
+{
+	std::ostringstream stream;
+	stream << "piInUnits -> " << pi_in_units_ << ", theta -> ";
+	PrintToStream2D(stream, theta_.begin(), theta_.end() );
+	return stream.str();
 }

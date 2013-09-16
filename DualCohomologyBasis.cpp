@@ -1,5 +1,5 @@
 #include "DualCohomologyBasis.h"
-
+#include "ShortestLoop.h"
 
 DualCohomologyBasis::~DualCohomologyBasis(void)
 {
@@ -18,13 +18,18 @@ DualCohomologyBasis::DualCohomologyBasis(const CohomologyBasis & cohomologybasis
 	SetToDualOf(cohomologybasis);
 }
 
-DualCohomologyBasis::DualCohomologyBasis(Triangulation * const triangulation, const std::vector<std::list<Edge*> > & generators, const std::vector<IntForm2D> & integrals )
+DualCohomologyBasis::DualCohomologyBasis(const Triangulation * const triangulation, const std::vector<std::list<Edge*> > & generators, const std::vector<IntForm2D> & integrals )
 	: CohomologyBasis(triangulation)
 {
 	omega_.resize(triangulation_->NumberOfTriangles());
-	ClearOmega();
 	
+	SetAccordingToGenerators(generators,integrals);
+}
+
+void DualCohomologyBasis::SetAccordingToGenerators(const std::vector<std::list<Edge*> > & generators, const std::vector<IntForm2D> & integrals )
+{
 	// construct a basis of dual closed forms such that the integral along a path homotopic to generators[i] gives integrals[i]
+	ClearOmega();
 	BOOST_ASSERT(generators.size() == 2);
 	boost::array<IntForm2D,2> forms = {NegateForm(integrals[1]),integrals[0]};
 	for(int i=0;i<2;i++)
@@ -35,10 +40,6 @@ DualCohomologyBasis::DualCohomologyBasis(Triangulation * const triangulation, co
 			setOmegaToMinusAdjacent((*edgeIt)->getAdjacent());
 		}
 	}
-
-	// The pair of generators might not be properly oriented. Therefore we have to check whether
-	// the overall sign is correct.
-
 
 }
 
@@ -116,4 +117,27 @@ IntForm2D DualCohomologyBasis::IntegrateToParent(Edge * edge) const
 		edge = edge->getAdjacent()->getPrevious();
 	}
 	return integral;
+}
+
+void DualCohomologyBasis::Simplify(bool StayInSameClass)
+{
+	CohomologyBasis cohomologybasis(triangulation_,*this);
+
+	ShortestLoop shortestloop(triangulation_, &cohomologybasis );
+	shortestloop.FindGenerators();
+	std::vector<std::list<Edge*> > generators = shortestloop.getGenerators();
+	std::vector<IntForm2D> integrals;
+	if( StayInSameClass )
+	{
+		integrals = shortestloop.getGeneratorIntegrals();
+	} else
+	{
+		integrals.resize(2);
+		integrals[0][0] = 1;
+		integrals[0][1] = 0;
+		integrals[1][0] = 0;
+		integrals[1][1] = 1;
+	}
+
+	SetAccordingToGenerators(generators,integrals);
 }

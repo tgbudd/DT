@@ -1,4 +1,6 @@
-#pragma once
+#ifndef DT_VERTEX_H
+#define DT_VERTEX_H
+
 #include "Edge.h"
 
 class Vertex
@@ -25,3 +27,4 @@ private:
 	Edge* parent_;
 };
 
+#endif

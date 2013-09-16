@@ -1,6 +1,8 @@
-#pragma once
-#include "matter.h"
-#include "triangulation.h"
+#ifndef LAPLACIAN_DETERMINANT_H
+#define LAPLACIAN_DETERMINANT_H
+
+#include "Matter.h"
+#include "Triangulation.h"
 #include "ConjugateGradient.h"
 
 class DualLaplacianMatrix : public Matrix
@@ -40,3 +42,4 @@ private:
 	double centralcharge_;
 };
 
+#endif

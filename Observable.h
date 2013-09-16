@@ -1,8 +1,9 @@
-#pragma once
+#ifndef DT_OBSERVABLE_H
+#define DT_OBSERVABLE_H
 
 #include <string>
 
-#include "triangulation.h"
+#include "Triangulation.h"
 
 class Observable
 {
@@ -14,3 +15,4 @@ public:
 	virtual std::string OutputData() const { return ""; }
 };
 
+#endif

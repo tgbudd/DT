@@ -1,11 +1,12 @@
-#pragma once
+#ifndef DT_EMBEDDING_H
+#define DT_EMBEDDING_H
 
 #include <vector>
 #include <map>
 
 #include "boost/array.hpp"
 
-#include "triangulation.h"
+#include "Triangulation.h"
 #include "Decoration.h"
 #include "CohomologyBasis.h"
 #include "ConjugateGradient.h"
@@ -87,11 +88,11 @@ public:
 	}
 	void setSize(int NumberOfTriangles,int NumberOfVertices)
 	{
-		if( coordinate_.size() != NumberOfVertices )
+		if( static_cast<int>(coordinate_.size()) != NumberOfVertices )
 		{
 			coordinate_.resize(NumberOfVertices);
 		}
-		if( form_.size() != NumberOfTriangles )
+		if( static_cast<int>(form_.size()) != NumberOfTriangles )
 		{
 			form_.resize(NumberOfTriangles );
 		}
@@ -105,6 +106,10 @@ public:
 	{
 		edge_measure_[triangle][edge] = measure;
 	}
+	int getSize() const
+	{
+		return static_cast<int>(form_.size());
+	}
 private:
 	void Coderivative( const std::vector<boost::array<double,3> > & oneform, std::vector<double> & result );
 	void LoadInitialCoordinates( std::vector<double> & coordinates, int i, Vertex * startVertex ) const;
@@ -117,3 +122,5 @@ private:
 	double accuracy_;
 	int maxiterations_;
 };
+
+#endif

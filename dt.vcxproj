@@ -64,6 +64,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AngleHistogram.h" />
     <ClInclude Include="BabyUniverseDistribution.h" />
     <ClInclude Include="BitmapDrawer.h" />
     <ClInclude Include="bitmap_image.h" />
@@ -83,17 +84,22 @@
     <ClInclude Include="PottsModel.h" />
     <ClInclude Include="PottsModelOnVertices.h" />
     <ClInclude Include="ShortestLoop.h" />
+    <ClInclude Include="Simulation.h" />
+    <ClInclude Include="ThetaHistogram.h" />
     <ClInclude Include="ThetaModel.h" />
     <ClInclude Include="Triangle.h" />
-    <ClInclude Include="triangulation.h" />
+    <ClInclude Include="Triangulation.h" />
     <ClInclude Include="utilities.h" />
     <ClInclude Include="Vertex.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AngleHistogram.cpp" />
     <ClCompile Include="BabyUniverseDistribution.cpp" />
     <ClCompile Include="BitmapDrawer.cpp" />
     <ClCompile Include="CirclePattern.cpp" />
     <ClCompile Include="CohomologyBasis.cpp" />
+    <ClCompile Include="ConjugateGradient.cpp" />
+    <ClCompile Include="ConnectivityRestrictor.cpp" />
     <ClCompile Include="DualCohomologyBasis.cpp" />
     <ClCompile Include="Edge.cpp" />
     <ClCompile Include="Embedding.cpp" />
@@ -103,6 +109,8 @@
     <ClCompile Include="PottsModel.cpp" />
     <ClCompile Include="PottsModelOnVertices.cpp" />
     <ClCompile Include="ShortestLoop.cpp" />
+    <ClCompile Include="Simulation.cpp" />
+    <ClCompile Include="ThetaHistogram.cpp" />
     <ClCompile Include="ThetaModel.cpp" />
     <ClCompile Include="Triangle.cpp" />
     <ClCompile Include="Triangulation.cpp" />

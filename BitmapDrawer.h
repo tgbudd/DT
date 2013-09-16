@@ -1,4 +1,5 @@
-#pragma once
+#ifndef BITMAP_DRAWER_H
+#define BITMAP_DRAWER_H
 
 #include <string>
 #include <list>
@@ -6,7 +7,7 @@
 #include <sstream>
 #include <map>
 
-#include "triangulation.h"
+#include "Triangulation.h"
 #include "Decoration.h"
 #include "Embedding.h"
 #include "ShortestLoop.h"
@@ -106,7 +107,7 @@ public:
 	void domainPolygon(const std::vector<Vector2D> & polygon)
 	{
 		std::vector<std::pair<int,int> > transPolygon;
-		for(int i=0;i<polygon.size();i++)
+		for(int i=0;i<static_cast<int>(polygon.size());i++)
 		{
 			transPolygon.push_back(Transform(polygon[i][0],polygon[i][1]));
 		}
@@ -123,7 +124,7 @@ public:
 	void Polygon(const std::vector<std::pair<int,int> > & polygon)
 	{
 		std::vector<std::pair<double,double> > dPolygon;
-		for(int i=0;i<polygon.size();i++)
+		for(int i=0;i<static_cast<int>(polygon.size());i++)
 		{
 			dPolygon.push_back(std::pair<double,double>(polygon[i].first,polygon[i].second));
 		}
@@ -137,7 +138,7 @@ public:
 			{
 				unsigned char r,g,b;
 				image_.get_pixel(x,y,r,g,b);
-				image_.set_pixel(x,y,r+ (255-r)*opacity,g+(255-g)*opacity,b+(255-b)*opacity);
+				image_.set_pixel(x,y,static_cast<unsigned char>(r+ (255-r)*opacity),static_cast<unsigned char>(g+(255-g)*opacity),static_cast<unsigned char>(b+(255-b)*opacity));
 			}
 		}
 	}
@@ -246,7 +247,7 @@ public:
 	void UpdateAfterFlipMove(const Edge * const edge)
 	{
 		hotedges_.push_front(edge->getPrevious());
-		if( hotedges_.size() > numberofedges_ )
+		if( static_cast<int>(hotedges_.size()) > numberofedges_ )
 		{
 			hotedges_.pop_back();
 		}
@@ -263,7 +264,7 @@ public:
 	}
 	void Draw(BitmapDrawer & drawer)
 	{
-		int index = hotedges_.size()-1;
+		int index = static_cast<int>(hotedges_.size())-1;
 		for(std::list<const Edge *>::reverse_iterator edgeIt=hotedges_.rbegin();edgeIt!=hotedges_.rend();edgeIt++)
 		{
 			drawer.setPenColor( (int)(256.0*(r_+(index/((double)numberofedges_)*(1-r_)))),
@@ -416,3 +417,5 @@ private:
 	std::map<char,Character> characters_;
 	bitmap_image font_bitmap_;
 };
+
+#endif

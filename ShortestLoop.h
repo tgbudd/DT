@@ -1,9 +1,10 @@
-#pragma once
+#ifndef SHORTEST_LOOP_H
+#define SHORTEST_LOOP_H
 
 #include <list>
 
-#include "observable.h"
-#include "triangulation.h"
+#include "Observable.h"
+#include "Triangulation.h"
 #include "CohomologyBasis.h"
 
 
@@ -57,3 +58,4 @@ private:
 	void TrimLoop( std::list<Edge*> & path );
 };
 
+#endif

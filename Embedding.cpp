@@ -19,12 +19,12 @@ LaplacianMatrix::LaplacianMatrix(const Triangulation * const triangulation, cons
 			insertion = laplacianRules_[start].insert(std::pair<int,double>(end,-edge_measure[i][j]));
 			if( !insertion.second )
 			{
-				insertion.first->second -= 1;
+				insertion.first->second -= edge_measure[i][j];
 			}
 			insertion = laplacianRules_[start].insert(std::pair<int,double>(start,edge_measure[i][j]));
 			if( !insertion.second )
 			{
-				insertion.first->second += 1;
+				insertion.first->second += edge_measure[i][j];
 			}
 		}
 	}
@@ -32,7 +32,7 @@ LaplacianMatrix::LaplacianMatrix(const Triangulation * const triangulation, cons
 
 void LaplacianMatrix::MultiplyVector(const std::vector<double> & from, std::vector<double> & to) const
 {
-	for(int i=0;i<from.size();i++)
+	for(int i=0;i<static_cast<int>(from.size());i++)
 	{
 		to[i] = 0.0;
 		for(std::map<int,double>::const_iterator it = laplacianRules_[i].begin(); it != laplacianRules_[i].end(); it++)
@@ -61,7 +61,7 @@ void Embedding::Coderivative( const std::vector<boost::array<double,3> > & onefo
 		for(int k=0;k<3;k++)
 		{
 			Edge * edge = triangle->getEdge(k);
-			result[edge->getPrevious()->getOpposite()->getId()] += oneform[j][k];
+			result[edge->getPrevious()->getOpposite()->getId()] += edge_measure_[j][k] * oneform[j][k];
 		}
 	}
 }

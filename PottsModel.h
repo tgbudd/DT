@@ -1,7 +1,8 @@
-#pragma once
+#ifndef POTTS_MODEL_H
+#define POTTS_MODEL_H
 
-#include "matter.h"
-#include "triangulation.h"
+#include "Matter.h"
+#include "Triangulation.h"
 
 
 class PottsModel :
@@ -31,7 +32,7 @@ public:
 		return spin_[i];
 	}
 
-	std::string PrintState() const;
+	std::string ExportState() const;
 
 
 private:
@@ -45,3 +46,4 @@ private:
 	std::vector<int> spin_;
 };
 
+#endif

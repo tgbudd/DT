@@ -1,13 +1,11 @@
-#pragma once
+#ifndef DT_TRIANGULATION_H
+#define DT_TRIANGULATION_H
 
 #include <vector>
 #include <list>
 #include <time.h>
 
 #include "boost/random/mersenne_twister.hpp"
-#include "boost/random/uniform_int_distribution.hpp"
-#include "boost/random/uniform_real_distribution.hpp"
-#include "boost/random/discrete_distribution.hpp"
 #include "boost/foreach.hpp"
 
 #include "utilities.h"
@@ -26,6 +24,7 @@ public:
 	~Triangulation(void);
 
 	void LoadRegularLattice(int width, int height);
+	void LoadFromAdjacencyList(const std::vector<boost::array<std::pair<int,int>,3 > > & adj);
 
 	int NumberOfTriangles() const
 	{
@@ -59,6 +58,10 @@ public:
 	bool TryFlipMove();
 	bool TryFlipMove(Edge * edge);
 
+	void SeedRandom(unsigned int seed);
+
+	std::string OutputData() const;
+
 private:
 	void DetermineVertices();
 
@@ -66,7 +69,7 @@ private:
 	std::vector<Vertex* > vertices_;
 	int n_triangles_, n_vertices_;
 
-	boost::random::mt19937 rng_;
+	boost::mt19937 rng_;
 
 	DominantMatter* dominantmatter_;   // matter may be present in the system that replaces the standard flip move
 	std::list<Decoration* > decoration_;   // contains all additional structure that needs updating after a flip move
@@ -75,3 +78,4 @@ private:
 	bool use_flipmove_;  // Defaults to true. May be set to false because some matter fields require a custom flip move.
 };
 
+#endif

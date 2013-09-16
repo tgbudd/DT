@@ -82,7 +82,7 @@ int PottsModel::DoWolffMove() {
 	return NumberOfFlips;
 }
 
-std::string PottsModel::PrintState() const {
+std::string PottsModel::ExportState() const {
 	std::ostringstream string;
 	string << "{";
 	for(int i=0;i<(int)spin_.size();i++)

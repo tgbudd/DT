@@ -1,7 +1,8 @@
-#pragma once
+#ifndef DUAL_COHOMOLOGY_BASIS_H
+#define DUAL_COHOMOLOGY_BASIS_H
 
 #include "CohomologyBasis.h"
-#include "triangulation.h"
+#include "Triangulation.h"
 
 
 class DualCohomologyBasis :
@@ -10,8 +11,8 @@ class DualCohomologyBasis :
 public:
 	DualCohomologyBasis() {}
 	DualCohomologyBasis(const CohomologyBasis & cohomologybasis);
-	DualCohomologyBasis(Triangulation * const triangulation) : CohomologyBasis(triangulation) {}
-	DualCohomologyBasis(Triangulation * const triangulation, const std::vector<std::list<Edge*> > & generators, const std::vector<IntForm2D> & integrals );
+	DualCohomologyBasis(const Triangulation * const triangulation) : CohomologyBasis(triangulation) {}
+	DualCohomologyBasis(const Triangulation * const triangulation, const std::vector<std::list<Edge*> > & generators, const std::vector<IntForm2D> & integrals );
 	~DualCohomologyBasis(void);
 
 	void Initialize(int width, int height);
@@ -22,5 +23,9 @@ public:
 	IntForm2D IntegrateToParent(Edge * edge) const;
 
 	void SetToDualOf(const CohomologyBasis & omega);		// change the CohomologyBasis into a DualCohomologyBasis
+	void SetAccordingToGenerators( const std::vector<std::list<Edge*> > & generators, const std::vector<IntForm2D> & integrals);
+
+	void Simplify(bool StayInSameClass=false);
 };
 
+#endif

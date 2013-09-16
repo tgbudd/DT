@@ -1,9 +1,10 @@
-#pragma once
+#ifndef COHOMOLOGY_BASIS_H
+#define COHOMOLOGY_BASIS_H
 
 #include <vector>
 
-#include "decoration.h"
-#include "triangulation.h"
+#include "Decoration.h"
+#include "Triangulation.h"
 
 typedef boost::array<int,2> IntForm2D;
 
@@ -45,9 +46,9 @@ class CohomologyBasis :
 {
 public:
 	CohomologyBasis() : triangulation_(NULL) {}
-	CohomologyBasis(Triangulation * const triangulation);
+	CohomologyBasis(const Triangulation * const triangulation);
 	CohomologyBasis(const CohomologyBasis & cohomologybasis) : omega_(cohomologybasis.omega_), triangulation_(cohomologybasis.triangulation_) {}
-	CohomologyBasis(Triangulation * const triangulation, const DualCohomologyBasis & dualcohomologybasis);
+	CohomologyBasis(const Triangulation * const triangulation, const DualCohomologyBasis & dualcohomologybasis);
 	~CohomologyBasis(void);
 
 
@@ -96,9 +97,10 @@ public:
 protected:
 	std::vector<boost::array<IntForm2D,3> > omega_;		// two closed one-forms on the triangulation
 	void ClearOmega();
-	Triangulation * triangulation_;
+	const Triangulation * triangulation_;
 private:
 
 	
 };
 
+#endif

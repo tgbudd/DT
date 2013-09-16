@@ -1,9 +1,10 @@
-#pragma once
+#ifndef DT_MATTER_H
+#define DT_MATTER_H
 
 #include <vector>
 #include <string>
 
-#include "triangulation.h"
+#include "Triangulation.h"
 #include "Decoration.h"
 #include "Edge.h"
 
@@ -27,3 +28,4 @@ private:
 
 };
 
+#endif

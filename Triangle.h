@@ -1,4 +1,5 @@
-#pragma once
+#ifndef DT_TRIANGLE_H
+#define DT_TRIANGLE_H
 
 #include <boost/array.hpp>
 
@@ -24,3 +25,4 @@ private:
 	int id_;
 };
 
+#endif

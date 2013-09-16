@@ -19,7 +19,7 @@ ColorScheme::ColorScheme( Scheme scheme ) : scheme_(scheme)
 boost::array<unsigned char,3> ColorScheme::getColor( double x ) const
 {
 	boost::array<unsigned char,3> color;
-	for(int i=1;i<schemedata_.size();i++)
+	for(int i=1;i<static_cast<int>(schemedata_.size());i++)
 	{
 		if( schemedata_[i].first > x )
 		{

@@ -2,22 +2,19 @@
 #include <sstream>
 #include <iomanip>
 
-#include "triangulation.h"
+#include "Simulation.h"
+#include "Triangulation.h"
 #include "DualCohomologyBasis.h"
-#include "CohomologyBasis.h"
 #include "ThetaModel.h"
 #include "BabyUniverseDistribution.h"
-
-#include "HarmonicEmbedding.h"
-#include "CirclePattern.h"
-#include "BitmapDrawer.h"
+#include "ThetaHistogram.h"
 
 int main(int argc, char* argv[])
 {
 	bool output = true;
 	int w,h;
-	int thermalizationSweeps, MeasurementSweeps;
-	if( argc < 5 )
+	int thermalizationSweeps, MeasurementSweeps, OutputSweeps;
+	if( argc < 6 )
 	{
 		std::cout << "width = ";
 		std::cin >> w;
@@ -27,6 +24,8 @@ int main(int argc, char* argv[])
 		std::cin >> thermalizationSweeps;
 		std::cout << "measurement sweeps = ";
 		std::cin >> MeasurementSweeps;
+		std::cout << "output sweeps = ";
+		std::cin >> OutputSweeps;
 	}else
 	{
 		std::istringstream is(argv[1]);
@@ -37,6 +36,8 @@ int main(int argc, char* argv[])
 		is3 >> thermalizationSweeps;
 		std::istringstream is4(argv[4]);
 		is4 >> MeasurementSweeps;
+		std::istringstream is5(argv[5]);
+		is5 >> OutputSweeps;
 		output = false;
 	}
 
@@ -47,72 +48,22 @@ int main(int argc, char* argv[])
 	dualcohomologybasis.Initialize(w,h);
 	triangulation.AddDecoration( &dualcohomologybasis );
 
-	ThetaModel thetamodel( &triangulation, &dualcohomologybasis );
+	ThetaModel thetamodel( &triangulation, &dualcohomologybasis, 18000 );
 	triangulation.setDominantMatter( &thetamodel );
 	thetamodel.Initialize();
 
-	CohomologyBasis cohomologybasis(dualcohomologybasis);
-	BabyUniverseDistribution babyuniv( &triangulation, &cohomologybasis, 3);
+	BabyUniverseDistribution babyuniv( &triangulation, &dualcohomologybasis, 3);
+
+	ThetaHistogram thetahistogram( &thetamodel, 180, 0.0, PI );
+	
+	Simulation simulation( &triangulation, thermalizationSweeps, OutputSweeps );
+
+	simulation.AddObservable( &babyuniv, MeasurementSweeps );
+	simulation.AddObservable( &thetahistogram, MeasurementSweeps );
 
 	triangulation.DoSweep(thermalizationSweeps);
 
-	int measurements=0;
-
-	BitmapDrawer bitmap(600,400,2);
-	HarmonicEmbedding harmonicembedding( &triangulation, &cohomologybasis );
-	CirclePattern circlepattern( &triangulation, &cohomologybasis, &thetamodel );
-	TriangulationDrawer tridrawer( &triangulation, &harmonicembedding );
-	TriangulationDrawer tridrawer2( &triangulation, &circlepattern );
-
-	int i=0;
-	
-	while(true)
-	{
-		cohomologybasis.SetToDualOf(dualcohomologybasis);
-		cohomologybasis.Simplify();
-		dualcohomologybasis.SetToDualOf(cohomologybasis);
-		babyuniv.Measure();
-
-		std::list<std::list<const Edge *> > paths;
-		babyuniv.FindMinbuNecksOfLength3(paths);
-		harmonicembedding.FindEmbedding();
-		bitmap.SetPeriodicDomain(harmonicembedding.CalculateModuli(),0.3);
-		bitmap.Clear();
-		bitmap.setPenColor(100,100,250);
-		BOOST_FOREACH(const std::list<const Edge *> & path, paths)
-		{
-			std::vector<Vector2D> coor;
-			Vector2D currentCoor = harmonicembedding.getCoordinate(path.front()->getNext()->getOpposite());
-			BOOST_FOREACH(const Edge * edge, path )
-			{
-				coor.push_back( currentCoor );
-				currentCoor = AddVectors2D( currentCoor, harmonicembedding.getForm(edge) );
-			}
-			bitmap.domainPolygon(coor);
-		}
-
-		bitmap.setPenWidth(4);
-		bitmap.setPenColor(0,0,0);
-		tridrawer.Draw(bitmap);
-		circlepattern.FindEmbedding();
-		bitmap.SetPeriodicDomain(circlepattern.CalculateModuli(),0.3);
-		bitmap.setPenColor(200,50,50);
-		tridrawer2.Draw(bitmap);
-
-		std::ostringstream os;
-		os << "D:\\temp\\dt\\output\\test-" << std::setw( 4 ) << std::setfill( '0' ) << i++ << ".bmp";
-		bitmap.SaveImage(os.str());
-
-	
-		measurements++;
-		if( measurements % 1 == 0 )
-		{
-			std::cout << babyuniv.OutputData() << "\n\n";
-		}
-
-		triangulation.DoSweep( MeasurementSweeps );
-	}
-
+	simulation.Run();
 
 	return 0;
 }

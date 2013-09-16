@@ -59,7 +59,7 @@ CirclePatternHessian::CirclePatternHessian(const Triangulation * const triangula
 			{
 				insertion.first->second += matrixElement;
 			}
-			insertion = matrix_rules_[i].insert(std::pair<int,int>(i,-matrixElement));
+			insertion = matrix_rules_[i].insert(std::pair<int,double>(i,-matrixElement));
 			if( !insertion.second )
 			{
 				insertion.first->second -= matrixElement;
@@ -70,7 +70,7 @@ CirclePatternHessian::CirclePatternHessian(const Triangulation * const triangula
 
 void CirclePatternHessian::MultiplyVector(const std::vector<double> & from, std::vector<double> & to) const
 {
-	for(int i=0;i<from.size();i++)
+	for(int i=0;i<static_cast<int>(from.size());i++)
 	{
 		to[i] = 0.0;
 		for(std::map<int,double>::const_iterator it = matrix_rules_[i].begin(); it != matrix_rules_[i].end(); it++)
@@ -117,7 +117,7 @@ bool CirclePattern::FindRadii()
 	std::vector<double> change(triangulation_->NumberOfTriangles(),0.0);
 	std::vector<double> grad(triangulation_->NumberOfTriangles(),0.0);
 
-	if( logradius_.size() != triangulation_->NumberOfTriangles() )
+	if( static_cast<int>(logradius_.size()) != triangulation_->NumberOfTriangles() )
 	{
 		logradius_.resize(triangulation_->NumberOfTriangles(),0.0);
 	}
@@ -130,7 +130,7 @@ bool CirclePattern::FindRadii()
 		EuclideanGradient(logradius_,grad);
 
 		double maxgrad=0.0;
-		for(int i=0;i<grad.size();i++)
+		for(int i=0;i<static_cast<int>(grad.size());i++)
 		{
 			if( fabs(grad[i]) > maxgrad )
 				maxgrad = fabs(grad[i]);
@@ -142,7 +142,7 @@ bool CirclePattern::FindRadii()
 		hessian.ConjugateGradientSolve(grad,change,1e-8);
 
 		double lambda=0.0;
-		for(int i=0;i<grad.size();i++)
+		for(int i=0;i<static_cast<int>(grad.size());i++)
 		{
 			lambda += -grad[i]*change[i];
 		}
@@ -153,7 +153,7 @@ bool CirclePattern::FindRadii()
 
 		double t=1.0;
 		double functional = EuclideanFunctional(logradius_);
-		for(int i=0;i<logradius_.size();i++)
+		for(int i=0;i<static_cast<int>(logradius_.size());i++)
 		{
 			logradius2[i] = logradius_[i] + change[i];
 		}
@@ -161,13 +161,13 @@ bool CirclePattern::FindRadii()
 		while( functional2 > functional - alpha * t * lambda )
 		{
 			t *= beta;
-			for(int i=0;i<logradius2.size();i++)
+			for(int i=0;i<static_cast<int>(logradius2.size());i++)
 			{
 				logradius2[i] = logradius_[i] + t*change[i];
 			}
 			functional2 = EuclideanFunctional(logradius2);
 		}
-		for(int i=0;i<logradius_.size();i++)
+		for(int i=0;i<static_cast<int>(logradius_.size());i++)
 		{
 			logradius_[i] = logradius2[i];
 		}
@@ -179,23 +179,23 @@ bool CirclePattern::FindRadii()
 	}
 
 	double totlograd=0.0;
-	for(int i=0;i<logradius_.size();i++)
+	for(int i=0;i<static_cast<int>(logradius_.size());i++)
 	{
 		totlograd += logradius_[i];
 	}
-	for(int i=0;i<logradius_.size();i++)
+	for(int i=0;i<static_cast<int>(logradius_.size());i++)
 	{
-		logradius_[i] -= totlograd/logradius_.size();
+		logradius_[i] -= totlograd/static_cast<int>(logradius_.size());
 	}
 	return true;
 }
 
 void CirclePattern::RadiiToAngles()
 {
-	if( angles_.size() != triangulation_->NumberOfTriangles() )
+	if( static_cast<int>(angles_.size()) != triangulation_->NumberOfTriangles() )
 		angles_.resize(triangulation_->NumberOfTriangles());
 
-	for(int i=0;i<angles_.size();i++)
+	for(int i=0;i<static_cast<int>(angles_.size());i++)
 	{
 		for(int j=0;j<3;j++)
 		{
@@ -207,7 +207,7 @@ void CirclePattern::RadiiToAngles()
 
 void CirclePattern::EuclideanGradient(const std::vector<double> & rho, std::vector<double> & grad)
 {
-	if( grad.size() != triangulation_->NumberOfTriangles() )
+	if( static_cast<int>(grad.size()) != triangulation_->NumberOfTriangles() )
 		grad.resize(triangulation_->NumberOfTriangles());
 	for(int i=0;i<triangulation_->NumberOfTriangles();i++)
 	{
@@ -225,16 +225,13 @@ void CirclePattern::EuclideanGradient(const std::vector<double> & rho, std::vect
 double CirclePattern::EuclideanFunctional(const std::vector<double> & rho)
 {
 	double action=0.0;
-	for(int i=0;i<rho.size();i++)
+	for(int i=0;i<static_cast<int>(rho.size());i++)
 	{
 		action += 2.0 * PI * rho[i];
 		for(int j=0;j<3;j++)
 		{
 			int nbr = triangulation_->getTriangle(i)->getEdge(j)->getAdjacent()->getParent()->getId();
-			if( nbr > i )
-			{
-				action += ImLi2plusinv(rho[i]-rho[nbr],thetamodel_->getRealTheta(i,j)) - (PI - thetamodel_->getRealTheta(i,j))*(rho[i]+rho[nbr]);
-			}
+			action += 0.5*(ImLi2plusinv(rho[i]-rho[nbr],thetamodel_->getRealTheta(i,j)) - (PI - thetamodel_->getRealTheta(i,j))*(rho[i]+rho[nbr]));
 		}
 	}
 	return action;

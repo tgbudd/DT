@@ -14,9 +14,9 @@ void ShortestLoop::FindShortestLoop(int maxLength)
 		{
 			setVertices.insert((*edgeIt)->getPrevious()->getOpposite());
 		}
-		if( maxLength == -1 || (pathIt->size() < maxLength) )
+		if( maxLength == -1 || (static_cast<int>(pathIt->size()) < maxLength) )
 		{
-			maxLength = pathIt->size();
+			maxLength = static_cast<int>(pathIt->size());
 		}
 	}
 	std::list<Vertex *> startVertices(setVertices.begin(),setVertices.end());
@@ -71,9 +71,9 @@ std::list<Edge*> ShortestLoop::FindShortestLoop(const std::list<Vertex *> & star
 	for(std::list<Vertex *>::const_iterator vert = startVertices.begin(); vert != startVertices.end(); vert++)
 	{
 		const std::list<Edge*> path = FindShortestLoop(*vert,notMultipleOf,maxlength);
-		if( !path.empty() && (maxlength == -1 || path.size() <= maxlength) )
+		if( !path.empty() && (maxlength == -1 || static_cast<int>(path.size()) <= maxlength) )
 		{
-			maxlength = ((int)path.size())-1;
+			maxlength = static_cast<int>(path.size())-1;
 			shortestpath = path;
 		}
 	}
@@ -82,11 +82,11 @@ std::list<Edge*> ShortestLoop::FindShortestLoop(const std::list<Vertex *> & star
 	
 std::list<Edge*> ShortestLoop::FindShortestLoop(Vertex * startVertex, const IntForm2D & notMultipleOf, int maxLength )
 {
-	if( visit.size() != triangulation_->NumberOfVertices() )
+	if( static_cast<int>(visit.size()) != triangulation_->NumberOfVertices() )
 	{
 		visit.resize(triangulation_->NumberOfVertices());
 	}
-	for(int i=0;i<visit.size();i++)
+	for(int i=0;i<static_cast<int>(visit.size());i++)
 	{
 		// set all vertices to unvisited
 		visit[i].distance = -1;

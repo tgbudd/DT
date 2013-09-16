@@ -1654,7 +1654,7 @@ public:
 	   int bot= -1000000;
 	   int left = 1000000;
 	   int right = -1000000;
-	   for(i=0;i<x.size();i++)
+	   for(i=0;i<static_cast<int>(x.size());i++)
 	   {
 		   if( (int)x[i].first < left )
 			   left = (int)x[i].first;
@@ -1669,8 +1669,8 @@ public:
 	   for(y=top;y<=bot;y++)
 	   {
 		   node.clear();
-		   j=x.size()-1;
-		   for(i=0;i<x.size();i++)
+		   j=static_cast<int>(x.size())-1;
+		   for(i=0;i<static_cast<int>(x.size());i++)
 		   {
 			   if( (x[i].second < (double)y && x[j].second >= (double)y) || (x[j].second < (double)y && x[i].second >= (double)y) )
 			   {
@@ -1679,7 +1679,7 @@ public:
 			   j=i;
 		   } 
 		   std::sort(node.begin(),node.end());
-		   for(i=0;i<node.size();i+=2)
+		   for(i=0;i<static_cast<int>(node.size());i+=2)
 		   {
 			   for(j=node[i];j<node[i+1];j++)
 				   plot_pixel(j,y);
@@ -1919,10 +1919,10 @@ public:
 	  if( periodicity )
 	  {
 		  // for now assume period[0][1]=0
-		  for( int y0 = mymod(y,period[1][1]); y0 < image_.height(); y0 += period[1][1] )
+		  for( int y0 = mymod(y,period[1][1]); y0 < static_cast<int>(image_.height()); y0 += period[1][1] )
 		  {
 			  int x1 = x+((y0-y)/period[1][1])*period[1][0];
-			  for(int x0 = mymod(x1,period[0][0]); x0 < image_.width(); x0 += period[0][0] )
+			  for(int x0 = mymod(x1,period[0][0]); x0 < static_cast<int>(image_.width()); x0 += period[0][0] )
 			  {
 				  image_.set_pixel(x0,y0,pen_color_red_,pen_color_green_,pen_color_blue_);
 			  }
@@ -1934,7 +1934,7 @@ public:
 			  image_.set_pixel(mymod(x,image_.width()),mymod(y,image_.height()) ,pen_color_red_,pen_color_green_,pen_color_blue_);
 		  } else
 		  {
-			  if( x >= 0 && x < image_.width() && y >=0 && y < image_.height() )
+			  if( x >= 0 && x < static_cast<int>(image_.width()) && y >=0 && y < static_cast<int>(image_.height()) )
 				image_.set_pixel(x,y,pen_color_red_,pen_color_green_,pen_color_blue_);
 		  }
 	  }

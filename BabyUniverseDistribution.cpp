@@ -124,7 +124,7 @@ int BabyUniverseDistribution::VolumeEnclosed(const std::list<const Edge *> & bou
 	int smallestSide = ( queues[0].empty() ? 0 : 1 );
 
 	// Euler's formula for the disk
-	if( numTriangles + boundary.size() + 2 == 2 * setOfVertices[smallestSide].size() )
+	if( numTriangles + static_cast<int>(boundary.size()) + 2 == 2 * setOfVertices[smallestSide].size() )
 	{
 		return numTriangles;
 	}
@@ -135,8 +135,8 @@ int BabyUniverseDistribution::VolumeEnclosed(const std::list<const Edge *> & bou
 std::string BabyUniverseDistribution::OutputData() const
 {
 	std::ostringstream output;
-	output << "BabyUniverses -> { measurements -> " << measurements_;
-	output << ", NeckSize -> " << minbu_necksize_;
+	output << "babyuniverses -> { measurements -> " << measurements_;
+	output << ", necksize -> " << minbu_necksize_;
 	output << ", distribution -> ";
 	PrintToStream(output,sizes_.begin(),sizes_.end());
 	output << "}";
