@@ -4,7 +4,7 @@
 #include <queue>
 #include <math.h>
 
-HarmonicEmbedding::HarmonicEmbedding(Triangulation * const triangulation, const CohomologyBasis * const cohomologybasis) 
+HarmonicEmbedding::HarmonicEmbedding(Triangulation * const triangulation, CohomologyBasis * const cohomologybasis) 
 	: triangulation_(triangulation), Embedding(triangulation,cohomologybasis)
 {
 

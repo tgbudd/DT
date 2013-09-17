@@ -80,10 +80,10 @@ void CirclePatternHessian::MultiplyVector(const std::vector<double> & from, std:
 	}
 }
 
-CirclePattern::CirclePattern(Triangulation * const triangulation, const CohomologyBasis * const cohomologybasis, const ThetaModel * const thetamodel)
+CirclePattern::CirclePattern(Triangulation * const triangulation, CohomologyBasis * const cohomologybasis, const ThetaModel * const thetamodel)
 	: triangulation_(triangulation), thetamodel_(thetamodel), Embedding(triangulation,cohomologybasis)
 {
-	max_newton_iterations_ = 1000;
+	max_newton_iterations_ = 50;
 }
 
 bool CirclePattern::FindEdgeMeasure()
@@ -124,6 +124,7 @@ bool CirclePattern::FindRadii()
 
 	int steps=0;
 	std::vector<double> logradius2(triangulation_->NumberOfTriangles(),0.0);
+	std::fill(logradius_.begin(),logradius_.end(),0.0);
 	while(true)
 	{
 		steps++;
@@ -177,6 +178,8 @@ bool CirclePattern::FindRadii()
 			return false;
 		}
 	}
+
+	std::cout << steps << "\n";
 
 	double totlograd=0.0;
 	for(int i=0;i<static_cast<int>(logradius_.size());i++)

@@ -8,7 +8,7 @@ class HarmonicEmbedding :
 	public Embedding
 {
 public:
-	HarmonicEmbedding(Triangulation * const triangulation, const CohomologyBasis * const cohomologybasis);
+	HarmonicEmbedding(Triangulation * const triangulation, CohomologyBasis * const cohomologybasis);
 	~HarmonicEmbedding() {}
 	bool FindEdgeMeasure();
 private:

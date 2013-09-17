@@ -13,7 +13,7 @@ void DualCohomologyBasis::Initialize(int width, int height)
 }
 
 DualCohomologyBasis::DualCohomologyBasis(const CohomologyBasis & cohomologybasis)
-	: CohomologyBasis(cohomologybasis)
+	:  CohomologyBasis(cohomologybasis)
 {
 	SetToDualOf(cohomologybasis);
 }
@@ -65,6 +65,10 @@ void DualCohomologyBasis::SetToDualOf(const CohomologyBasis & cohom)
 			}
 		}
 	}
+	if( cohom.IsUpToDate() )
+	{
+		SetUpToDate();
+	}
 }
 
 void DualCohomologyBasis::UpdateAfterFlipMove(const Edge * const edge)
@@ -81,6 +85,8 @@ void DualCohomologyBasis::UpdateAfterFlipMove(const Edge * const edge)
 	IntForm2D zero = {0,0};
 	setOmega(edge->getPrevious(),zero);
 	setOmega(otherEdge->getPrevious(),zero);
+
+	SetUpToDate();
 }
 
 bool DualCohomologyBasis::CheckClosedness() const

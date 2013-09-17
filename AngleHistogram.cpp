@@ -2,7 +2,7 @@
 
 
 
-AngleHistogram::AngleHistogram(const Embedding * const embedding, int bins, double min, double max)
+AngleHistogram::AngleHistogram(Embedding * const embedding, int bins, double min, double max)
 	: embedding_(embedding), bins_(bins), min_(min), max_(max)
 {
 	histogram_.resize(bins,0);
@@ -16,18 +16,21 @@ AngleHistogram::~AngleHistogram(void)
 
 void AngleHistogram::Measure()
 {
-	for(int i=0,end=embedding_->getSize();i<end;i++)
+	if( embedding_->IsUpToDate() || embedding_->MakeUpToDate() )
 	{
-		for(int j=0;j<3;j++)
+		for(int i=0,end=embedding_->getSize();i<end;i++)
 		{
-			int val = (int)(bins_*(CalculateAngle(i,j)-min_)/(max_-min_));
-			if( val >= 0 && val < bins_ )
+			for(int j=0;j<3;j++)
 			{
-				histogram_[val]++;
+				int val = (int)(bins_*(CalculateAngle(i,j)-min_)/(max_-min_));
+				if( val >= 0 && val < bins_ )
+				{
+					histogram_[val]++;
+				}
 			}
 		}
+		measurements_++;
 	}
-	measurements_++;
 }
 
 std::string AngleHistogram::OutputData() const

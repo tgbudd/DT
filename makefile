@@ -16,6 +16,7 @@ SRCS=main.cpp \
 	Embedding.cpp \
 	HarmonicEmbedding.cpp \
 	LaplacianDeterminant.cpp \
+	ModuliObservable.cpp \
 	PottsModel.cpp \
 	ShortestLoop.cpp \
 	Simulation.cpp \
@@ -42,14 +43,14 @@ Edge.o: Edge.cpp Edge.h
 Embedding.o: Embedding.cpp Embedding.h
 HarmonicEmbedding.o: HarmonicEmbedding.cpp HarmonicEmbedding.h
 LaplacianDeterminant.o: LaplacianDeterminant.cpp LaplacianDeterminant.h
+ModuliObservable.o: ModuliObservable.cpp ModuliObservable.h
 PottsModel.o: PottsModel.cpp PottsModel.h
 ShortestLoop.o: ShortestLoop.cpp ShortestLoop.h
 Simulation.o: Simulation.cpp Simulation.h
 ThetaHistogram.o: ThetaHistogram.cpp ThetaHistogram.h
 ThetaModel.o: ThetaModel.cpp ThetaModel.h
 Triangle.o: Triangle.cpp Triangle.h
-triangulation.o: triangulation.cpp triangulation.h
-utilities.o: utilities.cpp utilities.h
+Triangulation.o: Triangulation.cpp Triangulation.h
 Vertex.o: Vertex.cpp Vertex.h
 
 tool.o: tool.cc support.hh

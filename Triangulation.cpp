@@ -11,6 +11,7 @@
 Triangulation::Triangulation(void) : use_flipmove_(true) , dominantmatter_(NULL)
 {
 	rng_.seed(static_cast<unsigned int>(time(NULL)));
+	state_ = 1;
 }
 
 void Triangulation::SeedRandom(unsigned int seed)
@@ -111,6 +112,7 @@ void Triangulation::LoadRegularLattice(int width, int height)
 	}
 
 	DetermineVertices();
+	IncreaseState();
 }
 
 void Triangulation::DoSweep()
@@ -175,6 +177,8 @@ bool Triangulation::TryFlipMove(Edge * edge)
 	}
 
 	edge->DoFlipMove();
+	IncreaseState();
+
 	for(std::list<Decoration *>::iterator decoration = decoration_.begin(); decoration != decoration_.end(); decoration++ )
 	{
 		(*decoration)->UpdateAfterFlipMove(edge);
@@ -251,4 +255,9 @@ std::string Triangulation::OutputData() const
 	std::ostringstream stream;
 	stream << "triangulation -> {numberoftriangles -> " << NumberOfTriangles() << "}";
 	return stream.str();
+}
+
+void Triangulation::IncreaseState()
+{
+	state_++;
 }

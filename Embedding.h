@@ -9,6 +9,7 @@
 #include "Triangulation.h"
 #include "Decoration.h"
 #include "CohomologyBasis.h"
+#include "DualCohomologyBasis.h"
 #include "ConjugateGradient.h"
 #include "Vertex.h"
 #include "Edge.h"
@@ -27,19 +28,17 @@ private:
 class Embedding : public Decoration
 {
 public:
-	Embedding(const Triangulation * const triangulation, const CohomologyBasis * const cohomologybasis) : triangulation_(triangulation), cohomologybasis_(cohomologybasis) {
-		accuracy_ = 1.0e-6;
-		maxiterations_ = 2000;
-		edge_measure_.resize(triangulation->NumberOfTriangles());
-	}
+	Embedding(const Triangulation * const triangulation, CohomologyBasis * const cohomologybasis);
+
 	~Embedding() {}
 
 	void Initialize() {}
 	void UpdateAfterFlipMove(const Edge * const edge); 
 	bool FindEmbedding();
 	virtual bool FindEdgeMeasure() = 0;
-	std::pair< double, double > CalculateModuli() const;
+	std::pair< double, double > CalculateModuli();
 
+	bool MakeUpToDate();
 
 	const Vector2D & getCoordinate(Vertex * const & vertex) const
 	{
@@ -115,7 +114,7 @@ private:
 	void LoadInitialCoordinates( std::vector<double> & coordinates, int i, Vertex * startVertex ) const;
 
 	const Triangulation * const triangulation_;
-	const CohomologyBasis * const cohomologybasis_;
+	CohomologyBasis * const cohomologybasis_;
 	std::vector<Vector2D> coordinate_;
 	std::vector<boost::array<Vector2D,3> > form_;
 	std::vector<boost::array<double,3> > edge_measure_;

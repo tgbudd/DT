@@ -27,7 +27,7 @@ class CirclePattern :
 	public Embedding
 {
 public:
-	CirclePattern(Triangulation * const triangulation, const CohomologyBasis * const cohomologybasis, const ThetaModel * const thetamodel);
+	CirclePattern(Triangulation * const triangulation, CohomologyBasis * const cohomologybasis, const ThetaModel * const thetamodel);
 	~CirclePattern() {}
 
 	bool FindEdgeMeasure();

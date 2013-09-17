@@ -42,6 +42,12 @@ void LaplacianMatrix::MultiplyVector(const std::vector<double> & from, std::vect
 	}
 }
 
+Embedding::Embedding(const Triangulation * const triangulation, CohomologyBasis * const cohomologybasis) : Decoration(triangulation), triangulation_(triangulation), cohomologybasis_(cohomologybasis) {
+	accuracy_ = 1.0e-6;
+	maxiterations_ = 2000;
+	edge_measure_.resize(triangulation->NumberOfTriangles());
+}
+
 void Embedding::UpdateAfterFlipMove(const Edge * const edge) 
 {
 	setFormToMinusAdjacent(edge);
@@ -96,6 +102,15 @@ void Embedding::LoadInitialCoordinates( std::vector<double> & coordinates, int i
 
 bool Embedding::FindEmbedding()
 {
+	if( !cohomologybasis_->IsUpToDate() )
+	{
+		if( !cohomologybasis_->MakeUpToDate() )
+		{
+			return false;
+		}
+	}
+	cohomologybasis_->Simplify();
+
 	if( !FindEdgeMeasure() )
 	{
 		return false;
@@ -161,11 +176,18 @@ bool Embedding::FindEmbedding()
 			setCoordinate(j,i,properfmod(coordinate[j],1.0));
 		}
 	}
+
+	SetUpToDate();
 	return true;
 }
 
-std::pair< double, double > Embedding::CalculateModuli() const
+std::pair< double, double > Embedding::CalculateModuli()
 {
+	if( !IsUpToDate() )
+	{
+		FindEmbedding();
+	}
+
 	boost::array<boost::array<double,2>, 2> inproducts;
 	for(int i=0;i<2;i++)
 	{
@@ -182,4 +204,14 @@ std::pair< double, double > Embedding::CalculateModuli() const
 		}
 	}
 	return std::pair<double,double>( -inproducts[0][1] / inproducts[1][1], sqrt(inproducts[0][0] * inproducts[1][1] - inproducts[0][1] * inproducts[1][0])/inproducts[1][1] );
+}
+
+bool Embedding::MakeUpToDate()
+{
+	if( IsUpToDate() )
+	{
+		return true;
+	}
+
+	return FindEmbedding();
 }

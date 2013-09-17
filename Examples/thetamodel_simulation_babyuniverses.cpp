@@ -6,9 +6,8 @@
 #include "Triangulation.h"
 #include "DualCohomologyBasis.h"
 #include "ThetaModel.h"
-#include "CirclePattern.h"
-#include "ModuliObservable.h"
-#include "AngleHistogram.h"
+#include "BabyUniverseDistribution.h"
+#include "ThetaHistogram.h"
 
 int main(int argc, char* argv[])
 {
@@ -53,17 +52,16 @@ int main(int argc, char* argv[])
 	triangulation.setDominantMatter( &thetamodel );
 	thetamodel.Initialize();
 
+	BabyUniverseDistribution babyuniv( &triangulation, &dualcohomologybasis, 3);
+
+	ThetaHistogram thetahistogram( &thetamodel, 180, 0.0, PI );
+	
 	Simulation simulation( &triangulation, thermalizationSweeps, OutputSweeps );
 
-	CohomologyBasis cohom( &triangulation, dualcohomologybasis );
-	cohom.SetMakeUpToDateVia( &dualcohomologybasis );
+	simulation.AddObservable( &babyuniv, MeasurementSweeps );
+	simulation.AddObservable( &thetahistogram, MeasurementSweeps );
 
-	CirclePattern circlepattern( &triangulation, &cohom, &thetamodel );
-
-	ModuliObservable moduli( &circlepattern );
-	simulation.AddObservable( &moduli, MeasurementSweeps );
-	AngleHistogram angle( &circlepattern );
-	simulation.AddObservable( &angle, MeasurementSweeps );
+	triangulation.DoSweep(thermalizationSweeps);
 
 	simulation.Run();
 

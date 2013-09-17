@@ -48,7 +48,7 @@ void Simulation::Run()
 
 	triangulation_->DoSweep(thermalization_sweeps_);
 
-	for(sweeps_=0;true;sweeps_++)
+	for(sweeps_=1;true;sweeps_++)
 	{
 		triangulation_->DoSweep();
 
@@ -83,6 +83,7 @@ void Simulation::Output()
 	file << std::fixed;
 	
 	file << "{ identifier -> \"" << identifier_ << "\"";
+	file << ", processid -> \"" << process_id_ << "\"";
 	file << ", starttime -> \"" << RemoveNewline(ctime( &start_time_)) << "\"";
 	file << ", outputtime -> \"" << RemoveNewline(ctime( &currentTime)) << "\"";
 	file << ", runtimeinhours -> " << difftime(currentTime, start_time_)/3600.0;

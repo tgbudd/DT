@@ -80,6 +80,7 @@
     <ClInclude Include="HarmonicEmbedding.h" />
     <ClInclude Include="LaplacianDeterminant.h" />
     <ClInclude Include="Matter.h" />
+    <ClInclude Include="ModuliObservable.h" />
     <ClInclude Include="Observable.h" />
     <ClInclude Include="PottsModel.h" />
     <ClInclude Include="PottsModelOnVertices.h" />
@@ -106,6 +107,7 @@
     <ClCompile Include="HarmonicEmbedding.cpp" />
     <ClCompile Include="LaplacianDeterminant.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="ModuliObservable.cpp" />
     <ClCompile Include="PottsModel.cpp" />
     <ClCompile Include="PottsModelOnVertices.cpp" />
     <ClCompile Include="ShortestLoop.cpp" />

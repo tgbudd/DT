@@ -2,8 +2,9 @@
 #include "ShortestLoop.h"
 #include "DualCohomologyBasis.h"
 
-CohomologyBasis::CohomologyBasis(const Triangulation * const triangulation) : triangulation_(triangulation)
+CohomologyBasis::CohomologyBasis(const Triangulation * const triangulation) : Decoration(triangulation), triangulation_(triangulation)
 {
+	via_dualcohomologybasis_ = NULL;
 }
 
 
@@ -11,10 +12,14 @@ CohomologyBasis::~CohomologyBasis(void)
 {
 }
 
-CohomologyBasis::CohomologyBasis(const Triangulation * const triangulation, const DualCohomologyBasis & dualcohomologybasis) : triangulation_(triangulation)
+CohomologyBasis::CohomologyBasis(const Triangulation * const triangulation, const DualCohomologyBasis & dualcohomologybasis) : Decoration(triangulation), triangulation_(triangulation)
 {
 	omega_.resize(triangulation_->NumberOfTriangles());
 	SetToDualOf(dualcohomologybasis);
+	if( dualcohomologybasis.IsUpToDate() )
+	{
+		SetUpToDate();
+	}
 }
 
 void CohomologyBasis::Initialize()
@@ -56,6 +61,8 @@ void CohomologyBasis::Initialize(int width, int height)
 	}
 
 	BOOST_ASSERT(CheckClosedness());
+
+	SetUpToDate();
 }
 
 void CohomologyBasis::UpdateAfterFlipMove(const Edge * const edge)
@@ -70,14 +77,7 @@ void CohomologyBasis::UpdateAfterFlipMove(const Edge * const edge)
 		setOmega(edge->getPrevious()->getAdjacent(),i,-newomega);
 	}
 
-	/*// test
-	for(int i=0;i<2;i++)
-	{
-		int tot=getOmega(edge,i);
-		tot += getOmega(edge->getNext(),i);
-		tot += getOmega(edge->getPrevious(),i);
-		BOOST_ASSERT( tot == 0 );
-	}*/
+	SetUpToDate();
 }
 
 bool CohomologyBasis::CheckClosedness() const
@@ -145,4 +145,25 @@ void CohomologyBasis::SetToDualOf(const DualCohomologyBasis & dualOmega)
 			setOmega(edge,SubtractForms(toFinal,toInitial));
 		}
 	}
+
+	if( dualOmega.IsUpToDate() )
+	{
+		SetUpToDate();
+	}
+}
+
+void CohomologyBasis::SetMakeUpToDateVia(DualCohomologyBasis * dual)
+{
+	via_dualcohomologybasis_ = dual;
+}
+
+bool CohomologyBasis::MakeUpToDate()
+{
+	if( via_dualcohomologybasis_ != NULL && via_dualcohomologybasis_->IsUpToDate() )
+	{
+		SetToDualOf(*via_dualcohomologybasis_);
+		SetUpToDate();
+		return true;
+	}
+	return false;
 }

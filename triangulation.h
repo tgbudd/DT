@@ -17,6 +17,8 @@ class DominantMatter;
 class Decoration;
 class Edge;
 
+typedef unsigned int TriangulationState;
+
 class Triangulation
 {
 public:
@@ -62,8 +64,17 @@ public:
 
 	std::string OutputData() const;
 
+	bool IsState(const TriangulationState & state) const
+	{
+		return state == state_;
+	}
+	TriangulationState getState() const
+	{
+		return state_;
+	}
 private:
 	void DetermineVertices();
+	void IncreaseState();
 
 	std::vector<Triangle*> triangles_;
 	std::vector<Vertex* > vertices_;
@@ -76,6 +87,8 @@ private:
 	std::list<Matter* > matter_;	// subset of decoration_ that has its own moves and boltzmann weights
 
 	bool use_flipmove_;  // Defaults to true. May be set to false because some matter fields require a custom flip move.
+
+	TriangulationState state_;
 };
 
 #endif

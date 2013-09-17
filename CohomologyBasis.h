@@ -47,7 +47,7 @@ class CohomologyBasis :
 public:
 	CohomologyBasis() : triangulation_(NULL) {}
 	CohomologyBasis(const Triangulation * const triangulation);
-	CohomologyBasis(const CohomologyBasis & cohomologybasis) : omega_(cohomologybasis.omega_), triangulation_(cohomologybasis.triangulation_) {}
+	CohomologyBasis(const CohomologyBasis & cohomologybasis) : Decoration(cohomologybasis.triangulation_), omega_(cohomologybasis.omega_), triangulation_(cohomologybasis.triangulation_) {}
 	CohomologyBasis(const Triangulation * const triangulation, const DualCohomologyBasis & dualcohomologybasis);
 	~CohomologyBasis(void);
 
@@ -94,10 +94,13 @@ public:
 	void Simplify(bool StayInSameClass = false);
 	void SetToDualOf(const DualCohomologyBasis & dualOmega);	// change the DualCohomologyBasis to an equivalent CohomologyBasis
 
+	void SetMakeUpToDateVia(DualCohomologyBasis * via_dualcohomologybasis);
+	bool MakeUpToDate();
 protected:
 	std::vector<boost::array<IntForm2D,3> > omega_;		// two closed one-forms on the triangulation
 	void ClearOmega();
 	const Triangulation * triangulation_;
+	DualCohomologyBasis * via_dualcohomologybasis_;
 private:
 
 	
