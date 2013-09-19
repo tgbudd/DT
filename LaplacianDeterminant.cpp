@@ -1,5 +1,5 @@
 #include "LaplacianDeterminant.h"
-#include <math.h>
+#include <cmath>
 
 void DualLaplacianMatrix::MultiplyVector(const std::vector<double> & from, std::vector<double> & to) const
 {

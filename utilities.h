@@ -8,7 +8,7 @@
 #include <sstream>
 #include <vector>
 #include <string> 
-#include <math.h>
+#include <cmath>
 
 #include "boost/array.hpp"
 

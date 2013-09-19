@@ -45,6 +45,14 @@ public:
 	int getSize() const {
 		return static_cast<int>(theta_.size());
 	}
+	void setCosinePower(double CosinePower)
+	{
+		cos_power_ = CosinePower;
+		if( cos_power_ < -1e-8 || cos_power_ > 1e-8 )
+		{
+			use_cos_power_ = true;
+		}
+	}
 
 	bool TryThetaMove();
 	void TryThetaMove(int n);
@@ -52,8 +60,14 @@ public:
 
 	std::string ExportState() const;
 private:
+	double cosine(int theta) {
+		return std::cos( static_cast<double>(theta * PI/pi_in_units_) );
+	}
+
 	std::vector<boost::array<int,3> > theta_;
 	const int pi_in_units_;	// use integer angles where pi_in_units corresponds to an angle of pi
+	bool use_cos_power_;
+	double cos_power_;
 
 	Triangulation * const triangulation_;
 	const DualCohomologyBasis * const dualcohomologybasis_;

@@ -1,5 +1,5 @@
 #include <algorithm>
-#include <math.h>
+#include <cmath>
 #include <vector>
 #include <queue>
 #include <map>
@@ -7,7 +7,7 @@
 #include "ThetaModel.h"
 
 
-ThetaModel::ThetaModel(Triangulation * const triangulation, const DualCohomologyBasis * const dualcohomologybasis, int PiInUnits) : triangulation_(triangulation), dualcohomologybasis_(dualcohomologybasis), pi_in_units_(PiInUnits)
+ThetaModel::ThetaModel(Triangulation * const triangulation, const DualCohomologyBasis * const dualcohomologybasis, int PiInUnits) : triangulation_(triangulation), dualcohomologybasis_(dualcohomologybasis), pi_in_units_(PiInUnits), use_cos_power_(false)
 {
 }
 
@@ -110,6 +110,30 @@ bool ThetaModel::TryThetaMove(Edge * moveEdge)
 	if( dTheta == moveEdgeTheta )
 	{
 		return false;
+	}
+
+	if( use_cos_power_ )
+	{
+		// Boltzmann factor is product over edges of |cos(theta)|^(cos_power_).
+		double BoltzmannChange = 1.0;
+
+		BoltzmannChange *= cosine(getTheta((this->*previous)(kiteEdge))-dTheta) / cosine(getTheta((this->*previous)(kiteEdge)));
+		BoltzmannChange *= cosine(getTheta((this->*next)(kiteEdge))+dTheta) / cosine(getTheta((this->*next)(kiteEdge)));
+		BoltzmannChange *= cosine(getTheta((this->*previous)(moveEdge))-dTheta) / cosine(getTheta((this->*previous)(moveEdge)));
+		if( dTheta < moveEdgeTheta )
+		{
+			BoltzmannChange *= cosine(moveEdgeTheta-dTheta) /cosine(moveEdgeTheta);
+		} else
+		{
+			BoltzmannChange *= cosine( getTheta((this->*previous)(moveEdge->getAdjacent())) - dTheta + moveEdgeTheta ) / cosine( getTheta((this->*previous)(moveEdge->getAdjacent())));
+			BoltzmannChange *= cosine(dTheta-moveEdgeTheta)/cosine(moveEdgeTheta);
+		}
+		BoltzmannChange = std::pow(std::fabs(BoltzmannChange),cos_power_);
+
+		if(	!triangulation_->SucceedWithProbability( BoltzmannChange ) )
+		{
+			return false;
+		}
 	}
 
 	if( dTheta < 0 )
@@ -374,3 +398,4 @@ std::string ThetaModel::ExportState() const
 	PrintToStream2D(stream, theta_.begin(), theta_.end() );
 	return stream.str();
 }
+

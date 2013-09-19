@@ -13,6 +13,17 @@ ColorScheme::ColorScheme( Scheme scheme ) : scheme_(scheme)
 			schemedata_[i].second[1] = data[i][2];
 			schemedata_[i].second[2] = data[i][3];
 		}
+	} else if( scheme_ == BLUE_GREEN_YELLOW )
+	{
+		double data[7][4] = {{0., 0.122103, 0.00901808, 0.39826}, {0.166667, 0.0839935, 0.279645, 0.510102}, {0.333333, 0.097699, 0.498132, 0.548165}, {0.5, 0.175507, 0.652273, 0.528496}, {0.666667, 0.329526, 0.762208, 0.474596}, {0.833333, 0.571909, 0.839991, 0.408102}, {1., 0.914809, 0.897673, 0.350652}};
+		schemedata_.resize(7);
+		for(int i=0;i<7;i++)
+		{
+			schemedata_[i].first = data[i][0];
+			schemedata_[i].second[0] = data[i][1];
+			schemedata_[i].second[1] = data[i][2];
+			schemedata_[i].second[2] = data[i][3];
+		}
 	}
 }
 
@@ -35,6 +46,8 @@ boost::array<unsigned char,3> ColorScheme::getColor( double x ) const
 
 void TriangulationDrawer::Draw(BitmapDrawer & drawer)
 {
+	ColorScheme scheme(ColorScheme::BLUE_GREEN_YELLOW);
+
 	for(int i=0;i<triangulation_->NumberOfTriangles();i++)
 	{
 		Triangle * triangle = triangulation_->getTriangle(i);
@@ -48,6 +61,11 @@ void TriangulationDrawer::Draw(BitmapDrawer & drawer)
 			Vector2D start = embedding_->getCoordinate(edge->getNext()->getOpposite());
 			Vector2D form = embedding_->getForm(edge);
 
+			if( !edge_shade_.empty() )
+			{
+				boost::array<unsigned char,3> color = scheme.getColor( edge_shade_[i][j] );
+				drawer.setPenColor(color[0],color[1],color[2]);
+			}
 			drawer.domainLineSegment(start[0],start[1],start[0] + form[0],start[1] + form[1]);
 		}
 	}

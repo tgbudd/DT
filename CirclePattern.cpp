@@ -178,9 +178,6 @@ bool CirclePattern::FindRadii()
 			return false;
 		}
 	}
-
-	std::cout << steps << "\n";
-
 	double totlograd=0.0;
 	for(int i=0;i<static_cast<int>(logradius_.size());i++)
 	{

@@ -90,10 +90,22 @@ void Simulation::Output()
 	file << ", sweeps -> " << sweeps_;
 	file << ", thermalizationsweeps -> " << thermalization_sweeps_;
 	file << ", sweepsperoutput -> " << sweeps_per_output_;
+
+	file << ", configuration -> ";
+
+	std::ostringstream config;
+	PrintToStream(config,configuration_info_.begin(),configuration_info_.end());
+	file << config.str();
+
 	file << ", " << triangulation_->OutputData();
 	for(std::map<Observable*,MeasurementInfo>::iterator observable=observables_.begin();observable!=observables_.end();observable++)
 	{
 		file << ", " << observable->first->OutputData();
 	}
 	file << "}\n";
+}
+
+void Simulation::AddConfigurationInfo(std::string info)
+{
+	configuration_info_.push_back(info);
 }

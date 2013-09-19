@@ -17,7 +17,8 @@ class ColorScheme
 {
 public:
 	enum Scheme {
-		TEMPERATURE_MAP
+		TEMPERATURE_MAP,
+		BLUE_GREEN_YELLOW
 	};
 
 	ColorScheme( Scheme scheme );
@@ -203,8 +204,18 @@ public:
 	void Draw(BitmapDrawer & drawer);
 
 	void DrawShading(BitmapDrawer & drawer);
-private:
 
+	void SetEdgeShade(int triangle, int edge, double shade)
+	{
+		if( edge_shade_.empty() )
+		{
+			boost::array<double,3> zero = {0.0,0.0,0.0};
+			edge_shade_.resize(triangulation_->NumberOfTriangles(),zero);
+		}
+		edge_shade_[triangle][edge] = shade;
+	}
+private:
+	std::vector<boost::array<double,3> > edge_shade_;
 	Triangulation * const triangulation_;
 	const Embedding * const embedding_;
 };

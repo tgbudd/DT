@@ -2,7 +2,7 @@
 #include <vector>
 #include <algorithm>
 #include <queue>
-#include <math.h>
+#include <cmath>
 
 HarmonicEmbedding::HarmonicEmbedding(Triangulation * const triangulation, CohomologyBasis * const cohomologybasis) 
 	: triangulation_(triangulation), Embedding(triangulation,cohomologybasis)

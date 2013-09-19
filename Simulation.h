@@ -16,6 +16,8 @@ public:
 	void AddObservable(Observable * observable, int SweepsPerMeasurement);
 	void Run();
 	void Output();
+
+	void AddConfigurationInfo(std::string info);
 private:
 	void setStartTime();
 
@@ -36,6 +38,7 @@ private:
 	};
 
 	std::map<Observable *,MeasurementInfo> observables_;
+	std::vector<std::string> configuration_info_;
 };
 
 #endif
