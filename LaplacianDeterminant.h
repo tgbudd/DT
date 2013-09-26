@@ -3,12 +3,12 @@
 
 #include "Matter.h"
 #include "Triangulation.h"
-#include "ConjugateGradient.h"
+#include "LinearAlgebra.h"
 
-class DualLaplacianMatrix : public Matrix
+class DualLaplacianMatrix : public linearalgebra::Matrix
 {
 public:
-	DualLaplacianMatrix(const Triangulation * const triangulation) : triangulation_(triangulation) {}
+	DualLaplacianMatrix(const Triangulation * const triangulation) : Matrix(triangulation->NumberOfTriangles()), triangulation_(triangulation) {}
 
 	void MultiplyVector(const std::vector<double> & from, std::vector<double> & to) const;
 private:

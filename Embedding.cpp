@@ -4,7 +4,18 @@
 
 #include "Embedding.h"
 
-LaplacianMatrix::LaplacianMatrix(const Triangulation * const triangulation, const std::vector<boost::array<double,3> > & edge_measure) {
+LaplacianMatrix::LaplacianMatrix(const Triangulation * const triangulation) : Matrix(triangulation->NumberOfVertices() ) {
+	boost::array<double,3> unitmeasure = {1.0,1.0,1.0};
+	std::vector<boost::array<double,3> > edgemeasure(triangulation->NumberOfTriangles(),unitmeasure);
+	Initialize(triangulation,edgemeasure);
+}
+
+LaplacianMatrix::LaplacianMatrix(const Triangulation * const triangulation, const std::vector<boost::array<double,3> > & edge_measure) : Matrix(edge_measure.size()) {
+	Initialize(triangulation,edge_measure);
+}
+
+void LaplacianMatrix::Initialize(const Triangulation * const triangulation, const std::vector<boost::array<double,3> > & edge_measure)
+{
 	laplacianRules_.resize(triangulation->NumberOfVertices());
 	for(int i=0;i<triangulation->NumberOfTriangles();i++)
 	{
@@ -41,6 +52,7 @@ void LaplacianMatrix::MultiplyVector(const std::vector<double> & from, std::vect
 		}
 	}
 }
+
 
 Embedding::Embedding(const Triangulation * const triangulation, CohomologyBasis * const cohomologybasis) : Decoration(triangulation), triangulation_(triangulation), cohomologybasis_(cohomologybasis) {
 	accuracy_ = 1.0e-6;

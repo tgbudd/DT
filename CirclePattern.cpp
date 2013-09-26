@@ -43,7 +43,7 @@ double ImLi2plusinv(double x, double theta)
 	return p * x + ClausensIntegral(p + PI - theta) + ClausensIntegral(-p+PI-theta)-ClausensIntegral(2.0*(PI-theta));
 }
 
-CirclePatternHessian::CirclePatternHessian(const Triangulation * const triangulation, const ThetaModel * const thetamodel, const std::vector<double> & logradius )
+CirclePatternHessian::CirclePatternHessian(const Triangulation * const triangulation, const ThetaModel * const thetamodel, const std::vector<double> & logradius ) : Matrix( logradius.size() )
 {
 	matrix_rules_.resize(triangulation->NumberOfTriangles());
 	for(int i=0;i<triangulation->NumberOfTriangles();i++)

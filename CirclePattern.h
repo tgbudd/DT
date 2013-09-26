@@ -8,13 +8,13 @@
 #include "Embedding.h"
 #include "ThetaModel.h"
 #include "CohomologyBasis.h"
-#include "ConjugateGradient.h"
+#include "LinearAlgebra.h"
 
 double ClausensIntegral(double x);
 double Lobachevsky(double x);
 double ImLi2plusinv(double x, double theta);
 
-class CirclePatternHessian : public Matrix
+class CirclePatternHessian : public linearalgebra::Matrix
 {
 public:
 	CirclePatternHessian(const Triangulation * const triangulation, const ThetaModel * const thetamodel, const std::vector<double> & logradius); 

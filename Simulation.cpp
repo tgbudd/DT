@@ -14,8 +14,8 @@
 #include "Simulation.h"
 
 
-Simulation::Simulation(Triangulation * const & triangulation, int ThermalizationSweeps, int SweepsPerOutput)
-	: triangulation_(triangulation), thermalization_sweeps_(ThermalizationSweeps), sweeps_per_output_(SweepsPerOutput)
+Simulation::Simulation(Triangulation * const & triangulation, int ThermalizationSweeps, int SecondsPerOutput)
+	: triangulation_(triangulation), thermalization_sweeps_(ThermalizationSweeps), seconds_per_output_(SecondsPerOutput)
 {
 	char s[] = "aaaaaa";
 	for(int i=0;i<6;i++)
@@ -48,6 +48,8 @@ void Simulation::Run()
 
 	triangulation_->DoSweep(thermalization_sweeps_);
 
+	time_t last_output = time(NULL);
+
 	for(sweeps_=1;true;sweeps_++)
 	{
 		triangulation_->DoSweep();
@@ -59,9 +61,14 @@ void Simulation::Run()
 				observable->first->Measure();
 			}
 		}
-		if( sweeps_ % sweeps_per_output_ == 0 )
+		if( sweeps_ % 5 == 0 )
 		{
-			Output();
+			time_t current_time = time(NULL);
+			if( static_cast<int>(difftime(current_time,last_output)) > seconds_per_output_ )
+			{
+				Output();
+				last_output = current_time;
+			}
 		}
 	}
 
@@ -89,7 +96,7 @@ void Simulation::Output()
 	file << ", runtimeinhours -> " << difftime(currentTime, start_time_)/3600.0;
 	file << ", sweeps -> " << sweeps_;
 	file << ", thermalizationsweeps -> " << thermalization_sweeps_;
-	file << ", sweepsperoutput -> " << sweeps_per_output_;
+	file << ", secondsperoutput -> " << seconds_per_output_;
 
 	file << ", configuration -> ";
 

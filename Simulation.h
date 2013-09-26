@@ -10,7 +10,7 @@
 class Simulation
 {
 public:
-	Simulation(Triangulation * const & triangulation, int ThermalizationSweeps, int SweepsPerOutput );
+	Simulation(Triangulation * const & triangulation, int ThermalizationSweeps, int SecondsPerOutput );
 	~Simulation(void);
 
 	void AddObservable(Observable * observable, int SweepsPerMeasurement);
@@ -23,7 +23,7 @@ private:
 
 	Triangulation * const triangulation_;
 	int thermalization_sweeps_;
-	int sweeps_per_output_;
+	int seconds_per_output_;
 
 	int sweeps_;
 	time_t start_time_;

@@ -47,6 +47,11 @@ Edge * const & Triangulation::getRandomEdge()
 	return triangles_[RandomInteger(0,n_triangles_-1)]->getEdge(RandomInteger(0,2));
 }
 
+Vertex * const & Triangulation::getRandomVertex()
+{
+	return vertices_[RandomInteger(0,n_vertices_-1)];
+}
+
 int Triangulation::RandomInteger(int min, int max)
 {
 	boost::uniform_int<> distribution(min, max);

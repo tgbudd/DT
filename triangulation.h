@@ -44,6 +44,7 @@ public:
 
 	Triangle * const & getRandomTriangle();
 	Edge * const & getRandomEdge();
+	Vertex * const & getRandomVertex();
 
 
 	int RandomInteger(int min, int max);

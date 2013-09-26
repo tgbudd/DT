@@ -40,7 +40,7 @@ int main(int argc, char* argv[])
 		std::istringstream is3(argv[3]);
 		is3 >> cosinepower;
 		std::istringstream is4(argv[4]);
-		is3 >> thermalizationSweeps;
+		is3 >> thermalizationSweeps;			// STUPID BUG!!!!!!!!!!!
 		std::istringstream is5(argv[5]);
 		is4 >> MeasurementSweeps;
 		std::istringstream is6(argv[6]);
