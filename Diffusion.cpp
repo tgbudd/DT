@@ -42,7 +42,7 @@ void DiffusionMatrix::MultiplyVector(const std::vector<double> & from, std::vect
 
 
 Diffusion::Diffusion( Triangulation * const triangulation ) : triangulation_(triangulation),
-	samples_(20), measurements_(0), diffusion_steps_(1000), max_distance_(50)
+	samples_(20), measurements_(0), diffusion_steps_(100), max_distance_(50)
 {
 	int size = triangulation_->NumberOfVertices();
 	distance_.resize( size, 0 );
@@ -67,6 +67,7 @@ void Diffusion::Measure()
 	{
 		Vertex * startVertex = triangulation_->getRandomVertex();
 		DetermineDistance( startVertex );
+		MeasureDistanceDistribution();
 		DoDiffusion( startVertex, &diffusionmatrix );
 		measurements_++;
 	}
@@ -136,6 +137,14 @@ void Diffusion::DoMeasurementOnDistribution(int time)
 	}
 }
 
+void Diffusion::MeasureDistanceDistribution()
+{
+	for(int i=0,end=distance_.size();i<end;i++)
+	{
+		ResizeAndAdd(distance_distribution_,distance_[i],1);
+	}
+}
+
 std::string Diffusion::OutputData() const
 {
 	std::ostringstream stream;
@@ -143,6 +152,8 @@ std::string Diffusion::OutputData() const
 	stream << ", diffusionsteps -> " << diffusion_steps_ << ", samples -> " << samples_;
 	stream << ", distribution -> ";
 	PrintToStream2D(stream,distribution_.begin(),distribution_.end());
+	stream << "/" << measurements_ << ", distancedistribution -> ";
+	PrintToStream(stream,distance_distribution_.begin(),distance_distribution_.end());
 	stream << "/" << measurements_ << "}";
 	return stream.str();
 }

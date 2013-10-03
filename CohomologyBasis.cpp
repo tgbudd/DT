@@ -80,6 +80,20 @@ void CohomologyBasis::UpdateAfterFlipMove(const Edge * const edge)
 	SetUpToDate();
 }
 
+void CohomologyBasis::UpdateAfterCutMove(const boost::array< Edge *, 2> & edges)
+{
+	IntForm2D integral = SubtractForms(getOmega(edges[0]),getOmega(edges[1]));
+	Edge * edge = edges[1];
+	while( edge != edges[0] )
+	{
+		addToOmega(edge,integral);
+		addToOmega(edge->getNext(),NegateForm(integral));
+		edge = edge->getNext()->getAdjacent();
+	}
+	
+	SetUpToDate();
+}
+
 bool CohomologyBasis::CheckClosedness() const
 {
 	for(int i=0;i<triangulation_->NumberOfTriangles();i++)

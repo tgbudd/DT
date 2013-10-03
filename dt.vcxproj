@@ -91,6 +91,7 @@
     <ClInclude Include="PottsModelOnVertices.h" />
     <ClInclude Include="ShortestLoop.h" />
     <ClInclude Include="Simulation.h" />
+    <ClInclude Include="SpanningTree.h" />
     <ClInclude Include="ThetaHistogram.h" />
     <ClInclude Include="ThetaModel.h" />
     <ClInclude Include="Triangle.h" />
@@ -122,6 +123,7 @@
     <ClCompile Include="PottsModelOnVertices.cpp" />
     <ClCompile Include="ShortestLoop.cpp" />
     <ClCompile Include="Simulation.cpp" />
+    <ClCompile Include="SpanningTree.cpp" />
     <ClCompile Include="ThetaHistogram.cpp" />
     <ClCompile Include="ThetaModel.cpp" />
     <ClCompile Include="Triangle.cpp" />

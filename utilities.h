@@ -110,4 +110,38 @@ inline double VectorAngle( const Vector2D & from, const Vector2D & to )
 	return atan2( from[0] * to[1] - from[1] * to[0], from[0] * to[0] + from[1] * to[1] );
 }
 
+
+class ParameterStream {
+public:
+	ParameterStream(int argc, char** argv) : argc_(argc), argv_(argv), current_(1) {}
+	template<class T> T Read( std::string name )
+	{
+		T t;
+		if( current_ < argc_ )
+		{
+			std::istringstream is(argv_[current_]);
+			is >> t;
+			std::cout << name << " = " << t << "\n";
+		} else
+		{
+			std::cout << name << " = ";
+			std::cin >> t;
+		}
+		current_++;
+		return t;
+	}
+private: 
+	int current_;
+	int argc_;
+	char** argv_;
+};
+
+namespace math {
+	template<class T> 
+	T square(const T & t)
+	{
+		return t*t;
+	}
+}
+
 #endif

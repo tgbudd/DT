@@ -16,6 +16,7 @@ public:
 	virtual void Initialize() = 0;
 
 	virtual void UpdateAfterFlipMove(const Edge * const) {}
+	virtual void UpdateAfterCutMove(const boost::array< Edge *, 2> & edges) {}
 	virtual std::string ExportState() const { return ""; }
 
 	bool IsUpToDate() const { 

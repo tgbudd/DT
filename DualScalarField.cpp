@@ -80,3 +80,17 @@ double DualScalarField::BoltzmannChangeUnderFlipMove(const Edge * const edge) co
 
 	return std::exp(-daction);
 }
+
+double DualScalarField::BoltzmannChangeUnderGeneralMove(const std::vector<boost::array<Triangle *,2> > & toBeDeleted, const std::vector<boost::array<Triangle *,2> > & toBeAdded ) const
+{
+	double daction = 0.0;
+	for(std::vector<boost::array<Triangle *,2> >::const_iterator it = toBeDeleted.begin(); it!=toBeDeleted.end();++it)
+	{
+		daction -= math::square( getField( (*it)[0] ) - getField( (*it)[1] ) );
+	}
+	for(std::vector<boost::array<Triangle *,2> >::const_iterator it = toBeAdded.begin(); it!=toBeAdded.end();++it)
+	{
+		daction += math::square( getField( (*it)[0] ) - getField( (*it)[1] ) );
+	}
+	return std::exp(-daction);
+}

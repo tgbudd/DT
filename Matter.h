@@ -20,6 +20,9 @@ public:
 	virtual double BoltzmannChangeUnderFlipMove(const Edge * const ) const { 
 		return 1.0; 
 	}
+	virtual double BoltzmannChangeUnderGeneralMove(const std::vector<boost::array<Triangle *,2> > & toBeDeleted, const std::vector<boost::array<Triangle *,2> > & toBeAdded ) const { 
+		return 1.0; 
+	}
 	virtual void UpdateAfterFlipMove(const Edge * const) {}
 	virtual void DoSweep() = 0;
 

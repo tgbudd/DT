@@ -10,7 +10,7 @@ public:
 	Vertex(int id, Edge* parent) : id_(id), parent_(parent) {}
 	~Vertex(void);
 
-	const int & getId() {
+	const int & getId() const {
 		return id_;
 	}
 	Edge * const & getParent() const {

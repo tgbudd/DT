@@ -12,6 +12,7 @@
 #include "Embedding.h"
 #include "ShortestLoop.h"
 #include "bitmap_image.h"
+#include "SpanningTree.h"
 
 class ColorScheme
 {

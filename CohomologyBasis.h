@@ -86,6 +86,7 @@ public:
 	void Initialize(int width, int height);
 
 	void UpdateAfterFlipMove(const Edge * const);
+	void UpdateAfterCutMove(const boost::array< Edge *, 2> & edges);
 
 	bool CheckClosedness() const;
 

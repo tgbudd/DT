@@ -92,10 +92,23 @@ public:
 		if( static_cast<int>(coordinate_.size()) != NumberOfVertices )
 		{
 			coordinate_.resize(NumberOfVertices);
+			/*for(int i=0;i<NumberOfVertices;i++)
+			{
+				coordinate_[i][0] = triangulation_->RandomReal(0.0,1.0);
+				coordinate_[i][1] = triangulation_->RandomReal(0.0,1.0);
+			}*/
 		}
 		if( static_cast<int>(form_.size()) != NumberOfTriangles )
 		{
 			form_.resize(NumberOfTriangles );
+			/*for(int i=0;i<NumberOfVertices;i++)
+			{
+				for(int j=0;j<3;j++)
+				{
+					form_[i][j][0] = triangulation_->RandomReal(0.0,1.0);
+					form_[i][j][1] = triangulation_->RandomReal(0.0,1.0);
+				}
+			}*/
 		}
 	}
 	void setMaxIterations(int iterations)

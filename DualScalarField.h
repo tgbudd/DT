@@ -15,6 +15,7 @@ public:
 
 	void Initialize();
 	double BoltzmannChangeUnderFlipMove(const Edge * const ) const;
+	double BoltzmannChangeUnderGeneralMove(const std::vector<boost::array<Triangle *,2> > & toBeDeleted, const std::vector<boost::array<Triangle *,2> > & toBeAdded ) const;
 	void DoSweep();
 	double getField(Triangle * triangle) const;
 private:

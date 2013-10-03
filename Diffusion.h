@@ -32,6 +32,7 @@ private:
 	void DetermineDegrees();
 	void DoDiffusion(Vertex * startVertex, const linearalgebra::Matrix * const matrix );
 	void DoMeasurementOnDistribution(int time);
+	void MeasureDistanceDistribution();
 	
 	Triangulation * const triangulation_;
 
@@ -46,6 +47,7 @@ private:
 
 	int max_distance_;
 	std::vector<std::vector<double> > distribution_;  // distribution[t][r] is fraction of random walks of length t ending at distance r
+	std::vector<int> distance_distribution_;
 };
 
 #endif

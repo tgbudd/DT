@@ -43,8 +43,8 @@ double linearalgebra::DotProduct( const std::vector<double> & v1, const std::vec
 double linearalgebra::NormSquared( const std::vector<double> & v )
 {
 	int n = static_cast<int>(v.size());
-	int incx = 1;
-	return dnrm2_(&n,&v.front(),&incx);
+	int incx = 1,incy=1;
+	return ddot_(&n,&v.front(),&incx,&v.front(),&incy);
 }
 
 double linearalgebra::Total( const std::vector<double> & v )

@@ -53,13 +53,13 @@ Vertex * const & Triangulation::getRandomVertex()
 	return vertices_[RandomInteger(0,n_vertices_-1)];
 }
 
-int Triangulation::RandomInteger(int min, int max)
+int Triangulation::RandomInteger(int min, int max) const
 {
 	boost::uniform_int<> distribution(min, max);
 	return distribution(rng_);
 }
 
-bool Triangulation::SucceedWithProbability(double probability)
+bool Triangulation::SucceedWithProbability(double probability) const
 {
 	if( probability < 1.0e-8 )
 		return false;
@@ -68,16 +68,16 @@ bool Triangulation::SucceedWithProbability(double probability)
 	return probability > RandomReal(0.0,1.0); 
 }
 
-double Triangulation::RandomReal()
+double Triangulation::RandomReal() const
 {
 	return RandomReal(0.0,1.0);
 }
-double Triangulation::RandomReal(double min, double max)
+double Triangulation::RandomReal(double min, double max) const
 {
 	boost::uniform_real<> distribution(min,max);
 	return distribution(rng_);
 }
-double Triangulation::RandomNormal(double mean, double sigma)
+double Triangulation::RandomNormal(double mean, double sigma) const
 {
 	boost::normal_distribution<> distribution(mean,sigma);
 	return distribution(rng_);
@@ -203,6 +203,85 @@ bool Triangulation::TryFlipMove(Edge * edge)
 	return true;
 }
 
+bool Triangulation::TryCutMove(const boost::array< Edge *, 2> & edges, double combinatorialBoltzmann)
+{
+	if( edges[0]->getNext()->getOpposite() != edges[1]->getNext()->getOpposite() ||
+		edges[0]->getPrevious()->getOpposite() == edges[1]->getPrevious()->getOpposite() ||
+		edges[0]->getPrevious()->getOpposite() == edges[0]->getNext()->getOpposite() ||
+		edges[1]->getPrevious()->getOpposite() == edges[1]->getNext()->getOpposite() )
+	{
+		return false;
+	}
+
+	// Make explicit the dual bonds that are deleted and created
+	std::vector<boost::array<Triangle *,2> > toBeDeleted(2);
+	for(int i=0;i<2;i++)
+	{
+		toBeDeleted[i][0] = edges[i]->getParent();
+		toBeDeleted[i][1] = edges[i]->getAdjacent()->getParent();
+	}
+	std::vector<boost::array<Triangle *,2> > toBeAdded(toBeDeleted);
+	std::swap( toBeAdded[0][1], toBeAdded[1][1] );
+
+	double BoltzmannChange = combinatorialBoltzmann;
+	for(std::list<Matter *>::iterator matter = matter_.begin(); matter != matter_.end(); matter++ )
+	{
+		BoltzmannChange *= (*matter)->BoltzmannChangeUnderGeneralMove(toBeDeleted,toBeAdded);
+	}
+
+	if( !SucceedWithProbability(BoltzmannChange) )
+	{
+		return false;
+	}
+
+	DoCutMove(edges);
+	IncreaseState();
+
+	for(std::list<Decoration *>::iterator decoration = decoration_.begin(); decoration != decoration_.end(); decoration++ )
+	{
+		(*decoration)->UpdateAfterCutMove(edges);
+	}
+
+
+	return true;
+
+}
+
+void Triangulation::DoCutMove(const boost::array< Edge *, 2> & edges)
+{
+	Vertex * midVertex = edges[0]->getNext()->getOpposite();
+	Vertex * firstVertex = edges[0]->getPrevious()->getOpposite();
+	Vertex * secondVertex = edges[1]->getPrevious()->getOpposite();
+
+	// Update vertices
+	secondVertex->setParent(edges[0]->getNext());
+	midVertex->setParent(edges[1]->getNext());
+
+	Edge * oppositeEdge = edges[0]->getNext();
+	while( oppositeEdge->getPrevious() != edges[1] )
+	{
+		oppositeEdge->setOpposite( secondVertex );
+		oppositeEdge = oppositeEdge->getNext()->getAdjacent()->getNext();
+	}
+	oppositeEdge = edges[1]->getAdjacent()->getNext();
+	do {
+		oppositeEdge->setOpposite( firstVertex );
+		oppositeEdge = oppositeEdge->getNext()->getAdjacent()->getNext();
+	} while( oppositeEdge->getPrevious()->getAdjacent() != edges[1] );
+
+	// Update edge adjacency
+	Edge * adjFirstEdge = edges[0]->getAdjacent();
+	edges[0]->bindAdjacent(edges[1]->getAdjacent());
+	edges[1]->bindAdjacent(adjFirstEdge);
+
+	BOOST_ASSERT( midVertex->getParent()->getOpposite() == midVertex );
+	BOOST_ASSERT( firstVertex->getParent()->getOpposite() == firstVertex );
+	BOOST_ASSERT( secondVertex->getParent()->getOpposite() == secondVertex );
+	BOOST_ASSERT( CheckVertexNeighbourhood(midVertex) );
+	BOOST_ASSERT( CheckVertexNeighbourhood(firstVertex) );
+	BOOST_ASSERT( CheckVertexNeighbourhood(secondVertex) );
+}
+
 void Triangulation::DetermineVertices()
 {
 	if( !vertices_.empty() )
@@ -303,3 +382,16 @@ void Triangulation::Clear()
 	IncreaseState();
 }
 
+bool Triangulation::CheckVertexNeighbourhood(const Vertex * const vertex) const
+{
+	Edge * edge = vertex->getParent();
+	do {
+		if( edge->getOpposite() != vertex )
+		{
+			return false;
+		}
+		edge = edge->getNext()->getAdjacent()->getNext();
+	} while( edge != vertex->getParent() );
+
+	return true;
+}

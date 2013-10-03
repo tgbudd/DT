@@ -47,11 +47,11 @@ public:
 	Vertex * const & getRandomVertex();
 
 
-	int RandomInteger(int min, int max);
-	bool SucceedWithProbability(double probability);
-	double RandomReal();
-	double RandomReal(double min, double max);
-	double RandomNormal(double mean, double sigma);
+	int RandomInteger(int min, int max) const;
+	bool SucceedWithProbability(double probability) const;
+	double RandomReal() const;
+	double RandomReal(double min, double max) const;
+	double RandomNormal(double mean, double sigma) const;
 	void setDominantMatter(DominantMatter * const & dominantmatter);
 	void clearDominantMatter();
 	void AddMatter(Matter * matter);
@@ -62,6 +62,9 @@ public:
 
 	bool TryFlipMove();
 	bool TryFlipMove(Edge * edge);
+
+	bool TryCutMove(const boost::array< Edge *, 2> & edges, double combinatorialBoltzmann=1.0);
+	void DoCutMove(const boost::array< Edge *, 2> & edges);
 
 	void SeedRandom(unsigned int seed);
 
@@ -83,12 +86,13 @@ public:
 
 private:
 	void IncreaseState();
+	bool CheckVertexNeighbourhood(const Vertex * const vertex) const;
 
 	std::vector<Triangle*> triangles_;
 	std::vector<Vertex* > vertices_;
 	int n_triangles_, n_vertices_;
 
-	boost::mt19937 rng_;
+	mutable boost::mt19937 rng_;
 
 	DominantMatter* dominantmatter_;   // matter may be present in the system that replaces the standard flip move
 	std::list<Decoration* > decoration_;   // contains all additional structure that needs updating after a flip move
