@@ -76,6 +76,7 @@
     <ClInclude Include="DominantMatter.h" />
     <ClInclude Include="DualCohomologyBasis.h" />
     <ClInclude Include="DualDiffusion.h" />
+    <ClInclude Include="DualScalarField.h" />
     <ClInclude Include="Edge.h" />
     <ClInclude Include="Embedding.h" />
     <ClInclude Include="HarmonicEmbedding.h" />
@@ -83,6 +84,7 @@
     <ClInclude Include="LaplacianSpectrum.h" />
     <ClInclude Include="LinearAlgebra.h" />
     <ClInclude Include="Matter.h" />
+    <ClInclude Include="CMinusTwoBuilder.h" />
     <ClInclude Include="ModuliObservable.h" />
     <ClInclude Include="Observable.h" />
     <ClInclude Include="PottsModel.h" />
@@ -106,6 +108,7 @@
     <ClCompile Include="Diffusion.cpp" />
     <ClCompile Include="DualCohomologyBasis.cpp" />
     <ClCompile Include="DualDiffusion.cpp" />
+    <ClCompile Include="DualScalarField.cpp" />
     <ClCompile Include="Edge.cpp" />
     <ClCompile Include="Embedding.cpp" />
     <ClCompile Include="HarmonicEmbedding.cpp" />
@@ -113,6 +116,7 @@
     <ClCompile Include="LaplacianSpectrum.cpp" />
     <ClCompile Include="LinearAlgebra.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="CMinusTwoBuilder.cpp" />
     <ClCompile Include="ModuliObservable.cpp" />
     <ClCompile Include="PottsModel.cpp" />
     <ClCompile Include="PottsModelOnVertices.cpp" />

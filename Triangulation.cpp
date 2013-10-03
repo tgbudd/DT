@@ -1,5 +1,6 @@
 #include "boost/random/uniform_int.hpp"
 #include "boost/random/uniform_real.hpp"
+#include "boost/random/normal_distribution.hpp"
 
 #include "Triangulation.h"
 #include "Edge.h"
@@ -76,10 +77,20 @@ double Triangulation::RandomReal(double min, double max)
 	boost::uniform_real<> distribution(min,max);
 	return distribution(rng_);
 }
+double Triangulation::RandomNormal(double mean, double sigma)
+{
+	boost::normal_distribution<> distribution(mean,sigma);
+	return distribution(rng_);
+}
 
 void Triangulation::setDominantMatter(DominantMatter * const & dominantmatter)
 {
 	dominantmatter_ = dominantmatter;
+}
+
+void Triangulation::clearDominantMatter()
+{
+	dominantmatter_ = NULL;
 }
 
 void Triangulation::AddMatter(Matter * matter)
@@ -266,3 +277,29 @@ void Triangulation::IncreaseState()
 {
 	state_++;
 }
+
+Triangle * Triangulation::NewTriangle()
+{
+	triangles_.push_back(new Triangle());
+	triangles_.back()->setId(static_cast<int>(triangles_.size())-1);
+	n_triangles_++;
+	return triangles_.back();
+}
+
+void Triangulation::Clear()
+{
+	for(std::vector<Triangle *>::iterator it = triangles_.begin(); it != triangles_.end(); ++it )
+	{
+		delete *it;
+	}
+	triangles_.clear();
+	n_triangles_ = 0;
+	for(std::vector<Vertex *>::iterator it = vertices_.begin(); it != vertices_.end(); ++it )
+	{
+		delete *it;
+	}
+	vertices_.clear();
+	n_vertices_ = 0;
+	IncreaseState();
+}
+

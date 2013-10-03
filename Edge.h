@@ -10,8 +10,8 @@
 class Edge
 {
 public:
-	Edge() : adjacent_(NULL) {}
-	Edge(Triangle * parent, int id) : parent_(parent), adjacent_(NULL), id_(id) {}
+	Edge() : adjacent_(NULL), opposite_(NULL) {}
+	Edge(Triangle * parent, int id) : parent_(parent), adjacent_(NULL), id_(id), opposite_(NULL) {}
 
 	~Edge(void);
 

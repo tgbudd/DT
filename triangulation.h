@@ -51,7 +51,9 @@ public:
 	bool SucceedWithProbability(double probability);
 	double RandomReal();
 	double RandomReal(double min, double max);
+	double RandomNormal(double mean, double sigma);
 	void setDominantMatter(DominantMatter * const & dominantmatter);
+	void clearDominantMatter();
 	void AddMatter(Matter * matter);
 	void AddDecoration(Decoration * decoration);
 	
@@ -73,8 +75,13 @@ public:
 	{
 		return state_;
 	}
-private:
+
+	Triangle * NewTriangle();
+
+	void Clear();
 	void DetermineVertices();
+
+private:
 	void IncreaseState();
 
 	std::vector<Triangle*> triangles_;
