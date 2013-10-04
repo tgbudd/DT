@@ -26,6 +26,12 @@ public:
 	virtual void UpdateAfterFlipMove(const Edge * const) {}
 	virtual void DoSweep() = 0;
 
+	virtual double CentralCharge() const {
+		return 0.0;
+	}
+	virtual std::string ConfigurationData() const {
+		return "{}";
+	}
 private:
 	//const Triangulation * triangulation_;
 

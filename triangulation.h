@@ -84,6 +84,9 @@ public:
 	void Clear();
 	void DetermineVertices();
 
+	double TotalCentralCharge() const;
+
+	int CalculateGenus() const;
 private:
 	void IncreaseState();
 	bool CheckVertexNeighbourhood(const Vertex * const vertex) const;

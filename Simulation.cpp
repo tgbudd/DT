@@ -14,8 +14,8 @@
 #include "Simulation.h"
 
 
-Simulation::Simulation(Triangulation * const & triangulation, int ThermalizationSweeps, int SecondsPerOutput)
-	: triangulation_(triangulation), thermalization_sweeps_(ThermalizationSweeps), seconds_per_output_(SecondsPerOutput)
+Simulation::Simulation(Triangulation * const & triangulation, int ThermalizationSweeps, int SecondsPerOutput, bool output)
+	: triangulation_(triangulation), thermalization_sweeps_(ThermalizationSweeps), seconds_per_output_(SecondsPerOutput), output_(output)
 {
 	char s[] = "aaaaaa";
 	for(int i=0;i<6;i++)
@@ -46,18 +46,33 @@ void Simulation::Run()
 {
 	setStartTime();
 
+	if( output_ )
+	{
+		std::cout << "Start thermalization.\n";
+	}
+
 	triangulation_->DoSweep(thermalization_sweeps_);
 
 	time_t last_output = time(NULL);
+
+	if( output_ )
+	{
+		std::cout << "Finished thermalization.\n";
+	}
 
 	for(sweeps_=1;true;sweeps_++)
 	{
 		triangulation_->DoSweep();
 
+
 		for(std::map<Observable*,MeasurementInfo>::iterator observable=observables_.begin();observable!=observables_.end();observable++)
 		{
 			if( sweeps_ % observable->second.SweepsPerMeasurement == 0 )
 			{
+				if( output_ )
+				{
+					std::cout << "Measurement after " << sweeps_ << " sweeps.\n";
+				}				
 				observable->first->Measure();
 			}
 		}
@@ -110,6 +125,12 @@ void Simulation::Output()
 		file << ", " << observable->first->OutputData();
 	}
 	file << "}\n";
+
+	if( output_ )
+	{
+		std::cout << "Output written to " << filename.str() << ".\n";
+	}				
+
 }
 
 void Simulation::AddConfigurationInfo(std::string info)

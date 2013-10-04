@@ -94,3 +94,14 @@ double DualScalarField::BoltzmannChangeUnderGeneralMove(const std::vector<boost:
 	}
 	return std::exp(-daction);
 }
+
+double DualScalarField::CentralCharge() const {
+	return 1.0;
+}
+
+std::string DualScalarField::ConfigurationData() const {
+	std::ostringstream stream;
+	stream << std::fixed << "{type -> \"dualscalarfield\", centralcharge -> 1, massive -> ";
+	stream << (massive_? "true" : "false" ) << ", masssquared -> " << mass_squared_ << "}";
+	return stream.str();
+}

@@ -130,6 +130,9 @@ public:
 		current_++;
 		return t;
 	}
+	bool UserInput() {
+		return current_ > argc_;
+	}
 private: 
 	int current_;
 	int argc_;

@@ -187,3 +187,15 @@ Edge * SpanningTree::RandomOtherSpanningEdge(Edge * edge)
 	}
 	return otherEdge;
 }
+
+double SpanningTree::CentralCharge() const
+{
+	return -2.0;
+}
+
+std::string SpanningTree::ConfigurationData() const
+{
+	std::ostringstream stream;
+	stream << std::fixed << "{type -> \"spanningtree\", centralcharge -> -2 }";
+	return stream.str();
+}

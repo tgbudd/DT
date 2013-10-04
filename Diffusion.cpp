@@ -42,14 +42,22 @@ void DiffusionMatrix::MultiplyVector(const std::vector<double> & from, std::vect
 
 
 Diffusion::Diffusion( Triangulation * const triangulation ) : triangulation_(triangulation),
-	samples_(20), measurements_(0), diffusion_steps_(100), max_distance_(50)
+	samples_(20), measurements_(0), max_distance_(50)
 {
 	int size = triangulation_->NumberOfVertices();
 	distance_.resize( size, 0 );
 	probability_.resize( size, 0.0 );
 	next_probability_.resize( size, 0.0 );
 	degree_.resize( size, 0 );
-	distribution_.resize(diffusion_steps_,std::vector<double>(max_distance_+1,0.0));
+	for(int i=1;i<=100;i++)
+	{
+		diffusion_times_.push_back(i);
+	}
+	for(int i=11;2*i*i<triangulation_->NumberOfVertices();i++)
+	{
+		diffusion_times_.push_back(i*i);
+	}
+	distribution_.resize(diffusion_times_.size(),std::vector<double>(max_distance_+1,0.0));
 
 }
 
@@ -118,13 +126,16 @@ void Diffusion::DoDiffusion(Vertex * startVertex, const linearalgebra::Matrix * 
 {
 	std::fill(probability_.begin(),probability_.end(),0.0);
 	probability_[startVertex->getId()] = 1.0;
-
-	for(int i=0;i<diffusion_steps_;i++)
+	int previousTime=0;
+	for(int i=0,end=diffusion_times_.size();i<end;i++)
 	{
-		BOOST_ASSERT( std::fabs( linearalgebra::Total(probability_) - 1.0 ) < 1e-6 );
-		matrix->MultiplyVector(probability_,next_probability_);
-		linearalgebra::Copy(next_probability_,probability_);
-		DoMeasurementOnDistribution(i+1);
+		for(int j=previousTime;j<diffusion_times_[i];j++)
+		{
+			matrix->MultiplyVector(probability_,next_probability_);
+			linearalgebra::Copy(next_probability_,probability_);
+		}
+		previousTime = diffusion_times_[i];
+		DoMeasurementOnDistribution(i);
 	}
 }
 
@@ -133,7 +144,7 @@ void Diffusion::DoMeasurementOnDistribution(int time)
 	for(int j=0,end=distance_.size();j<end;j++)
 	{
 		if( distance_[j] <= max_distance_ )
-			distribution_[time-1][distance_[j]] += probability_[j];
+			distribution_[time][distance_[j]] += probability_[j];
 	}
 }
 
@@ -149,7 +160,9 @@ std::string Diffusion::OutputData() const
 {
 	std::ostringstream stream;
 	stream << std::fixed << "diffusion -> {measurements -> " << measurements_ << ", walkprobability -> " << 1.0;
-	stream << ", diffusionsteps -> " << diffusion_steps_ << ", samples -> " << samples_;
+	stream << ", samples -> " << samples_;
+	stream << ", diffusiontimes -> ";
+	PrintToStream(stream,diffusion_times_.begin(),diffusion_times_.end());
 	stream << ", distribution -> ";
 	PrintToStream2D(stream,distribution_.begin(),distribution_.end());
 	stream << "/" << measurements_ << ", distancedistribution -> ";

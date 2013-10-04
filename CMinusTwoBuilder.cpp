@@ -139,3 +139,15 @@ void CMinusTwoBuilder::ApplyBoundaryMatching(const std::vector<std::pair<int,int
 		boundary_[it->first]->bindAdjacent(boundary_[it->second]);
 	}
 }
+
+double CMinusTwoBuilder::CentralCharge() const
+{
+	return -2.0;
+}
+
+std::string CMinusTwoBuilder::ConfigurationData() const
+{
+	std::ostringstream stream;
+	stream << std::fixed << "{type -> \"cminustwobuilder\", centralcharge -> -2 }";
+	return stream.str();
+}

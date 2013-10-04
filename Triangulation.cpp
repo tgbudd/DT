@@ -1,6 +1,7 @@
 #include "boost/random/uniform_int.hpp"
 #include "boost/random/uniform_real.hpp"
 #include "boost/random/normal_distribution.hpp"
+#include "boost/random.hpp"
 
 #include "Triangulation.h"
 #include "Edge.h"
@@ -80,7 +81,8 @@ double Triangulation::RandomReal(double min, double max) const
 double Triangulation::RandomNormal(double mean, double sigma) const
 {
 	boost::normal_distribution<> distribution(mean,sigma);
-	return distribution(rng_);
+	boost::variate_generator< boost::mt19937, boost::normal_distribution<> > generator(rng_,distribution);
+	return generator();
 }
 
 void Triangulation::setDominantMatter(DominantMatter * const & dominantmatter)
@@ -348,7 +350,20 @@ void Triangulation::LoadFromAdjacencyList(const std::vector<boost::array<std::pa
 std::string Triangulation::OutputData() const
 {
 	std::ostringstream stream;
-	stream << "triangulation -> {numberoftriangles -> " << NumberOfTriangles() << "}";
+	stream << std::fixed << "triangulation -> {numberoftriangles -> " << NumberOfTriangles() << ", genus -> " << CalculateGenus() << "}";
+	stream << ", matter -> {";
+	bool first = true;
+	if( dominantmatter_ != NULL )
+	{
+		stream << dominantmatter_->ConfigurationData();
+		first=false;
+	}
+	for(std::list<Matter *>::const_iterator matter = matter_.begin(); matter != matter_.end(); matter++ )
+	{
+		stream << (first?"":", ") << (*matter)->ConfigurationData();
+		first=false;
+	}
+	stream << "}, centralcharge -> " << TotalCentralCharge();
 	return stream.str();
 }
 
@@ -394,4 +409,23 @@ bool Triangulation::CheckVertexNeighbourhood(const Vertex * const vertex) const
 	} while( edge != vertex->getParent() );
 
 	return true;
+}
+
+double Triangulation::TotalCentralCharge() const
+{
+	double centralcharge = 0.0;
+	if( dominantmatter_ != NULL )
+	{
+		centralcharge += dominantmatter_->CentralCharge();
+	}
+	for(std::list<Matter *>::const_iterator matter = matter_.begin(); matter != matter_.end(); matter++ )
+	{
+		centralcharge += (*matter)->CentralCharge();
+	}
+	return centralcharge;
+}
+
+int Triangulation::CalculateGenus() const
+{
+	return 1 - (NumberOfVertices() - NumberOfTriangles()/2)/2;
 }

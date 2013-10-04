@@ -43,7 +43,7 @@ private:
 
 	int measurements_;
 	int samples_;
-	int diffusion_steps_;
+	std::vector<int> diffusion_times_;
 
 	int max_distance_;
 	std::vector<std::vector<double> > distribution_;  // distribution[t][r] is fraction of random walks of length t ending at distance r

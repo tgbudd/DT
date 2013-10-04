@@ -1,7 +1,7 @@
 #ifndef CMINUSTWOBUILDER_H
 #define CMINUSTWOBUILDER_H
 
-#include "dominantmatter.h"
+#include "DominantMatter.h"
 #include "Triangulation.h"
 
 class CMinusTwoBuilder :
@@ -12,6 +12,9 @@ public:
 	~CMinusTwoBuilder();
 
 	void DoSweep();
+	
+	double CentralCharge() const;
+	std::string ConfigurationData() const;
 private:
 	void RandomDiskTriangulation();
 	void RandomBoundaryMatching();

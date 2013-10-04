@@ -2,7 +2,7 @@
 #define SPANNING_TREE_H
 
 #include "Triangulation.h"
-#include "dominantmatter.h"
+#include "DominantMatter.h"
 #include "Edge.h"
 
 class SpanningTree :
@@ -19,6 +19,9 @@ public:
 	bool InSpanningTree(Edge * edge) const;
 	void setInSpanningTree(int triangle, int edge, bool ist);
 	void setInSpanningTree(Edge * edge, bool ist);
+
+	double CentralCharge() const;
+	std::string ConfigurationData() const;
 private:
 	int SpanningDegree(const Vertex * vertex) const;
 	void UpdateSpanningDegree(const Vertex * vertex);
