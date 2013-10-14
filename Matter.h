@@ -11,7 +11,7 @@
 class Matter : public Decoration
 {
 public:
-	Matter() {}
+	Matter() : use_custom_sweep_size_(false) {}
 	~Matter(void) {}
 	virtual bool IsFlipMoveAllowed(const Edge * const) {
 		return true;
@@ -32,9 +32,19 @@ public:
 	virtual std::string ConfigurationData() const {
 		return "{}";
 	}
+	void SetCustomSweepSize(int n) {
+		use_custom_sweep_size_ = (n>0);
+		custom_sweep_size_ = n;
+	}
+	bool UsesCustomSweepSize() const {
+		return use_custom_sweep_size_;
+	}
+	int CustomSweepSize() const {
+		return custom_sweep_size_;
+	}
 private:
-	//const Triangulation * triangulation_;
-
+	bool use_custom_sweep_size_;	// Only used in special circumstances where we want to do 
+	int custom_sweep_size_;		
 };
 
 #endif

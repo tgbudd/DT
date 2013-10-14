@@ -204,7 +204,7 @@ public:
 
 	void Draw(BitmapDrawer & drawer);
 
-	void DrawShading(BitmapDrawer & drawer);
+	void DrawShading(BitmapDrawer & drawer, ColorScheme::Scheme colorscheme = ColorScheme::TEMPERATURE_MAP);
 
 	void SetEdgeShade(int triangle, int edge, double shade)
 	{
@@ -215,8 +215,17 @@ public:
 		}
 		edge_shade_[triangle][edge] = shade;
 	}
+	void SetTriangleShade(int triangle, double shade)
+	{
+		if( triangle_shade_.empty() )
+		{
+			triangle_shade_.resize(triangulation_->NumberOfTriangles(),0.0);
+		}
+		triangle_shade_[triangle] = shade;
+	}
 private:
 	std::vector<boost::array<double,3> > edge_shade_;
+	std::vector<double> triangle_shade_;
 	Triangulation * const triangulation_;
 	const Embedding * const embedding_;
 };
@@ -233,6 +242,19 @@ public:
 	void DrawPath(BitmapDrawer & drawer, const std::list<Edge*> & path );
 private:
 	const ShortestLoop * const shortestloop_;
+	const Embedding * const embedding_;
+};
+
+class SpanningTreeDrawer : public ComponentDrawer
+{
+public:
+	SpanningTreeDrawer(const Triangulation * const triangulation, const SpanningTree * const spanningtree, const Embedding * const embedding) 
+		: triangulation_(triangulation), spanningtree_(spanningtree), embedding_(embedding) {}
+
+	void Draw(BitmapDrawer & drawer);
+private:
+	const Triangulation * const triangulation_;
+	const SpanningTree * const spanningtree_;
 	const Embedding * const embedding_;
 };
 

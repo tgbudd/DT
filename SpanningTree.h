@@ -13,6 +13,8 @@ public:
 	~SpanningTree();
 
 	void Initialize();
+	void Initialize(const std::vector<boost::array<bool,3> > & intree);
+	void InitializeWithLoopErasedRandomWalk();
 
 	void DoSweep();
 	bool InSpanningTree(int triangle,int edge) const;
@@ -24,9 +26,11 @@ public:
 	std::string ConfigurationData() const;
 private:
 	int SpanningDegree(const Vertex * vertex) const;
+	void UpdateSpanningDegree(const Vertex * vertex, int degree);
 	void UpdateSpanningDegree(const Vertex * vertex);
 	void UpdateSpanningDegree();
-	Edge * RandomOtherSpanningEdge(Edge * edge);
+	std::pair<Edge *,int> RandomOtherSpanningEdge(Edge * edge);
+	bool CheckTree();
 
 	bool TryFlipMove(Edge * edge);
 	bool TrySpanningMove(Edge * edge);

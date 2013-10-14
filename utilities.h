@@ -147,4 +147,30 @@ namespace math {
 	}
 }
 
+
+class ReusableFlag
+{
+public:
+	ReusableFlag(int n) : current_flag_(0) {
+		flag_.resize(n,0);
+	}
+	void Reset() {
+		current_flag_++;
+		if( current_flag_ == 0 )
+		{
+			std::fill(flag_.begin(),flag_.end(),0);
+			current_flag_=1;
+		}
+	}
+	bool isSet(int n) {
+		return flag_[n] == current_flag_;
+	}
+	void Set(int n, bool f=true) {
+		flag_[n] = (f ? current_flag_ : current_flag_-1 );
+	}
+private:
+	unsigned int current_flag_;
+	std::vector<unsigned int> flag_;
+};
+
 #endif

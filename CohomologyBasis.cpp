@@ -2,7 +2,8 @@
 #include "ShortestLoop.h"
 #include "DualCohomologyBasis.h"
 
-CohomologyBasis::CohomologyBasis(const Triangulation * const triangulation) : Decoration(triangulation), triangulation_(triangulation)
+CohomologyBasis::CohomologyBasis(const Triangulation * const triangulation) 
+	: Decoration(triangulation), triangulation_(triangulation), reinitialization_(false), stay_in_same_class_(false)
 {
 	via_dualcohomologybasis_ = NULL;
 }
@@ -12,7 +13,8 @@ CohomologyBasis::~CohomologyBasis(void)
 {
 }
 
-CohomologyBasis::CohomologyBasis(const Triangulation * const triangulation, const DualCohomologyBasis & dualcohomologybasis) : Decoration(triangulation), triangulation_(triangulation)
+CohomologyBasis::CohomologyBasis(const Triangulation * const triangulation, const DualCohomologyBasis & dualcohomologybasis) 
+	: Decoration(triangulation), triangulation_(triangulation), reinitialization_(false), stay_in_same_class_(false)
 {
 	omega_.resize(triangulation_->NumberOfTriangles());
 	SetToDualOf(dualcohomologybasis);
@@ -26,6 +28,10 @@ void CohomologyBasis::Initialize()
 {
 	omega_.resize(triangulation_->NumberOfTriangles());
 	ClearOmega();
+	DualCohomologyBasis dualcohom(triangulation_);
+	dualcohom.Initialize();
+	SetToDualOf(dualcohom);
+	SetUpToDate();
 }
 
 void CohomologyBasis::ClearOmega()
@@ -37,7 +43,8 @@ void CohomologyBasis::ClearOmega()
 
 void CohomologyBasis::Initialize(int width, int height)
 {
-	Initialize();
+	omega_.resize(triangulation_->NumberOfTriangles());
+	ClearOmega();
 		
 	BOOST_ASSERT( triangulation_->NumberOfTriangles() == 2 * width * height );
 
@@ -122,6 +129,16 @@ IntForm2D CohomologyBasis::Integrate(const std::list<Edge *> & path) const
 	return integral;
 }
 
+void CohomologyBasis::SetStayInSameClass(bool value)
+{
+	stay_in_same_class_=value;
+}
+
+void CohomologyBasis::Simplify()
+{
+	Simplify(stay_in_same_class_);
+}
+
 void CohomologyBasis::Simplify(bool StayInSameClass)
 {
 	ShortestLoop shortestloop(triangulation_,this);
@@ -173,11 +190,20 @@ void CohomologyBasis::SetMakeUpToDateVia(DualCohomologyBasis * dual)
 
 bool CohomologyBasis::MakeUpToDate()
 {
-	if( via_dualcohomologybasis_ != NULL && via_dualcohomologybasis_->IsUpToDate() )
+	if( reinitialization_ )
+	{
+		Initialize();
+		return true;
+	} else if( via_dualcohomologybasis_ != NULL && via_dualcohomologybasis_->IsUpToDate() )
 	{
 		SetToDualOf(*via_dualcohomologybasis_);
 		SetUpToDate();
 		return true;
 	}
 	return false;
+}
+
+void CohomologyBasis::SetMakeUpToDateViaReinitialization(bool value)
+{
+	reinitialization_ = value;
 }

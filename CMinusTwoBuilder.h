@@ -15,6 +15,7 @@ public:
 	
 	double CentralCharge() const;
 	std::string ConfigurationData() const;
+	void getSpanningTree(std::vector<boost::array<bool,3> > & intree) const;
 private:
 	void RandomDiskTriangulation();
 	void RandomBoundaryMatching();

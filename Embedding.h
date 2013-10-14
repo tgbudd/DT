@@ -36,6 +36,7 @@ public:
 
 	void Initialize() {}
 	void UpdateAfterFlipMove(const Edge * const edge); 
+	void UpdateAfterCutMove(const boost::array< Edge *, 2> & edges);
 	bool FindEmbedding();
 	virtual bool FindEdgeMeasure() = 0;
 	std::pair< double, double > CalculateModuli();
@@ -124,9 +125,15 @@ public:
 	{
 		return static_cast<int>(form_.size());
 	}
+	void setWorkWithHarmonicForms(bool value)
+	{
+		work_with_harmonic_forms_ = value;
+	}
 private:
 	void Coderivative( const std::vector<boost::array<double,3> > & oneform, std::vector<double> & result );
 	void LoadInitialCoordinates( std::vector<double> & coordinates, int i, Vertex * startVertex ) const;
+	bool CheckClosedness();
+
 
 	const Triangulation * const triangulation_;
 	CohomologyBasis * const cohomologybasis_;
@@ -135,6 +142,7 @@ private:
 	std::vector<boost::array<double,3> > edge_measure_;
 	double accuracy_;
 	int maxiterations_;
+	bool work_with_harmonic_forms_;
 };
 
 #endif

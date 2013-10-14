@@ -1,3 +1,5 @@
+#include <queue>
+
 #include "DualCohomologyBasis.h"
 #include "ShortestLoop.h"
 
@@ -5,12 +7,6 @@ DualCohomologyBasis::~DualCohomologyBasis(void)
 {
 }
 
-void DualCohomologyBasis::Initialize(int width, int height)
-{
-	CohomologyBasis cohom(triangulation_);
-	cohom.Initialize(width,height);
-	SetToDualOf(cohom);
-}
 
 DualCohomologyBasis::DualCohomologyBasis(const CohomologyBasis & cohomologybasis)
 	:  CohomologyBasis(cohomologybasis)
@@ -24,6 +20,119 @@ DualCohomologyBasis::DualCohomologyBasis(const Triangulation * const triangulati
 	omega_.resize(triangulation_->NumberOfTriangles());
 	
 	SetAccordingToGenerators(generators,integrals);
+}
+
+void DualCohomologyBasis::Initialize(int width, int height)
+{
+	CohomologyBasis cohom(triangulation_);
+	cohom.Initialize(width,height);
+	SetToDualOf(cohom);
+}
+
+void DualCohomologyBasis::Initialize()
+{
+	// Construct a unicellular map dual to a dual spanning tree.
+	boost::array<bool,3> alltrue = {true,true,true};
+	std::vector<boost::array<bool,3> > inMap(triangulation_->NumberOfTriangles(),alltrue);
+	Triangle * startTriangle = triangulation_->getRandomTriangle();
+
+	std::vector<bool> visited(triangulation_->NumberOfTriangles(),false);
+	std::vector<Triangle *> queue;
+
+	visited[startTriangle->getId()] = true;
+	queue.push_back( startTriangle );
+
+	while( !queue.empty() )
+	{
+		int entry = triangulation_->RandomInteger(0,queue.size()-1);
+		std::swap( queue[entry], queue.back() );
+		Triangle * triangle = queue.back();
+		queue.pop_back();
+
+		for(int i=0;i<3;i++)
+		{
+			Edge * edge = triangle->getEdge(i);
+			int nbrid = edge->getAdjacent()->getParent()->getId();
+			if( !visited[nbrid] )
+			{
+				inMap[edge->getParent()->getId()][edge->getId()] = false;
+				inMap[nbrid][edge->getAdjacent()->getId()] = false;
+				visited[nbrid] = true;
+				queue.push_back(edge->getAdjacent()->getParent());
+			}
+		}
+	}
+
+	// Traverse the unicellular map and point vertices towards the root.
+	std::vector<Edge *> pointToRoot(triangulation_->NumberOfVertices(),NULL);
+	visited.resize(triangulation_->NumberOfVertices());
+	std::fill(visited.begin(),visited.end(),false);
+
+	Vertex * startVertex = triangulation_->getRandomVertex();
+	std::queue<Vertex *> vertexqueue;
+	vertexqueue.push(startVertex);
+	visited[startVertex->getId()] = true;
+
+	std::vector<Edge *> cycleEdges;
+	while( !vertexqueue.empty() && cycleEdges.size() != 2 )
+	{
+		Vertex * vertex = vertexqueue.front();
+		vertexqueue.pop();
+
+		Edge * edge = vertex->getParent()->getPrevious();
+		do{
+			Vertex * nbr = edge->getPrevious()->getOpposite();
+			if( edge != pointToRoot[vertex->getId()] && inMap[edge->getParent()->getId()][edge->getId()] )
+			{
+				if( visited[nbr->getId()] )
+				{
+					if( cycleEdges.empty() || cycleEdges[0] != edge->getAdjacent() )
+					{
+						cycleEdges.push_back(edge);
+						if( cycleEdges.size() == 2 )
+						{
+							break;
+						}
+					}
+				} else
+				{
+					visited[nbr->getId()] = true;
+					pointToRoot[nbr->getId()] = edge->getAdjacent();
+					vertexqueue.push( nbr );
+				}
+			}
+			edge = edge->getAdjacent()->getNext();
+		} while( edge != vertex->getParent()->getPrevious());
+	}
+
+	std::vector<std::list<Edge*> > generators(2);
+	for(int i=0;i<2;i++)
+	{
+		Edge * currentEdge = cycleEdges[i]->getAdjacent();
+		while( currentEdge != NULL )
+		{
+			generators[i].push_back(currentEdge->getAdjacent());
+			currentEdge = pointToRoot[currentEdge->getPrevious()->getOpposite()->getId()];
+		}
+		std::reverse(generators[i].begin(),generators[i].end());
+		currentEdge = pointToRoot[cycleEdges[i]->getPrevious()->getOpposite()->getId()];
+		while( currentEdge != NULL )
+		{
+			generators[i].push_back(currentEdge);
+			currentEdge = pointToRoot[currentEdge->getPrevious()->getOpposite()->getId()];
+		}
+	}
+	std::vector<IntForm2D> integrals(2);
+	integrals[0][0] = 1;
+	integrals[0][1] = 0;
+	integrals[1][0] = 0;
+	integrals[1][1] = 1;
+
+	omega_.resize(triangulation_->NumberOfTriangles());
+	ClearOmega();
+	SetAccordingToGenerators(generators,integrals);
+
+	SetUpToDate();
 }
 
 void DualCohomologyBasis::SetAccordingToGenerators(const std::vector<std::list<Edge*> > & generators, const std::vector<IntForm2D> & integrals )

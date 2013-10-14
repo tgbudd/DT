@@ -151,3 +151,18 @@ std::string CMinusTwoBuilder::ConfigurationData() const
 	stream << std::fixed << "{type -> \"cminustwobuilder\", centralcharge -> -2 }";
 	return stream.str();
 }
+
+void CMinusTwoBuilder::getSpanningTree(std::vector<boost::array<bool,3> > & intree) const
+{
+	if( intree.size() != n_triangles_ )
+	{
+		intree.resize( n_triangles_ );
+	}
+	boost::array<bool,3> allfalse = {false,false,false};
+	std::fill(intree.begin(),intree.end(),allfalse);
+	BOOST_FOREACH(Edge * edge, boundary_)
+	{
+		intree[edge->getParent()->getId()][edge->getId()] = true;
+	}
+}
+

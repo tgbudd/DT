@@ -47,7 +47,8 @@ class CohomologyBasis :
 public:
 	CohomologyBasis() : triangulation_(NULL) {}
 	CohomologyBasis(const Triangulation * const triangulation);
-	CohomologyBasis(const CohomologyBasis & cohomologybasis) : Decoration(cohomologybasis.triangulation_), omega_(cohomologybasis.omega_), triangulation_(cohomologybasis.triangulation_) {}
+	CohomologyBasis(const CohomologyBasis & cohomologybasis) 
+		: Decoration(cohomologybasis.triangulation_), omega_(cohomologybasis.omega_), triangulation_(cohomologybasis.triangulation_), stay_in_same_class_(false) {}
 	CohomologyBasis(const Triangulation * const triangulation, const DualCohomologyBasis & dualcohomologybasis);
 	~CohomologyBasis(void);
 
@@ -92,18 +93,22 @@ public:
 
 	IntForm2D Integrate(const std::list<Edge *> & path) const;
 
-	void Simplify(bool StayInSameClass = false);
+	void Simplify();
+	void Simplify(bool StayInSameClass);
 	void SetToDualOf(const DualCohomologyBasis & dualOmega);	// change the DualCohomologyBasis to an equivalent CohomologyBasis
+	void SetStayInSameClass(bool value);
 
 	void SetMakeUpToDateVia(DualCohomologyBasis * via_dualcohomologybasis);
+	void SetMakeUpToDateViaReinitialization(bool value);
 	bool MakeUpToDate();
 protected:
 	std::vector<boost::array<IntForm2D,3> > omega_;		// two closed one-forms on the triangulation
 	void ClearOmega();
 	const Triangulation * triangulation_;
 	DualCohomologyBasis * via_dualcohomologybasis_;
+	bool reinitialization_;
 private:
-
+	bool stay_in_same_class_;
 	
 };
 

@@ -16,6 +16,7 @@ public:
 	~DualCohomologyBasis(void);
 
 	void Initialize(int width, int height);
+	void Initialize();
 
 	void UpdateAfterFlipMove(const Edge * const);
 

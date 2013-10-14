@@ -10,7 +10,7 @@
 #include "DominantMatter.h"
 #include <time.h>
 
-Triangulation::Triangulation(void) : use_flipmove_(true) , dominantmatter_(NULL)
+Triangulation::Triangulation(void) : use_flipmove_(true) , dominantmatter_(NULL), use_custom_sweep_size_(false)
 {
 	rng_.seed(static_cast<unsigned int>(time(NULL)));
 	state_ = 1;
@@ -39,17 +39,17 @@ Vertex * const & Triangulation::getVertex(int id) const
 	return vertices_[id];
 }
 	
-Triangle * const & Triangulation::getRandomTriangle()
+Triangle * const & Triangulation::getRandomTriangle() const
 {
 	return triangles_[RandomInteger(0,n_triangles_-1)];
 }
 
-Edge * const & Triangulation::getRandomEdge()
+Edge * const & Triangulation::getRandomEdge() const
 {
 	return triangles_[RandomInteger(0,n_triangles_-1)]->getEdge(RandomInteger(0,2));
 }
 
-Vertex * const & Triangulation::getRandomVertex()
+Vertex * const & Triangulation::getRandomVertex() const
 {
 	return vertices_[RandomInteger(0,n_vertices_-1)];
 }
@@ -142,7 +142,8 @@ void Triangulation::DoSweep()
 	{
 		// Perform a sweep of triangle flips
 		int SuccesfulMoves = 0;
-		while( SuccesfulMoves < n_triangles_ )
+		int TotalMoves = (use_custom_sweep_size_ ? custom_sweep_size_ : n_triangles_);
+		while( SuccesfulMoves < TotalMoves )
 		{
 			if( TryFlipMove() )
 				SuccesfulMoves++;
@@ -429,3 +430,10 @@ int Triangulation::CalculateGenus() const
 {
 	return 1 - (NumberOfVertices() - NumberOfTriangles()/2)/2;
 }
+
+void Triangulation::SetCustomSweepSize(int n)
+{
+	use_custom_sweep_size_ = (n>0);
+	custom_sweep_size_ = n;
+}
+

@@ -71,9 +71,9 @@ void TriangulationDrawer::Draw(BitmapDrawer & drawer)
 	}
 }
 
-void TriangulationDrawer::DrawShading(BitmapDrawer & drawer)
+void TriangulationDrawer::DrawShading(BitmapDrawer & drawer, ColorScheme::Scheme colorscheme)
 {
-	ColorScheme scheme(ColorScheme::TEMPERATURE_MAP);
+	ColorScheme scheme(colorscheme);
 
 	for(int i=0;i<triangulation_->NumberOfTriangles();i++)
 	{
@@ -83,11 +83,17 @@ void TriangulationDrawer::DrawShading(BitmapDrawer & drawer)
 		polygon.push_back( AddVectors2D(polygon.back(),embedding_->getForm(i,2)) );
 		polygon.push_back( AddVectors2D(polygon.back(),embedding_->getForm(i,0)) );
 
-		double area = SignedPolygonArea( polygon );
-		BOOST_ASSERT( area > -1.0e-8 );
-		double minlogarea = std::max(0.0,std::min(8.0,-log(area)));
-		boost::array<unsigned char,3> color = scheme.getColor( (minlogarea+1.0) / 10.0 );
-
+		boost::array<unsigned char,3> color;
+		if( triangle_shade_.empty() )
+		{
+			double area = SignedPolygonArea( polygon );
+			BOOST_ASSERT( area > -1.0e-8 );
+			double minlogarea = std::max(0.0,std::min(8.0,-log(area)));
+			boost::array<unsigned char,3> color = scheme.getColor( (minlogarea+1.0) / 10.0 );
+		} else
+		{
+			color = scheme.getColor( triangle_shade_[i] );
+		}
 		drawer.setPenColor(color[0],color[1],color[2]);
 		drawer.domainPolygon( polygon );
 	}
@@ -116,3 +122,21 @@ void ShortestLoopDrawer::DrawPath(BitmapDrawer & drawer, const std::list<Edge*> 
 		drawer.domainLineSegment(start[0],start[1],start[0] + form[0],start[1] + form[1]);
 	}
 }
+
+void SpanningTreeDrawer::Draw(BitmapDrawer & drawer)
+{
+	for(int i=0;i<triangulation_->NumberOfTriangles();i++)
+	{
+		for(int j=0;j<3;j++)
+		{
+			Edge * edge = triangulation_->getTriangle(i)->getEdge(j);
+			if( spanningtree_->InSpanningTree(edge) )
+			{
+				Vector2D start = embedding_->getCoordinate(edge->getNext()->getOpposite());
+				Vector2D form = embedding_->getForm(edge);
+				drawer.domainLineSegment(start[0],start[1],start[0] + form[0],start[1] + form[1]);
+			}
+		}
+	}
+}
+

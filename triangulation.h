@@ -42,9 +42,9 @@ public:
 	
 	Vertex * const & getVertex(int id) const;
 
-	Triangle * const & getRandomTriangle();
-	Edge * const & getRandomEdge();
-	Vertex * const & getRandomVertex();
+	Triangle * const & getRandomTriangle() const;
+	Edge * const & getRandomEdge() const;
+	Vertex * const & getRandomVertex() const;
 
 
 	int RandomInteger(int min, int max) const;
@@ -87,6 +87,8 @@ public:
 	double TotalCentralCharge() const;
 
 	int CalculateGenus() const;
+
+	void SetCustomSweepSize(int n);
 private:
 	void IncreaseState();
 	bool CheckVertexNeighbourhood(const Vertex * const vertex) const;
@@ -104,6 +106,9 @@ private:
 	bool use_flipmove_;  // Defaults to true. May be set to false because some matter fields require a custom flip move.
 
 	TriangulationState state_;
+
+	bool use_custom_sweep_size_;	// Only used in special circumstances where we want to do 
+	int custom_sweep_size_;			// more frequent observations (like when a video is produced).
 };
 
 #endif

@@ -27,6 +27,7 @@ public:
 
 	void Measure();
 	std::string OutputData() const;
+	void setMeasureDistanceOnly(bool distanceonly);
 private:
 	void DetermineDistance(Vertex * startVertex);
 	void DetermineDegrees();
@@ -41,6 +42,7 @@ private:
 	std::vector<double> probability_;
 	std::vector<double> next_probability_;
 
+	bool distance_only_;
 	int measurements_;
 	int samples_;
 	std::vector<int> diffusion_times_;
