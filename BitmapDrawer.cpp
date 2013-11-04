@@ -44,6 +44,44 @@ boost::array<unsigned char,3> ColorScheme::getColor( double x ) const
 	return color;
 }
 
+DiscreteColorScheme::DiscreteColorScheme( DiscreteColorScheme::Scheme scheme ) : scheme_(scheme)
+{
+	if( scheme_ == COLORS8 )
+	{
+		schemedata_.resize(9);
+		double data[9][3] = {{0.611765, 0.298039, 0.294118}, {1., 0.854902, 0.827451}, {0.858824, 0.560784, 0.458824}, {0.654902, 0.298039, 0.0823529}, {0.870588, 0.92549, 0.215686}, {0.501961, 0.686275, 0.0352941}, {0.215686, 0.364706, 0.164706}, {0.243137, 0.317647, 0.309804}, {0.686275, 0.192157, 0.247059}};
+		for(int i=0;i<9;i++)
+		{
+			for(int j=0;j<3;j++)
+			{
+				schemedata_[i][j] = data[i][j];
+			}
+		}
+	} else if( scheme_ == COLORS2 )
+	{
+		schemedata_.resize(9);
+		double data[9][3] = {{0.901176, 0.30549, 0.30549}, {1., 0.486667, 0.3}, {1., 0.618431, 0.478431}, {0.637647, 0.431765, 0.324706}, {1., 0.914902, 0.654118}, {0.791373, 0.821569, 0.876471}, {0.44549, 0.467451, 0.525098}, {0.360392, 0.398824, 0.500392}, {0.536078, 0.582745, 0.736471}};
+		for(int i=0;i<9;i++)
+		{
+			for(int j=0;j<3;j++)
+			{
+				schemedata_[i][j] = data[i][j];
+			}
+		}
+	}
+}
+
+boost::array<unsigned char,3> DiscreteColorScheme::getColor( int i ) const
+{
+	boost::array<unsigned char,3> color;
+	int index = ( i%schemedata_.size() + schemedata_.size())%schemedata_.size();
+	for(int j=0;j<3;j++)
+	{
+		color[j] = static_cast<unsigned char>( 255.9 * schemedata_[index][j] );
+	}
+	return color;
+}
+
 void TriangulationDrawer::Draw(BitmapDrawer & drawer)
 {
 	ColorScheme scheme(ColorScheme::BLUE_GREEN_YELLOW);
@@ -97,6 +135,54 @@ void TriangulationDrawer::DrawShading(BitmapDrawer & drawer, ColorScheme::Scheme
 		drawer.setPenColor(color[0],color[1],color[2]);
 		drawer.domainPolygon( polygon );
 	}
+}
+
+void TriangulationDrawer::DrawShading(BitmapDrawer & drawer, DiscreteColorScheme::Scheme colorscheme)
+{
+	DiscreteColorScheme scheme(colorscheme);
+
+	for(int i=0;i<triangulation_->NumberOfTriangles();i++)
+	{
+		Triangle * triangle = triangulation_->getTriangle(i);
+		std::vector<Vector2D> polygon;
+		polygon.push_back( embedding_->getCoordinate(triangle->getEdge(0)->getOpposite()) );
+		polygon.push_back( AddVectors2D(polygon.back(),embedding_->getForm(i,2)) );
+		polygon.push_back( AddVectors2D(polygon.back(),embedding_->getForm(i,0)) );
+
+		boost::array<unsigned char,3> color;
+		if( !triangle_color_index_.empty() )
+		{
+			color = scheme.getColor( triangle_color_index_[i] );
+		}
+		drawer.setPenColor(color[0],color[1],color[2]);
+		drawer.domainPolygon( polygon );
+	}
+}
+
+void TriangulationDrawer::SetEdgeShade(int triangle, int edge, double shade)
+{
+	if( edge_shade_.empty() )
+	{
+		boost::array<double,3> zero = {0.0,0.0,0.0};
+		edge_shade_.resize(triangulation_->NumberOfTriangles(),zero);
+	}
+	edge_shade_[triangle][edge] = shade;
+}
+void TriangulationDrawer::SetTriangleShade(int triangle, double shade)
+{
+	if( triangle_shade_.empty() )
+	{
+		triangle_shade_.resize(triangulation_->NumberOfTriangles(),0.0);
+	}
+	triangle_shade_[triangle] = shade;
+}
+void TriangulationDrawer::SetTriangleColorIndex(int triangle, int index)
+{
+	if( triangle_shade_.empty() )
+	{
+		triangle_color_index_.resize(triangulation_->NumberOfTriangles(),0);
+	}
+	triangle_color_index_[triangle] = index;
 }
 
 void ShortestLoopDrawer::Draw(BitmapDrawer & drawer)

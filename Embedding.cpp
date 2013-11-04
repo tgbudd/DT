@@ -59,7 +59,7 @@ Embedding::Embedding(const Triangulation * const triangulation, CohomologyBasis 
 {
 	work_with_harmonic_forms_ = false;
 	accuracy_ = 1.0e-6;
-	maxiterations_ = 2000;
+	maxiterations_ = 4000;
 	edge_measure_.resize(triangulation->NumberOfTriangles());
 }
 

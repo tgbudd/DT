@@ -11,6 +11,8 @@ public:
 	~BabyUniverseDetector();
 
 	std::pair<int,bool> VolumeEnclosed(const std::list<const Edge *> & boundary) const;
+	int VolumeEnclosed(const std::list<const Edge *> & boundary, bool thisSide) const;
+	int VolumeEnclosed(std::list<const Edge *>::const_iterator begin, std::list<const Edge *>::const_iterator end, bool thisSide) const;
 	void EnclosedTriangles(const std::list<const Edge *> & boundary, std::vector<Triangle *> & triangles, bool thisSide) const;
 private:
 	std::pair<int,bool> VolumeEnclosedSpherical(const std::list<const Edge *> & boundary) const;

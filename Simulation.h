@@ -18,6 +18,7 @@ public:
 	void Output();
 
 	void AddConfigurationInfo(std::string info);
+	std::string GetIdentifier() const;
 private:
 	void setStartTime();
 

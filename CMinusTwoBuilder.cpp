@@ -22,13 +22,15 @@ void CMinusTwoBuilder::DoSweep()
 	triangulation_->Clear();
 	RandomDiskTriangulation();
 	RandomBoundaryMatching();
-	BOOST_ASSERT( genus_ == 0 );
-	if( genus_ == 0 )
-	{
-		ApplyBoundaryMatching(matching_);
-	}
-
+	ApplyBoundaryMatching(matching_);
 	triangulation_->DetermineVertices();
+
+	if( genus_ == 1 )
+	{
+		GenusZeroToGenusOneMatching();
+		ApplyBoundaryMatching( matching_ );
+		triangulation_->DetermineVertices();
+	}
 }
 
 void CMinusTwoBuilder::RandomDiskTriangulation()
@@ -97,9 +99,64 @@ void CMinusTwoBuilder::RandomDiskTriangulation()
 
 }
 
-void CMinusTwoBuilder::MatchingToGenusOneMatching()
+void CMinusTwoBuilder::GenusZeroToGenusOneMatching()
 {
+	// select three distinct vertices at random
+	boost::array<Vertex*,3> vertices;
+	for(int i=0;i<3;i++)
+	{
+		int v = triangulation_->RandomInteger(0,triangulation_->NumberOfVertices()-1-i);
+		for(int j=0;j<i;j++)
+		{
+			if( v >= vertices[j]->getId() )
+			{
+				v++;
+			}
+		}
+		vertices[i] = triangulation_->getVertex(v);
+	}
+	
+	// For each edge we need to know what its position in the boundary is (if applicable).
+	/*boost::array<int,3> allMinusOne = {-1,-1,-1};
+	std::vector<boost::array<int,3> > edgeToBoundary(n_triangles_,allMinusOne);
+	for(int i=0,endi=boundary_.size();i<endi;i++)
+	{
+		edgeToBoundary[boundary_[i]->getParent()->getId()][boundary_[i]->getId()] = i;
+	}*/
 
+	// Select the edge entering vertex v[i] which appears first in boundary_.
+	boost::array<int,3> minimalEdgeIndices = {-1,-1,-1};
+	for(int i=0,endi=boundary_.size();i<endi;i++)
+	{
+		for(int j=0;j<3;j++)
+		{
+			if( minimalEdgeIndices[j] == -1 && boundary_[i]->getPrevious()->getOpposite() == vertices[j] )
+			{
+				minimalEdgeIndices[j] = i;
+			}
+		}
+	}
+
+	// Order according to the position in boundary
+	std::sort(minimalEdgeIndices.begin(),minimalEdgeIndices.end());
+
+	// Define a relabeling of the boundary (see Chapuy, "A new combinatorial identity...", lemma 1)
+	std::vector<int> label(boundary_.size());
+	for(int i=0,endi=boundary_.size();i<endi;i++)
+	{
+		if(i <= minimalEdgeIndices[0] || i > minimalEdgeIndices[2]) 
+			label[i]=i;
+		else if(i <= minimalEdgeIndices[1])
+			label[i] = i+(minimalEdgeIndices[2]-minimalEdgeIndices[1]);
+		else 
+			label[i] = i-(minimalEdgeIndices[1]-minimalEdgeIndices[0]);
+	}
+
+	for(std::vector<std::pair<int,int> >::iterator it = matching_.begin();it!=matching_.end();it++)
+	{
+		it->first = label[it->first];
+		it->second = label[it->second];
+	}
 }
 
 void CMinusTwoBuilder::RandomBoundaryMatching()

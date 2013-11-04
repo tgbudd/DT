@@ -93,6 +93,10 @@ inline double SignedPolygonArea( const std::vector<Vector2D> & v )
 	}
 	return area;
 }
+inline double NormSquared2D( const Vector2D & v )
+{
+	return v[0]*v[0] + v[1]*v[1];
+}
 
 inline void ResizeAndAdd(std::vector<int> & v, int index, int value)
 {

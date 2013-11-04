@@ -4,6 +4,7 @@
 #include "Triangle.h"
 #include "Edge.h"
 #include "Diffusion.h"
+#include "TriangulationProperties.h"
 
 DiffusionMatrix::DiffusionMatrix(const Triangulation * const triangulation, const std::vector<int> & degree)
 	: Matrix(triangulation->NumberOfVertices())
@@ -86,43 +87,12 @@ void Diffusion::Measure()
 
 void Diffusion::DetermineDistance(Vertex * startVertex)
 {
-	std::fill(distance_.begin(),distance_.end(),-1);
-
-	std::queue<Vertex *> q;
-	q.push( startVertex );
-	distance_[startVertex->getId()] = 0;
-
-	while( !q.empty() )
-	{
-		Vertex * vertex = q.front();
-		q.pop();
-
-		Edge * edge = vertex->getParent()->getPrevious();
-		do {
-			Vertex * nbr = edge->getPrevious()->getOpposite();
-
-			if( distance_[nbr->getId()] == -1 )
-			{
-				distance_[nbr->getId()] = distance_[vertex->getId()] + 1;
-				q.push(nbr);
-			}
-			edge = edge->getPrevious()->getAdjacent();
-		} while( edge->getNext() != vertex->getParent() );
-	}
+	properties::VertexDistanceList(triangulation_,startVertex,distance_);
 }
 
 void Diffusion::DetermineDegrees()
 {
-	for(int i=0,end=triangulation_->NumberOfVertices();i<end;i++)
-	{
-		Vertex * vertex = triangulation_->getVertex(i);
-		Edge * edge = vertex->getParent()->getPrevious();
-		degree_[i]=0;
-		do {
-			edge = edge->getPrevious()->getAdjacent();
-			++degree_[i];
-		} while( edge->getNext() != vertex->getParent() );
-	}
+	properties::DegreeList(triangulation_,degree_);
 }
 
 void Diffusion::DoDiffusion(Vertex * startVertex, const linearalgebra::Matrix * const matrix )

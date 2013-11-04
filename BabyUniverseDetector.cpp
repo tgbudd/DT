@@ -91,3 +91,41 @@ void BabyUniverseDetector::EnclosedTriangles(const std::list<const Edge *> & bou
 		}
 	}
 }
+
+int BabyUniverseDetector::VolumeEnclosed(std::list<const Edge *>::const_iterator begin, std::list<const Edge *>::const_iterator end, bool thisSide) const
+{
+	int triangles=0;
+	std::queue<Triangle *> queue;
+	visited_.Reset();
+	if( thisSide )
+	{
+		queue.push((*begin)->getParent());
+	} else
+	{
+		queue.push((*begin)->getAdjacent()->getParent());
+	}
+	visited_.Set(queue.front()->getId());
+	while( !queue.empty() )
+	{
+		Triangle * triangle = queue.front();
+		queue.pop();
+		triangles++;
+		for(int j=0;j<3;j++)
+		{
+			Edge * edge = triangle->getEdge(j);
+			Triangle * nbrTriangle = edge->getAdjacent()->getParent();
+			if( !visited_.isSet(nbrTriangle->getId()) &&
+				std::find(begin,end,(thisSide? edge : edge->getAdjacent())) == end )
+			{
+				queue.push(nbrTriangle);
+				visited_.Set(nbrTriangle->getId());
+			}
+		}
+	}
+	return triangles;
+}
+
+int BabyUniverseDetector::VolumeEnclosed(const std::list<const Edge *> & boundary, bool thisSide) const
+{
+	return VolumeEnclosed(boundary.begin(),boundary.end(),thisSide);
+}

@@ -29,13 +29,31 @@ private:
 	std::vector<std::pair<double, boost::array<double,3> > > schemedata_;
 };
 
+class DiscreteColorScheme
+{
+public:
+	enum Scheme {
+		COLORS8,
+		COLORS2
+	};
+
+	DiscreteColorScheme( Scheme scheme );
+	boost::array<unsigned char,3> getColor( int i ) const;
+private:
+	Scheme scheme_;
+	std::vector<boost::array<double,3> > schemedata_;
+};
+
+
 class BitmapDrawer
 {
 public:
 	BitmapDrawer(int width, int height, int antialiasing = 1) : width_(width), height_(height), 
 		fullwidth_(width * antialiasing), fullheight_(height * antialiasing),
 		antialiasing_(antialiasing),
-		image_(antialiasing * width, antialiasing * height), draw_(image_) 
+		image_(antialiasing * width, antialiasing * height), draw_(image_),
+		shiftdomainX_(0.5),
+		shiftdomainY_(0.5)
 	{
 		BOOST_ASSERT( antialiasing == 1 || antialiasing == 2 || antialiasing == 4 || antialiasing == 8 );
 		// start with a white background
@@ -49,6 +67,12 @@ public:
 	void SetPeriodicDomain(const std::pair<double,double> & modulus, double areafraction )
 	{
 		SetPeriodicDomain(modulus,areafraction,fullwidth_/2,fullheight_/2);
+	}
+	void SetPeriodicDomain(const std::pair<double,double> & modulus, double areafraction, double XOnBitmap, double YOnBitmap, double XInDomain, double YInDomain )
+	{
+		shiftdomainX_ = XInDomain;
+		shiftdomainY_ = YInDomain;
+		SetPeriodicDomain(modulus,areafraction,static_cast<int>(XOnBitmap * fullwidth_),static_cast<int>(YOnBitmap * fullheight_) );
 	}
 	void SetPeriodicDomain(const std::pair<double,double> & modulus, double areafraction, int offsetX, int offsetY )
 	{
@@ -169,10 +193,8 @@ private:
 
 	std::pair<int,int> Transform(double x, double y) const
 	{
-		return std::pair<int,int>((int)(scale_ * fullwidth_ * ((x-0.5) + modulus_.first * (y-0.5))) + offsetX_,(int)(scale_ * fullwidth_ * modulus_.second * (y-0.5)) + offsetY_);
+		return std::pair<int,int>((int)(scale_ * fullwidth_ * ((x-shiftdomainX_) + modulus_.first * (y-shiftdomainY_))) + offsetX_,(int)(scale_ * fullwidth_ * modulus_.second * (y-shiftdomainY_)) + offsetY_);
 	}
-
-	
 
 	bitmap_image image_;
 	image_drawer draw_;
@@ -180,6 +202,7 @@ private:
 	double scale_;		// the width of the domain compared to the width of the bitmap
 	int absolutescale_;
 	int offsetX_, offsetY_;
+	double shiftdomainX_, shiftdomainY_;
 	int width_, height_;
 	int fullwidth_, fullheight_;
 	int antialiasing_;
@@ -200,32 +223,22 @@ class TriangulationDrawer : public ComponentDrawer
 {
 public:
 	TriangulationDrawer(Triangulation * const triangulation, const Embedding * const embedding) 
-		: triangulation_(triangulation), embedding_(embedding) {}
+		: triangulation_(triangulation), embedding_(embedding), use_indexed_colors_(false) {}
 
 	void Draw(BitmapDrawer & drawer);
 
-	void DrawShading(BitmapDrawer & drawer, ColorScheme::Scheme colorscheme = ColorScheme::TEMPERATURE_MAP);
+	void DrawShading(BitmapDrawer & drawer, ColorScheme::Scheme colorscheme = ColorScheme::TEMPERATURE_MAP );
+	void DrawShading(BitmapDrawer & drawer, DiscreteColorScheme::Scheme colorscheme);
 
-	void SetEdgeShade(int triangle, int edge, double shade)
-	{
-		if( edge_shade_.empty() )
-		{
-			boost::array<double,3> zero = {0.0,0.0,0.0};
-			edge_shade_.resize(triangulation_->NumberOfTriangles(),zero);
-		}
-		edge_shade_[triangle][edge] = shade;
-	}
-	void SetTriangleShade(int triangle, double shade)
-	{
-		if( triangle_shade_.empty() )
-		{
-			triangle_shade_.resize(triangulation_->NumberOfTriangles(),0.0);
-		}
-		triangle_shade_[triangle] = shade;
-	}
+	void SetEdgeShade(int triangle, int edge, double shade);
+	void SetTriangleShade(int triangle, double shade);
+	void SetTriangleColorIndex(int triangle, int index);
+	boost::array<unsigned char,3> TriangleColor(int triangle);
 private:
 	std::vector<boost::array<double,3> > edge_shade_;
 	std::vector<double> triangle_shade_;
+	std::vector<int> triangle_color_index_;
+	bool use_indexed_colors_;
 	Triangulation * const triangulation_;
 	const Embedding * const embedding_;
 };

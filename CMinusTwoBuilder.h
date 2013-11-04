@@ -19,7 +19,7 @@ public:
 private:
 	void RandomDiskTriangulation();
 	void RandomBoundaryMatching();
-	void MatchingToGenusOneMatching();
+	void GenusZeroToGenusOneMatching();
 	void ApplyBoundaryMatching(const std::vector<std::pair<int,int> > & matching);
 
 	Triangulation * const triangulation_;

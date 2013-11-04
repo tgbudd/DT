@@ -129,6 +129,10 @@ public:
 	{
 		work_with_harmonic_forms_ = value;
 	}
+	void SetAccuracy(double accuracy) 
+	{
+		accuracy_=accuracy;
+	}
 private:
 	void Coderivative( const std::vector<boost::array<double,3> > & oneform, std::vector<double> & result );
 	void LoadInitialCoordinates( std::vector<double> & coordinates, int i, Vertex * startVertex ) const;

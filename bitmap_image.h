@@ -31,7 +31,7 @@
 #include <vector>
 #include <algorithm>
 
-inline unsigned int mymod(int x, int a)
+inline int mymod(int x, int a)
 {
 	return (x%a+a)%a;
 }
@@ -1665,6 +1665,21 @@ public:
 		   if( (int)x[i].second > bot )
 			   bot = (int)x[i].second;
 	   }
+
+	   if( periodicity && period[0][0] > 1.8 * static_cast<int>(image_.width()) && period[1][1] > 1.8 * static_cast<int>(image_.height()) )
+	   {
+		   int centery = (bot+top)/2, centerx = (left+right)/2;
+		   int ysteps = (mymod(centery-(static_cast<int>(image_.height())-period[1][1])/2,period[1][1])-(centery-(static_cast<int>(image_.height())-period[1][1])/2))/period[1][1];
+		   int xsteps = (mymod(centerx + ysteps * period[1][0]-(static_cast<int>(image_.width())-period[0][0])/2,period[0][0])-(centerx + ysteps * period[1][0]-(static_cast<int>(image_.width())-period[0][0])/2))/period[0][0];
+		   if( top + ysteps * period[1][1] > static_cast<int>(image_.height()) ||
+			   bot + ysteps * period[1][1] < 0 ||
+			   left + ysteps * period[1][0] + xsteps * period[0][0] > static_cast<int>(image_.width()) ||
+			   right + ysteps * period[1][0] + xsteps * period[0][0] < 0 )
+		   {
+			   return;
+		   }
+	   }
+
 	   std::vector<int> node;
 	   for(y=top;y<=bot;y++)
 	   {

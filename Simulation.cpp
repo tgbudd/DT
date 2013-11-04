@@ -35,6 +35,11 @@ Simulation::~Simulation(void)
 {
 }
 
+std::string Simulation::GetIdentifier() const
+{
+	return identifier_;
+}
+
 void Simulation::AddObservable(Observable * observable, int SweepsPerMeasurement)
 {
 	MeasurementInfo info;

@@ -108,9 +108,11 @@
     <ClInclude Include="DominantMatter.h" />
     <ClInclude Include="DualCohomologyBasis.h" />
     <ClInclude Include="DualDiffusion.h" />
+    <ClInclude Include="DualRandomWalk.h" />
     <ClInclude Include="DualScalarField.h" />
     <ClInclude Include="Edge.h" />
     <ClInclude Include="Embedding.h" />
+    <ClInclude Include="HarmonicDiffusion.h" />
     <ClInclude Include="HarmonicEmbedding.h" />
     <ClInclude Include="LaplacianDeterminant.h" />
     <ClInclude Include="LaplacianSpectrum.h" />
@@ -119,6 +121,7 @@
     <ClInclude Include="CMinusTwoBuilder.h" />
     <ClInclude Include="ModuliObservable.h" />
     <ClInclude Include="Observable.h" />
+    <ClInclude Include="PeelingProcedure.h" />
     <ClInclude Include="PottsModel.h" />
     <ClInclude Include="PottsModelOnVertices.h" />
     <ClInclude Include="ShortestLoop.h" />
@@ -128,6 +131,7 @@
     <ClInclude Include="ThetaModel.h" />
     <ClInclude Include="Triangle.h" />
     <ClInclude Include="Triangulation.h" />
+    <ClInclude Include="TriangulationProperties.h" />
     <ClInclude Include="utilities.h" />
     <ClInclude Include="Vertex.h" />
   </ItemGroup>
@@ -143,9 +147,11 @@
     <ClCompile Include="DistanceDistribution.cpp" />
     <ClCompile Include="DualCohomologyBasis.cpp" />
     <ClCompile Include="DualDiffusion.cpp" />
+    <ClCompile Include="DualRandomWalk.cpp" />
     <ClCompile Include="DualScalarField.cpp" />
     <ClCompile Include="Edge.cpp" />
     <ClCompile Include="Embedding.cpp" />
+    <ClCompile Include="HarmonicDiffusion.cpp" />
     <ClCompile Include="HarmonicEmbedding.cpp" />
     <ClCompile Include="LaplacianDeterminant.cpp" />
     <ClCompile Include="LaplacianSpectrum.cpp" />
@@ -153,6 +159,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="CMinusTwoBuilder.cpp" />
     <ClCompile Include="ModuliObservable.cpp" />
+    <ClCompile Include="PeelingProcedure.cpp" />
     <ClCompile Include="PottsModel.cpp" />
     <ClCompile Include="PottsModelOnVertices.cpp" />
     <ClCompile Include="ShortestLoop.cpp" />
@@ -162,6 +169,7 @@
     <ClCompile Include="ThetaModel.cpp" />
     <ClCompile Include="Triangle.cpp" />
     <ClCompile Include="Triangulation.cpp" />
+    <ClCompile Include="TriangulationProperties.cpp" />
     <ClCompile Include="Vertex.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
