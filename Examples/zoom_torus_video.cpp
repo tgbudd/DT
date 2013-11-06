@@ -97,7 +97,7 @@ void Snapshot::Measure()
 	}
 }
 
-Vertex * Snapshot::SelectVertex() 
+Vertex * Snapshot::SelectVertex()
 {
 	Vertex * vertex;
 	double minarea = 1.0;
@@ -144,14 +144,6 @@ void Snapshot::RunCommand()
 	os << "D:\\temp\\bmptoavi.bat " << firstfile_ << " " << lastfile_ << " " << prefix;
 	std::cout << "run: " << os.str() << "\n";
 	std::system(os.str().c_str());
-	/*os << "D:\\temp\\EasyBMPtoAVI -start " << firstfile_ << " -end " << lastfile_ << " -framerate 15 -output D:/temp/output/out.avi";
-	std::cout << "run: " << os.str() << "\n";
-	std::system(os.str().c_str());
-	std::ostringstream os2;	
-	os2 << "start \"avidemux\" \"C:\\Program Files\\Avidemux 2.6\\avidemux.exe\" --load \"D:\\temp\\output\\out.avi\" --run \"D:\\temp\\fffs.py\" --save \"D:\\temp\\video\\zoom-a-" << batch_counter_ << ".avi\" --quit";
-	std::cout << "run: " << os2.str() << "\n";
-	std::system(os2.str().c_str());
-	*/
 	firstfile_.clear();
 }
 
@@ -161,9 +153,9 @@ int main(int argc, char* argv[])
 
 	int n =	param.Read<int>("triangles");
 	int seed = param.Read<int>("seed");
-	int thermalizationSweeps = 0;//param.Read<int>("thermalization sweeps");
-	int	measurementSweeps = 1; //param.Read<int>("measurement sweeps");
-	int secondsperoutput = 999999; //param.Read<int>("seconds per output");
+	int thermalizationSweeps = 0;
+	int	measurementSweeps = 1; 
+	int secondsperoutput = 999999; 
 	bool output = param.UserInput();
 
 	Triangulation triangulation;
@@ -180,9 +172,6 @@ int main(int argc, char* argv[])
 	HarmonicEmbedding embedding( &triangulation, &cohom );
 	embedding.SetAccuracy( 1.0e-8 );
 
-//	HarmonicDiffusion diffusion( &triangulation, &embedding, &cohom );
-//	simulation.AddObservable( &diffusion, measurementSweeps );
-
 	Snapshot snapshot( &triangulation, &embedding );
 	std::ostringstream prefix;
 	prefix << "D:/temp/output/snapshot-" << simulation.GetIdentifier() << "-";
@@ -196,73 +185,3 @@ int main(int argc, char* argv[])
 
 	return 0;
 }
-
-/*
-#include "Simulation.h"
-#include "Triangulation.h"
-#include "utilities.h"
-#include "HarmonicEmbedding.h"
-#include "HarmonicDiffusion.h"
-#include "CohomologyBasis.h"
-#include "CMinusTwoBuilder.h"
-
-int main(int argc, char* argv[])
-{
-	ParameterStream param(argc,argv);
-
-	int n =	param.Read<int>("triangles");
-	int thermalizationSweeps = param.Read<int>("thermalization sweeps");
-	int	measurementSweeps = param.Read<int>("measurement sweeps");
-	int secondsperoutput = param.Read<int>("seconds per output");
-	bool output = param.UserInput();
-
-	Triangulation triangulation;
-	CMinusTwoBuilder builder(&triangulation,1,n);
-	triangulation.setDominantMatter(&builder);
-	triangulation.DoSweep();
-
-	Simulation simulation( &triangulation, thermalizationSweeps, secondsperoutput, output );
-
-	CohomologyBasis cohom( &triangulation );
-	cohom.SetMakeUpToDateViaReinitialization(true);
-
-	HarmonicEmbedding embedding( &triangulation, &cohom );
-
-	HarmonicDiffusion diffusion( &triangulation, &embedding, &cohom );
-	simulation.AddObservable( &diffusion, measurementSweeps );
-
-	simulation.Run();
-	return 0;
-}*/
-
-
-/*
-#include "Simulation.h"
-#include "Triangulation.h"
-#include "utilities.h"
-#include "CMinusTwoBuilder.h"
-#include "PeelingProcedure.h"
-
-int main(int argc, char* argv[])
-{
-	ParameterStream param(argc,argv);
-
-	int n =	param.Read<int>("triangles");
-	int thermalizationSweeps = param.Read<int>("thermalizationsweeps");
-	int	measurementSweeps = param.Read<int>("measurementsweeps");
-	bool output = param.UserInput();
-
-	Triangulation triangulation;
-	CMinusTwoBuilder builder(&triangulation,0,n);
-	triangulation.setDominantMatter(&builder);
-	triangulation.DoSweep();
-	triangulation.clearDominantMatter();
-
-	Simulation simulation( &triangulation, thermalizationSweeps, 120, output );
-
-	PeelingProcedure peeling( &triangulation );
-	simulation.AddObservable( &peeling, measurementSweeps );
-
-	simulation.Run();
-	return 0;
-}*/

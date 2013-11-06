@@ -34,7 +34,11 @@ class DiscreteColorScheme
 public:
 	enum Scheme {
 		COLORS8,
-		COLORS2
+		COLORS2,
+		COLORS3,
+		COLORS6,
+		COLORS10,
+		CMYK
 	};
 
 	DiscreteColorScheme( Scheme scheme );

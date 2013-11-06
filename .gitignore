@@ -37,3 +37,4 @@ _ReSharper*/
 *.sdf
 ipch/
 *.opensdf
+output/
