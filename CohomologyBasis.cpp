@@ -119,10 +119,30 @@ bool CohomologyBasis::CheckClosedness() const
 	return true;
 }
 
-IntForm2D CohomologyBasis::Integrate(const std::list<Edge *> & path) const
+IntForm2D CohomologyBasis::Integrate(const std::list<const Edge *> & path) const
+{
+	return Integrate(path.begin(),path.end());
+}
+
+IntForm2D CohomologyBasis::Integrate(std::list<const Edge *>::const_iterator begin, std::list<const Edge *>::const_iterator end) const
 {
 	IntForm2D integral = {0,0};
-	for(std::list<Edge *>::const_iterator edgeIt = path.begin(); edgeIt != path.end(); edgeIt++ )
+	for(std::list<const Edge *>::const_iterator edgeIt = begin; edgeIt != end; edgeIt++ )
+	{
+		integral = AddForms(integral,getOmega(*edgeIt));
+	}
+	return integral;
+}
+
+IntForm2D CohomologyBasis::Integrate(const std::list<Edge *> & path) const
+{
+	return Integrate(path.begin(),path.end());
+}
+
+IntForm2D CohomologyBasis::Integrate(std::list<Edge *>::const_iterator begin, std::list<Edge *>::const_iterator end) const
+{
+	IntForm2D integral = {0,0};
+	for(std::list<Edge *>::const_iterator edgeIt = begin; edgeIt != end; edgeIt++ )
 	{
 		integral = AddForms(integral,getOmega(*edgeIt));
 	}

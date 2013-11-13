@@ -203,6 +203,17 @@ void TriangulationDrawer::DrawShading(BitmapDrawer & drawer, DiscreteColorScheme
 	}
 }
 
+void TriangulationDrawer::DrawTriangleShading(BitmapDrawer & drawer, int triangleIndex, boost::array<unsigned char,3> color)
+{
+	Triangle * triangle = triangulation_->getTriangle(triangleIndex);
+	std::vector<Vector2D> polygon;
+	polygon.push_back( embedding_->getCoordinate(triangle->getEdge(0)->getOpposite()) );
+	polygon.push_back( AddVectors2D(polygon.back(),embedding_->getForm(triangleIndex,2)) );
+	polygon.push_back( AddVectors2D(polygon.back(),embedding_->getForm(triangleIndex,0)) );
+	drawer.setPenColor(color[0],color[1],color[2]);
+	drawer.domainPolygon( polygon );
+}
+
 void TriangulationDrawer::SetEdgeShade(int triangle, int edge, double shade)
 {
 	if( edge_shade_.empty() )

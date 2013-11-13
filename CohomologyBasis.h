@@ -91,7 +91,10 @@ public:
 
 	bool CheckClosedness() const;
 
+	IntForm2D Integrate(const std::list<const Edge *> & path) const;
+	IntForm2D Integrate(std::list<const Edge *>::const_iterator begin, std::list<const Edge *>::const_iterator end) const;
 	IntForm2D Integrate(const std::list<Edge *> & path) const;
+	IntForm2D Integrate(std::list<Edge *>::const_iterator begin, std::list<Edge *>::const_iterator end) const;
 
 	void Simplify();
 	void Simplify(bool StayInSameClass);

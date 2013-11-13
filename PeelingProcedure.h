@@ -5,23 +5,38 @@
 #include "Triangulation.h"
 #include "Edge.h"
 #include "BabyUniverseDetector.h"
+#include "CohomologyBasis.h"
 
+class Snapshot;
 
 class PeelingProcedure :
 	public Observable
 {
 public:
+	///// temporary /////
+	friend class Snapshot;
+	/////////////////////
+
 	PeelingProcedure(const Triangulation * const triangulation);
+	PeelingProcedure(const Triangulation * const triangulation, CohomologyBasis * const cohomologybasis);
 	~PeelingProcedure();
 	void Measure();
 	std::string OutputData() const;
 private:
 	void DoPeeling();
+	void DoPeelingOnTorus(Triangle * startTriangle);
+	bool DoPeelingStepOnTorus();
+	void InitializePeeling();
+	void InitializePeeling(Triangle * startTriangle);
 	bool PeelingStep();
-	void ProcessBabyUniverse();
+	bool FirstLoopContainsFinalVertex(std::list<const Edge*>::const_iterator loopBegin) const;
+	bool FirstLoopIsDisk(std::list<const Edge*>::const_iterator loopBegin) const;
+	std::list<const Edge*>::const_iterator FindSecondLoopBegin() const;
+	void ProcessBabyUniverse(std::list<const Edge*>::const_iterator secondLoopBegin, bool FirstLoopContainsBabyUniverse);
 	Vertex * ChooseFinalVertex();
 	void RandomWalk(bool StayInMotherUniverse);
 	void DualRandomWalk(bool StayInMotherUniverse);
+	Triangle * RandomStartTriangle();
 
 	bool FrontierIsSimpleClosedCurve();
 	bool FinalVertexBeyondFrontier();
@@ -33,7 +48,9 @@ private:
 
 	const Triangulation * const triangulation_;
 	BabyUniverseDetector babyuniversedetector_;
+	CohomologyBasis * const cohomologybasis_;
 
+	Triangle * last_triangle_;
 	Triangle * start_triangle_;
 	Vertex * start_vertex_;
 	std::vector<bool> vertex_in_mother_universe_;
@@ -49,6 +66,7 @@ private:
 	std::vector<std::vector<int> > distance_trajectory_;
 	int max_trajectories_;
 
+	bool random_walk_;
 	int random_walk_measurements_;
 	int random_walk_measurements_mother_;
 	int walk_time_;

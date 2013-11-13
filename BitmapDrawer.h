@@ -233,7 +233,7 @@ public:
 
 	void DrawShading(BitmapDrawer & drawer, ColorScheme::Scheme colorscheme = ColorScheme::TEMPERATURE_MAP );
 	void DrawShading(BitmapDrawer & drawer, DiscreteColorScheme::Scheme colorscheme);
-
+	void DrawTriangleShading(BitmapDrawer & drawer, int triangleIndex, boost::array<unsigned char,3> color);
 	void SetEdgeShade(int triangle, int edge, double shade);
 	void SetTriangleShade(int triangle, double shade);
 	void SetTriangleColorIndex(int triangle, int index);

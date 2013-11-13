@@ -1,5 +1,6 @@
 #include "boost/utility.hpp"
 #include <set>
+#include <algorithm>
 
 #include "PeelingProcedure.h"
 #include "TriangulationProperties.h"
@@ -12,7 +13,9 @@ PeelingProcedure::PeelingProcedure(const Triangulation * const triangulation)
 	  random_walk_measurements_(0),
 	  random_walk_measurements_mother_(0),
 	  max_trajectories_(1),
-	  baby_walk_(true)
+	  baby_walk_(true),
+	  random_walk_(false),
+	  cohomologybasis_(NULL)
 {
 	in_mother_universe_.resize(triangulation_->NumberOfTriangles(),false);
 	in_frontier_.resize(triangulation_->NumberOfVertices(),false);
@@ -23,6 +26,28 @@ PeelingProcedure::PeelingProcedure(const Triangulation * const triangulation)
 	waiting_times_.resize(1000,0);
 }
 
+PeelingProcedure::PeelingProcedure(const Triangulation * const triangulation, CohomologyBasis * const cohomologybasis)
+	: triangulation_(triangulation), 
+	  babyuniversedetector_(triangulation),
+	  walk_time_(50000),
+	  random_walk_measurements_(0),
+	  random_walk_measurements_mother_(0),
+	  max_trajectories_(1),
+	  baby_walk_(true),
+	  random_walk_(false),
+	  cohomologybasis_(cohomologybasis)
+{
+	in_mother_universe_.resize(triangulation_->NumberOfTriangles(),false);
+	in_frontier_.resize(triangulation_->NumberOfVertices(),false);
+	vertex_in_mother_universe_.resize(triangulation_->NumberOfVertices(),false);
+	if( random_walk_ )
+	{
+		distance_square_.resize(walk_time_,0);
+		distance_square_mother_.resize(walk_time_,0);
+		distance_square_mother_effective_.resize(walk_time_,0);
+		waiting_times_.resize(1000,0);
+	}
+}
 
 PeelingProcedure::~PeelingProcedure(void)
 {
@@ -31,9 +56,19 @@ PeelingProcedure::~PeelingProcedure(void)
 
 void PeelingProcedure::Measure(void)
 {
-	DoPeeling();
-	//RandomWalk( false );
-	//RandomWalk( true );
+	if( cohomologybasis_ == NULL )
+	{
+		DoPeeling();
+	} else
+	{
+		DoPeelingOnTorus(RandomStartTriangle());
+	}
+
+	if( random_walk_ )
+	{
+		RandomWalk( false );
+		RandomWalk( true );
+	}
 }
 
 
@@ -70,7 +105,7 @@ std::string PeelingProcedure::OutputData() const
 	return stream.str();
 }
 
-void PeelingProcedure::DoPeeling()
+Triangle * PeelingProcedure::RandomStartTriangle()
 {
 	Triangle * startTriangle;
 	do {
@@ -78,8 +113,23 @@ void PeelingProcedure::DoPeeling()
 	} while( startTriangle->getEdge(0)->getOpposite() == startTriangle->getEdge(1)->getOpposite()
 		|| startTriangle->getEdge(1)->getOpposite() == startTriangle->getEdge(2)->getOpposite()
 		|| startTriangle->getEdge(0)->getOpposite() == startTriangle->getEdge(2)->getOpposite() );
+	return startTriangle;
+}
+
+void PeelingProcedure::InitializePeeling()
+{
+	Triangle * startTriangle = RandomStartTriangle();
+	InitializePeeling(startTriangle);
+}
+
+void PeelingProcedure::InitializePeeling(Triangle * startTriangle)
+{
+	BOOST_ASSERT( startTriangle->getEdge(0)->getOpposite() != startTriangle->getEdge(1)->getOpposite() );
+	BOOST_ASSERT( startTriangle->getEdge(1)->getOpposite() != startTriangle->getEdge(2)->getOpposite() );
+	BOOST_ASSERT( startTriangle->getEdge(0)->getOpposite() != startTriangle->getEdge(2)->getOpposite() );
 
 	start_triangle_ = startTriangle;
+	last_triangle_ = startTriangle;
 	Edge * oppositeEdge = startTriangle->getEdge(triangulation_->RandomInteger(0,2));
 	Vertex * startVertex = oppositeEdge->getOpposite();
 	start_vertex_ = startVertex;
@@ -102,6 +152,11 @@ void PeelingProcedure::DoPeeling()
 	vertex_in_mother_universe_[oppositeEdge->getPrevious()->getOpposite()->getId()] = true;
 
 	properties::VertexDistanceList(triangulation_,startVertex,distance_);
+}
+
+void PeelingProcedure::DoPeeling()
+{
+	InitializePeeling();
 
 	Vertex * finalVertex = ChooseFinalVertex();
 	properties::VertexDistanceList(triangulation_,finalVertex,distance_to_final_);
@@ -120,7 +175,8 @@ void PeelingProcedure::DoPeeling()
 		if( PeelingStep() )
 		{
 			// Fronteir has a figure-8 form and therefore a baby universe has been encountered.
-			ProcessBabyUniverse();
+			std::list<const Edge*>::const_iterator secondLoopBegin = FindSecondLoopBegin();
+			ProcessBabyUniverse(secondLoopBegin,FirstLoopContainsFinalVertex(secondLoopBegin));
 		}
 		volume_within_frontier_++;
 		steps++;
@@ -133,10 +189,43 @@ void PeelingProcedure::DoPeeling()
 	}
 }
 
+void PeelingProcedure::DoPeelingOnTorus(Triangle * startTriangle)
+{
+	InitializePeeling(startTriangle);
+	bool hasWrappedAround = false;
+	while( !hasWrappedAround )
+	{
+		hasWrappedAround = DoPeelingStepOnTorus();
+	}
+}
+
+bool PeelingProcedure::DoPeelingStepOnTorus()
+{
+	volume_within_frontier_++;
+	if( PeelingStep() )
+	{
+		// Frontier has a figure-8 form
+		std::list<const Edge*>::const_iterator secondLoopBegin = FindSecondLoopBegin();
+			
+		//BOOST_ASSERT( (*frontier_.begin())->getNext()->getOpposite() == (*secondLoopBegin)->getNext()->getOpposite() );
+		//BOOST_ASSERT( FormIsZero(cohomologybasis_->Integrate(frontier_.begin(),frontier_.end())) );
+		if( FormIsZero(cohomologybasis_->Integrate(frontier_.begin(),secondLoopBegin) ) )
+		{
+			// One of the loops is a baby universe
+			ProcessBabyUniverse(secondLoopBegin, FirstLoopIsDisk(secondLoopBegin) );
+		} else
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 bool PeelingProcedure::PeelingStep()
 {
 	Edge * adjEdge = frontier_.back()->getAdjacent();
 	Triangle * newTriangle = adjEdge->getParent();
+	last_triangle_ = newTriangle;
 
 	BOOST_ASSERT( !in_mother_universe_[newTriangle->getId()] );
 	in_mother_universe_[newTriangle->getId()] = true;
@@ -175,28 +264,21 @@ bool PeelingProcedure::PeelingStep()
 	return false;
 }
 
-void PeelingProcedure::ProcessBabyUniverse()
+bool PeelingProcedure::FirstLoopIsDisk(std::list<const Edge*>::const_iterator loopBegin) const
 {
-	Vertex * saddleVertex = frontier_.front()->getNext()->getOpposite();
-	std::list<const Edge*>::iterator loopBegin;
-	int firstLoopSize=0;
-	for(std::list<const Edge*>::iterator it=boost::next(frontier_.begin());it!=frontier_.end();it++)
-	{
-		firstLoopSize++;
-		if( (*it)->getNext()->getOpposite() == saddleVertex )
-		{
-			loopBegin = it;
-			break;
-		}
-	}
+	std::pair<int,bool> volume = babyuniversedetector_.VolumeEnclosed(frontier_.begin(),loopBegin);
+	return !volume.second;
+}
 
+bool PeelingProcedure::FirstLoopContainsFinalVertex(std::list<const Edge*>::const_iterator loopBegin) const
+{
 	int minDistanceToFinalVertex = 1000000;
-	for(std::list<const Edge*>::iterator it=frontier_.begin();it!=loopBegin;it++)
+	for(std::list<const Edge*>::const_iterator it=frontier_.begin();it!=loopBegin;it++)
 	{
 		minDistanceToFinalVertex = std::min(distance_to_final_[(*it)->getNext()->getOpposite()->getId()],minDistanceToFinalVertex);
 	}
 	bool firstLoopContainsFinalVertex = false; 
-	for(std::list<const Edge*>::iterator it=frontier_.begin();it!=loopBegin;it++)
+	for(std::list<const Edge*>::const_iterator it=frontier_.begin();it!=loopBegin;it++)
 	{
 		Vertex * vertex = (*it)->getNext()->getOpposite();
 		if( distance_to_final_[vertex->getId()] == minDistanceToFinalVertex )
@@ -214,41 +296,55 @@ void PeelingProcedure::ProcessBabyUniverse()
 			{
 				if( distance_to_final_[edge->getPrevious()->getOpposite()->getId()] == minDistanceToFinalVertex - 1 )
 				{
-					firstLoopContainsFinalVertex  = true;
-					break;
+					return true;
 				}
 				edge = edge->getAdjacent()->getNext();
 			}
-			if( firstLoopContainsFinalVertex )
-			{
-				break;
-			}
 		}
 	}
-	if( firstLoopContainsFinalVertex )
+	return false;
+}
+
+std::list<const Edge*>::const_iterator PeelingProcedure::FindSecondLoopBegin() const
+{
+	Vertex * saddleVertex = frontier_.front()->getNext()->getOpposite();
+	for(std::list<const Edge*>::const_iterator it=boost::next(frontier_.begin());it!=frontier_.end();it++)
 	{
-		int volume = babyuniversedetector_.VolumeEnclosed(loopBegin,frontier_.end(),false);
-		DoMeasurementOnBabyUniverse(loopBegin,frontier_.end(),volume);
-		for(std::list<const Edge*>::iterator it=boost::next(loopBegin);it!=frontier_.end();it++)
+		if( (*it)->getNext()->getOpposite() == saddleVertex )
+		{
+			return it;
+		}
+	}
+	return frontier_.end();
+}
+
+void PeelingProcedure::ProcessBabyUniverse(std::list<const Edge*>::const_iterator secondLoopBegin, bool FirstLoopContainsBabyUniverse)
+{
+	int firstLoopSize = std::distance(frontier_.cbegin(),secondLoopBegin);
+	if( !FirstLoopContainsBabyUniverse )
+	{
+		int volume = babyuniversedetector_.VolumeEnclosed(secondLoopBegin,frontier_.end(),false);
+		DoMeasurementOnBabyUniverse(secondLoopBegin,frontier_.end(),volume);
+		for(std::list<const Edge*>::const_iterator it=boost::next(secondLoopBegin);it!=frontier_.end();it++)
 		{
 			in_frontier_[(*it)->getNext()->getOpposite()->getId()] = false;
 		}
 		volume_within_frontier_ += volume;	
-		frontier_.erase(loopBegin,frontier_.end());
+		frontier_.erase(secondLoopBegin,frontier_.end());
 		frontier_.push_back(frontier_.front());
 		frontier_.pop_front();
 		frontier_size_ = firstLoopSize;
 
 	} else
 	{
-		int volume = babyuniversedetector_.VolumeEnclosed(frontier_.begin(),loopBegin,false);
-		DoMeasurementOnBabyUniverse(frontier_.begin(),loopBegin,volume);
-		for(std::list<const Edge*>::iterator it=boost::next(frontier_.begin());it!=loopBegin;it++)
+		int volume = babyuniversedetector_.VolumeEnclosed(frontier_.begin(),secondLoopBegin,false);
+		DoMeasurementOnBabyUniverse(frontier_.begin(),secondLoopBegin,volume);
+		for(std::list<const Edge*>::const_iterator it=boost::next(frontier_.begin());it!=secondLoopBegin;it++)
 		{
 			in_frontier_[(*it)->getNext()->getOpposite()->getId()] = false;
 		}
 		volume_within_frontier_ += volume;	
-		frontier_.erase(frontier_.begin(),loopBegin);
+		frontier_.erase(frontier_.begin(),secondLoopBegin);
 		frontier_size_ -= firstLoopSize;
 	}
 }
