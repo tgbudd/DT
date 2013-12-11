@@ -16,9 +16,13 @@ public:
 
 	bool FindEdgeMeasure();
 	bool FindRadii();
+	void RadiiToAngles();
+
+	bool GetRadii(std::vector<double> & radii);
 private:
 //	void RadiiToAngles();
 	double AngleSum(int vertexId);
+	double Angle(Edge * edge);
 	const Triangulation * const triangulation_;
 	
 	std::vector<int> degree_;

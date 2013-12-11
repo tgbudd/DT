@@ -43,6 +43,8 @@ public:
 
 	bool MakeUpToDate();
 
+	virtual bool GetRadii(std::vector<double> & radii);
+
 	const Vector2D & getCoordinate(Vertex * const & vertex) const
 	{
 		return coordinate_[vertex->getId()];

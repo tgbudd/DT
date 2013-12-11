@@ -99,8 +99,10 @@
     <ClInclude Include="BabyUniverseDistribution.h" />
     <ClInclude Include="BitmapDrawer.h" />
     <ClInclude Include="bitmap_image.h" />
+    <ClInclude Include="CirclePacking.h" />
     <ClInclude Include="CirclePattern.h" />
     <ClInclude Include="CohomologyBasis.h" />
+    <ClInclude Include="ConformalDistribution.h" />
     <ClInclude Include="ConnectivityRestrictor.h" />
     <ClInclude Include="Decoration.h" />
     <ClInclude Include="Diffusion.h" />
@@ -140,8 +142,10 @@
     <ClCompile Include="BabyUniverseDetector.cpp" />
     <ClCompile Include="BabyUniverseDistribution.cpp" />
     <ClCompile Include="BitmapDrawer.cpp" />
+    <ClCompile Include="CirclePacking.cpp" />
     <ClCompile Include="CirclePattern.cpp" />
     <ClCompile Include="CohomologyBasis.cpp" />
+    <ClCompile Include="ConformalDistribution.cpp" />
     <ClCompile Include="ConnectivityRestrictor.cpp" />
     <ClCompile Include="Diffusion.cpp" />
     <ClCompile Include="DistanceDistribution.cpp" />

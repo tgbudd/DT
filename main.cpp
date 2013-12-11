@@ -5,35 +5,38 @@
 #include "Simulation.h"
 #include "Triangulation.h"
 #include "utilities.h"
-#include "HarmonicEmbedding.h"
-#include "HarmonicDiffusion.h"
+#include "CirclePacking.h"
 #include "CohomologyBasis.h"
-#include "CMinusTwoBuilder.h"
+#include "ConnectivityRestrictor.h"
+#include "ConformalDistribution.h"
 
 int main(int argc, char* argv[])
 {
 	ParameterStream param(argc,argv);
 
-	int n =	param.Read<int>("triangles");
+	int w =	param.Read<int>("width");
+	int h = param.Read<int>("height");
 	int thermalizationSweeps = param.Read<int>("thermalization sweeps");
 	int	measurementSweeps = param.Read<int>("measurement sweeps");
 	int secondsperoutput = param.Read<int>("seconds per output");
 	bool output = param.UserInput();
 
 	Triangulation triangulation;
-	CMinusTwoBuilder builder(&triangulation,1,n);
-	triangulation.setDominantMatter(&builder);
-	triangulation.DoSweep();
+	triangulation.LoadRegularLattice(w,h);
 
 	Simulation simulation( &triangulation, thermalizationSweeps, secondsperoutput, output );
 
 	CohomologyBasis cohom( &triangulation );
 	cohom.SetMakeUpToDateViaReinitialization(true);
 
-	HarmonicEmbedding embedding( &triangulation, &cohom );
+	ConnectivityRestrictor connect( &triangulation, ConnectivityRestrictor::NO_DOUBLE_EDGES );
+	triangulation.AddMatter( &connect );
 
-	HarmonicDiffusion diffusion( &triangulation, &embedding, &cohom );
-	simulation.AddObservable( &diffusion, measurementSweeps );
+	CirclePacking circlepacking( &triangulation, &cohom );
+
+	ConformalDistribution conf( &circlepacking );
+
+	simulation.AddObservable( &conf, measurementSweeps );
 
 	simulation.Run();
 	return 0;

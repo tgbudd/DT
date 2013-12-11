@@ -278,3 +278,8 @@ bool Embedding::CheckClosedness()
 	}
 	return true;
 }
+
+bool Embedding::GetRadii(std::vector<double> & radii)
+{
+	return false;
+}
