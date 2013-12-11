@@ -18,6 +18,7 @@ public:
 	std::string OutputData() const;
 private:
 	void DoRandomWalk();
+	void DoRandomWienerWalk();
 	Edge * RandomEdge(Vertex * v);
 	void DoGraphDistanceMeasurement();
 
@@ -39,6 +40,17 @@ private:
 	int measurements_;
 	int walk_time_;
 	int max_graph_distance_;
+
+	int max_trajectories_;
+	std::vector<std::vector<double> > wiener_time_;
+	std::vector<std::vector<double> > euclidean_distance_;
+
+	int max_wiener_trajectories_;
+	double time_step_;
+	int num_wiener_steps_;
+	std::vector<std::vector<int> > walking_time_;
+	std::vector<std::vector<double> > wiener_euclidean_distance_;
+
 };
 
 #endif
