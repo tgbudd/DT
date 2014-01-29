@@ -15,6 +15,7 @@ class PeelingProcedure :
 public:
 	///// temporary /////
 	friend class Snapshot;
+	friend class PeelingMeasurement;
 	/////////////////////
 
 	PeelingProcedure(const Triangulation * const triangulation);

@@ -4,56 +4,6 @@
 
 #include "Embedding.h"
 
-LaplacianMatrix::LaplacianMatrix(const Triangulation * const triangulation) : Matrix(triangulation->NumberOfVertices() ) {
-	boost::array<double,3> unitmeasure = {1.0,1.0,1.0};
-	std::vector<boost::array<double,3> > edgemeasure(triangulation->NumberOfTriangles(),unitmeasure);
-	Initialize(triangulation,edgemeasure);
-}
-
-LaplacianMatrix::LaplacianMatrix(const Triangulation * const triangulation, const std::vector<boost::array<double,3> > & edge_measure) : Matrix(edge_measure.size()) {
-	Initialize(triangulation,edge_measure);
-}
-
-void LaplacianMatrix::Initialize(const Triangulation * const triangulation, const std::vector<boost::array<double,3> > & edge_measure)
-{
-	laplacianRules_.resize(triangulation->NumberOfVertices());
-	for(int i=0;i<triangulation->NumberOfTriangles();i++)
-	{
-		Triangle * triangle = triangulation->getTriangle(i);
-		for(int j=0;j<3;j++)
-		{
-			Edge * edge = triangle->getEdge(j);
-			int start = edge->getNext()->getOpposite()->getId();
-			int end = edge->getPrevious()->getOpposite()->getId();
-
-			std::pair<std::map<int,double>::iterator,bool> insertion;
-			insertion = laplacianRules_[start].insert(std::pair<int,double>(end,-edge_measure[i][j]));
-			if( !insertion.second )
-			{
-				insertion.first->second -= edge_measure[i][j];
-			}
-			insertion = laplacianRules_[start].insert(std::pair<int,double>(start,edge_measure[i][j]));
-			if( !insertion.second )
-			{
-				insertion.first->second += edge_measure[i][j];
-			}
-		}
-	}
-}
-
-void LaplacianMatrix::MultiplyVector(const std::vector<double> & from, std::vector<double> & to) const
-{
-	for(int i=0;i<static_cast<int>(from.size());i++)
-	{
-		to[i] = 0.0;
-		for(std::map<int,double>::const_iterator it = laplacianRules_[i].begin(); it != laplacianRules_[i].end(); it++)
-		{
-			to[i] += it->second * from[it->first];
-		}
-	}
-}
-
-
 Embedding::Embedding(const Triangulation * const triangulation, CohomologyBasis * const cohomologybasis) 
 	: Decoration(triangulation), triangulation_(triangulation), cohomologybasis_(cohomologybasis) 
 {

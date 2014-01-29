@@ -117,6 +117,7 @@
     <ClInclude Include="HarmonicDiffusion.h" />
     <ClInclude Include="HarmonicEmbedding.h" />
     <ClInclude Include="LaplacianDeterminant.h" />
+    <ClInclude Include="LaplacianMatrix.h" />
     <ClInclude Include="LaplacianSpectrum.h" />
     <ClInclude Include="LinearAlgebra.h" />
     <ClInclude Include="Matter.h" />
@@ -158,6 +159,7 @@
     <ClCompile Include="HarmonicDiffusion.cpp" />
     <ClCompile Include="HarmonicEmbedding.cpp" />
     <ClCompile Include="LaplacianDeterminant.cpp" />
+    <ClCompile Include="LaplacianMatrix.cpp" />
     <ClCompile Include="LaplacianSpectrum.cpp" />
     <ClCompile Include="LinearAlgebra.cpp" />
     <ClCompile Include="main.cpp" />

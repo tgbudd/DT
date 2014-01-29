@@ -14,18 +14,7 @@
 #include "Vertex.h"
 #include "Edge.h"
 #include "utilities.h"
-
-
-class LaplacianMatrix : public linearalgebra::Matrix
-{
-public:
-	LaplacianMatrix (const Triangulation * const triangulation);
-	LaplacianMatrix (const Triangulation * const triangulation, const std::vector<boost::array<double,3> > & edge_measure);
-	void MultiplyVector(const std::vector<double> & from, std::vector<double> & to) const;
-private:
-	void Initialize(const Triangulation * const triangulation, const std::vector<boost::array<double,3> > & edge_measure);
-	std::vector<std::map<int,double> > laplacianRules_;
-};
+#include "LaplacianMatrix.h"
 
 class Embedding : public Decoration
 {

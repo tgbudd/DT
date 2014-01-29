@@ -160,6 +160,17 @@ public:
 		}
 		draw_.polygon(dPolygon);
 	}
+	void Disk(std::pair<int,int> c, int r)
+	{
+		for(int i=-r;i<=r;i++)
+		{
+			for(int j=-r;j<=r;j++)
+			{
+				if( i*i+j*j <= r*r )
+					draw_.plot_pixel(c.first+i,c.second+j);
+			}
+		}
+	}
 	void TransparentBox(int x1, int y1, int x2, int y2, double opacity)
 	{
 		for(int x=x1;x<=x2;x++)
