@@ -93,6 +93,13 @@ inline Vector2D SubtractVectors2D( const Vector2D & v1, const Vector2D & v2 )
 	diff[1] -= v2[1];
 	return diff;
 }
+inline Vector2D ScaleVector2D( const Vector2D & v, double a )
+{
+	Vector2D v2;
+	v2[0] = a*v[0];
+	v2[1] = a*v[1];
+	return v2;
+}
 inline Vector2D NegateVector2D( const Vector2D & v )
 {
 	Vector2D neg;
@@ -152,10 +159,9 @@ inline Vector2D MobiusTransform(const Vector2D & z, const Vector2D & z0)
 	double denominator = 1.0 - 2.0 * DotProduct(z,z0) + normsqz * normsqz0;
 	Vector2D y;
 	y[0] = (z[0] - z0[0] - normsqz * z0[0] + z[0] * z0[0] * z0[0] - z[0] * z0[1] * z0[1] + 2.0 * z[1] * z0[0] * z0[1])/denominator;
-	y[0] = (z[1] - z0[1] - normsqz * z0[1] - z[1] * z0[0] * z0[0] + z[1] * z0[1] * z0[1] + 2.0 * z[0] * z0[0] * z0[1])/denominator;
+	y[1] = (z[1] - z0[1] - normsqz * z0[1] - z[1] * z0[0] * z0[0] + z[1] * z0[1] * z0[1] + 2.0 * z[0] * z0[0] * z0[1])/denominator;
 	return y;
 }
-
 
 inline Vector2D RotateVector2D(const Vector2D & v, double angle)
 {
@@ -169,6 +175,32 @@ inline Vector2D RotateVector2D(const Vector2D & v, double angle)
 inline Vector2D MobiusTransform(const Vector2D & z, const Vector2D & z0, double angle)
 {
 	return RotateVector2D(MobiusTransform(z,z0),angle);
+}
+
+inline Vector2D MobiusTransform(const Vector2D & z, const Vector2D & z0, const Vector2D & z1)
+{
+	// Mobius transform that maps z0 to 0 and z1 to the positive real axis
+	return RotateVector2D(MobiusTransform(z,z0),-VectorAngle(MobiusTransform(z1,z0)));
+}
+
+inline Vector2D InverseMobiusTransform(const Vector2D & z, const Vector2D & z0, const Vector2D & z1)
+{
+	// Mobius transform that maps 0 to z0 and some point on the positive real axis to z1
+	return MobiusTransform(RotateVector2D(z,VectorAngle(MobiusTransform(z1,z0))),NegateVector2D(z0));
+}
+inline double PoincareDistance(const Vector2D & z1, const Vector2D & z0)
+{
+	double r = Norm2D(MobiusTransform(z1,z0));
+	return std::log(1+r) - std::log(1-r);
+}
+inline std::pair<Vector2D,double> EuclideanCircle(const Vector2D & z, double exprad)
+{
+	// Give the Euclidean center and radius of the hyperbolic circle around z with hyperbolic radius -log(exprad)/2
+	double normsqz = NormSquared2D(z);
+	double sqrtexprad = std::sqrt(exprad);
+	double factor = 1.0/((1.0+sqrtexprad)*(1.0+sqrtexprad)-(1.0-sqrtexprad)*(1.0-sqrtexprad) * normsqz);
+	double radius = factor * (1.0 - exprad) * (1.0-normsqz);
+	return std::pair<Vector2D,double>(ScaleVector2D(z,1.0 - factor*(1.0-sqrtexprad)*(1.0-sqrtexprad)*(1.0-normsqz)),radius);
 }
 
 inline Vector2D CenterOfCircle(const boost::array<Vector2D,3> & v)

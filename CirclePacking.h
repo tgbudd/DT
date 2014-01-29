@@ -22,18 +22,7 @@ public:
 	void RadiiToAngles();
 
 	bool GetRadii(std::vector<double> & radii);
-	bool FindDiskEmbedding(const std::list<const Edge*> & boundary, const Edge * centerEdge);
-	void getCircles(std::vector<std::pair<Vector2D,double> > & circles);
 private:
-	bool FindDiskRadii(const std::list<const Edge*> & boundary);
-	bool DiskLayout(const std::list<const Edge*> & boundary);
-	void MobiusTransformation(const Edge * centerEdge);
-	std::vector<Triangle *> disk_triangles_;
-	std::vector<Vertex *> disk_vertices_;
-	std::vector<boost::array<double,3> > disk_edge_measure_;
-
-	std::pair<Vector2D,double> CircleMobius(Vector2D c, double radius, Vector2D z0, double angle);
-
 //	void RadiiToAngles();
 	double AngleSum(int vertexId);
 	double Angle(Edge * edge);
@@ -44,7 +33,6 @@ private:
 	std::vector<int> degree_;
 	std::vector<double> radius_;
 	std::vector<boost::array<double,3> > angles_;
-	std::vector<Vector2D> disk_coordinate_;
 
 
 	int max_iterations_;

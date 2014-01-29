@@ -106,6 +106,7 @@
     <ClInclude Include="ConnectivityRestrictor.h" />
     <ClInclude Include="Decoration.h" />
     <ClInclude Include="Diffusion.h" />
+    <ClInclude Include="DiskCirclePacking.h" />
     <ClInclude Include="DistanceDistribution.h" />
     <ClInclude Include="DominantMatter.h" />
     <ClInclude Include="DualCohomologyBasis.h" />
@@ -149,6 +150,7 @@
     <ClCompile Include="ConformalDistribution.cpp" />
     <ClCompile Include="ConnectivityRestrictor.cpp" />
     <ClCompile Include="Diffusion.cpp" />
+    <ClCompile Include="DiskCirclePacking.cpp" />
     <ClCompile Include="DistanceDistribution.cpp" />
     <ClCompile Include="DualCohomologyBasis.cpp" />
     <ClCompile Include="DualDiffusion.cpp" />

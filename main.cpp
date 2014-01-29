@@ -5,7 +5,7 @@
 #include "Simulation.h"
 #include "Triangulation.h"
 #include "utilities.h"
-#include "CirclePacking.h"
+#include "DiskCirclePacking.h"
 #include "CohomologyBasis.h"
 #include "ConnectivityRestrictor.h"
 #include "PeelingProcedure.h"
@@ -23,7 +23,7 @@ private:
 	void SaveBitmap();
 
 	Triangulation * triangulation_;
-	CirclePacking circlepacking_;
+	DiskCirclePacking diskcirclepacking_;
 	PeelingProcedure peelingprocedure_;
 	CohomologyBasis * cohomologybasis_;
 
@@ -36,7 +36,7 @@ private:
 
 PeelingMeasurement::PeelingMeasurement(Triangulation * triangulation, CohomologyBasis * cohomologybasis ) 
 	: triangulation_(triangulation), 
-	  circlepacking_(triangulation,cohomologybasis),
+	  diskcirclepacking_(triangulation),
 	  peelingprocedure_(triangulation,cohomologybasis),
 	  cohomologybasis_(cohomologybasis),
 	  fullwidth_(1000),
@@ -54,24 +54,34 @@ void PeelingMeasurement::Measure()
 		Triangle * triangle = SelectTriangle();
 		
 		peelingprocedure_.InitializePeeling( triangle );
-
+		DiscreteColorScheme scheme(DiscreteColorScheme::COLORS8);
+		int a=0;
 		do {
-			if( peelingprocedure_.volume_within_frontier_ > 20 && circlepacking_.FindDiskEmbedding(peelingprocedure_.frontier_,triangle->getEdge(0)) )
+			if( a%2 == 0 )
 			{
-				std::vector<std::pair<Vector2D,double> > circles;
-				circlepacking_.getCircles(circles);
-
-				bitmap_.Clear();
-				bitmap_.setPenColor(20,20,200);
-				for(int i=0,endi=circles.size();i<endi;i++)
+				if( peelingprocedure_.volume_within_frontier_ > 50 && diskcirclepacking_.FindEmbedding(peelingprocedure_.frontier_,triangle->getEdge(0)) )
 				{
-					std::pair<int,int> x;
-					x.first = static_cast<int>(fullwidth_/2 + fullheight_ * ( 0.5 + 0.48 * circles[i].first[0] ));
-					x.second = static_cast<int>(fullheight_/2 + fullheight_ * ( 0.5 + 0.48 * circles[i].first[1] ));
-					bitmap_.Disk(x, static_cast<int>(fullheight_ * 0.48 * circles[i].second) );
+					std::vector<std::pair<Vertex*,std::pair<Vector2D,double> > > circles;
+					diskcirclepacking_.getCircles(circles);
+
+					bitmap_.Clear();
+					bitmap_.setPenColor(200,200,200);
+					bitmap_.Disk(std::pair<int,int>(fullwidth_/2,fullheight_/2),static_cast<int>(0.48*fullheight_));
+					bitmap_.setPenColor(20,20,200);
+					for(int i=0,endi=circles.size();i<endi;i++)
+					{
+						boost::array<unsigned char,3> c = scheme.getColor(peelingprocedure_.distance_[circles[i].first->getId()]);
+						bitmap_.setPenColor(c[0],c[1],c[2]);				
+						std::pair<int,int> x;
+						x.first = static_cast<int>(fullwidth_/2 + fullheight_ * 0.48 * circles[i].second.first[0] );
+						x.second = static_cast<int>(fullheight_/2 + fullheight_ * 0.48 * circles[i].second.first[1] );
+						bitmap_.Disk(x, static_cast<int>(fullheight_ * 0.48 * circles[i].second.second) );
+					}
+					SaveBitmap();
+					int hy=0;
 				}
-				SaveBitmap();
 			}
+			a++;
 		} while( !peelingprocedure_.DoPeelingStepOnTorus() );
 	}
 }
