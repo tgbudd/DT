@@ -1,3 +1,6 @@
+#include <map>
+#include <queue>
+
 #include "boost/random/uniform_int.hpp"
 #include "boost/random/uniform_real.hpp"
 #include "boost/random/normal_distribution.hpp"
@@ -130,6 +133,60 @@ void Triangulation::LoadRegularLattice(int width, int height)
 	}
 
 	DetermineVertices();
+	IncreaseState();
+}
+
+void Triangulation::LoadSphericalBySubdivision(int numberOfTriangles)
+{
+	BOOST_ASSERT( numberOfTriangles >= 4 || numberOfTriangles % 2 == 0 );
+
+	LoadTetrahedron();
+
+	while( static_cast<int>(triangles_.size()) < numberOfTriangles )
+	{
+		Subdivide(getRandomTriangle());
+	}
+}
+
+void Triangulation::LoadTetrahedron()
+{
+	BOOST_ASSERT( triangles_.empty() );
+	n_triangles_=0;
+	for(int i=0;i<4;i++)
+	{
+		NewTriangle();
+	}
+	triangles_[0]->getEdge(0)->bindAdjacent(triangles_[3]->getEdge(0));
+	triangles_[0]->getEdge(1)->bindAdjacent(triangles_[1]->getEdge(0));
+	triangles_[0]->getEdge(2)->bindAdjacent(triangles_[2]->getEdge(0));
+	triangles_[1]->getEdge(1)->bindAdjacent(triangles_[3]->getEdge(2));
+	triangles_[1]->getEdge(2)->bindAdjacent(triangles_[2]->getEdge(1));
+	triangles_[2]->getEdge(2)->bindAdjacent(triangles_[3]->getEdge(1));
+		
+	DetermineVertices();
+	IncreaseState();
+}
+
+void Triangulation::Subdivide(Triangle * triangle)
+{
+	Triangle * t1 = NewTriangle(*triangle);
+	Triangle * t2 = NewTriangle(*triangle);
+
+	n_vertices_++; 
+	vertices_.push_back(new Vertex(vertices_.size(),triangle->getEdge(0)));
+	triangle->getEdge(0)->getOpposite()->setParent(t1->getEdge(0));
+	triangle->getEdge(0)->setOpposite(vertices_.back());
+	t1->getEdge(1)->setOpposite(vertices_.back());
+	t2->getEdge(2)->setOpposite(vertices_.back());
+
+	triangle->getEdge(1)->getAdjacent()->bindAdjacent(t1->getEdge(1));
+	triangle->getEdge(2)->getAdjacent()->bindAdjacent(t2->getEdge(2));
+	t1->getEdge(2)->bindAdjacent(t2->getEdge(1));
+	t1->getEdge(0)->bindAdjacent(triangle->getEdge(1));
+	t2->getEdge(0)->bindAdjacent(triangle->getEdge(2));
+
+	BOOST_ASSERT(CheckVertexNeighbourhood(vertices_.back()));
+
 	IncreaseState();
 }
 
@@ -324,6 +381,8 @@ void Triangulation::DetermineVertices()
 		}
 	}
 	n_vertices_ = static_cast<int>(vertices_.size());
+
+	IncreaseState();
 }
 
 void Triangulation::LoadFromAdjacencyList(const std::vector<boost::array<std::pair<int,int>,3 > > & adj)
@@ -379,6 +438,26 @@ Triangle * Triangulation::NewTriangle()
 	triangles_.back()->setId(static_cast<int>(triangles_.size())-1);
 	n_triangles_++;
 	return triangles_.back();
+}
+
+Triangle * Triangulation::NewTriangle(const Triangle & triangle)
+{
+	triangles_.push_back(new Triangle(triangle));
+	triangles_.back()->setId(static_cast<int>(triangles_.size())-1);
+	n_triangles_++;
+	return triangles_.back();
+}
+
+void Triangulation::DeleteTriangle(Triangle * triangle)
+{
+	if( triangles_.back() != triangle )
+	{
+		triangles_[triangle->getId()] = triangles_.back();
+		triangles_.back()->setId(triangle->getId());
+	}
+	triangles_.pop_back();
+	delete triangle;
+	n_triangles_--;
 }
 
 void Triangulation::Clear()
@@ -437,3 +516,114 @@ void Triangulation::SetCustomSweepSize(int n)
 	custom_sweep_size_ = n;
 }
 
+void Triangulation::RemoveBabyUniverses()
+{
+	// Identify all pairs of edges that form a neck of length 2
+	std::vector<boost::array<Edge *,3> > newNbr(NumberOfTriangles());
+	for(int i=0;i<NumberOfVertices();i++)
+	{
+		Vertex * vertex = getVertex(i);
+		std::map<Vertex*,Edge*> edgeToVertex;
+		Edge * edge = vertex->getParent()->getPrevious();
+		bool firstround = true;
+		while(true)
+		{
+			if( edge->getPrevious()->getOpposite() == vertex )
+			{
+				newNbr[edge->getParent()->getId()][edge->getId()] = edge->getAdjacent();
+			} else
+			{
+				std::pair<std::map<Vertex*,Edge*>::iterator,bool> ret = edgeToVertex.insert(std::pair<Vertex*,Edge*>(edge->getPrevious()->getOpposite(),edge));
+				if( !ret.second )
+				{
+					newNbr[ret.first->second->getAdjacent()->getParent()->getId()][ret.first->second->getAdjacent()->getId()] = edge;
+					newNbr[edge->getParent()->getId()][edge->getId()] = ret.first->second->getAdjacent();
+					ret.first->second = edge;
+				}
+			}
+
+			edge = edge->getAdjacent()->getNext();
+			if( edge == vertex->getParent()->getPrevious() )
+			{
+				if( firstround )
+				{
+					firstround = false;
+				} else
+				{
+					break;
+				}
+			}
+		}
+	}
+
+	////////
+	for(int i=0;i<NumberOfTriangles();i++)
+	{
+		for(int j=0;j<3;j++)
+		{
+			BOOST_ASSERT( newNbr[newNbr[i][j]->getParent()->getId()][newNbr[i][j]->getId()] == getTriangle(i)->getEdge(j) );
+		}
+	}
+	/////////
+
+	// Determine largest component
+	std::vector<int> flag(NumberOfTriangles(),-1);
+	int largest = 0;
+	int largestFlag = 0;
+	std::queue<Triangle *> q;
+	for(int i=0;i<NumberOfTriangles();i++)
+	{
+		if( flag[i] != -1 )
+			continue;
+
+		int size = 0;
+		q.push(getTriangle(i));
+		flag[i] = i;
+		while( !q.empty() )
+		{
+			Triangle * t = q.front();
+			q.pop();
+			size++;
+			for(int j=0;j<3;j++)
+			{
+				Triangle * nbr = newNbr[t->getId()][j]->getParent();
+				BOOST_ASSERT( flag[nbr->getId()] == -1 || flag[nbr->getId()] == i );
+				if( flag[nbr->getId()] == -1 )
+				{
+					flag[nbr->getId()] = i;
+					q.push(nbr);
+				}
+			}
+		}
+		if( size > largest )
+		{
+			largest = size;
+			largestFlag = i;
+		}
+	}
+
+	// Update neighbour info
+	for(int i=0;i<NumberOfTriangles();i++)
+	{
+		Triangle * triangle = getTriangle(i);
+		if( flag[i] == largestFlag )
+		{
+			for(int j=0;j<3;j++)
+			{
+				triangle->getEdge(j)->setAdjacent(newNbr[i][j]);
+			}
+		}
+	}
+
+	// Delete all triangles that do not have flag=largestFlag
+	std::vector<Triangle *> tmpTriangles = triangles_;
+	for(int i=0,endi=tmpTriangles.size();i<endi;i++)
+	{
+		if( flag[i] != largestFlag )
+		{
+			DeleteTriangle(tmpTriangles[i]);
+		}
+	}
+
+	DetermineVertices();
+}

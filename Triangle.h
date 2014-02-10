@@ -9,6 +9,7 @@ class Triangle
 {
 public:
 	Triangle();
+	Triangle(const Triangle & triangle);
 	~Triangle();
 
 	const int& getId() const {

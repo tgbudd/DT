@@ -2,13 +2,15 @@
 
 #include "CirclePacking.h"
 #include "TriangulationProperties.h"
+#include "HarmonicEmbedding.h"
 
 CirclePacking::CirclePacking(Triangulation * const triangulation, CohomologyBasis * const cohomologybasis)
 	: triangulation_(triangulation), Embedding(triangulation,cohomologybasis), babyuniversedetector_(triangulation)
+	, cohomologybasis_(cohomologybasis)
 {
 	max_iterations_ = 5000;
 	epsilon_ = 1.0e-5;
-	delta_ = 0.04;
+	delta_ = 0.01;
 }
 
 double CirclePacking::Angle(Edge * edge)
@@ -34,14 +36,13 @@ double CirclePacking::AngleSum(int vertexId)
 
 bool CirclePacking::FindRadii()
 {
-	// given the theta, determine the radii of the circles in the circle pattern
-
 	if( static_cast<int>(radius_.size()) != triangulation_->NumberOfVertices() )
 	{
 		radius_.resize(triangulation_->NumberOfVertices());
 	}
-	std::fill(radius_.begin(),radius_.end(),1.0);
+
 	double startRadius = std::sqrt(1.0/triangulation_->NumberOfVertices());
+	std::fill(radius_.begin(),radius_.end(),startRadius);
 	std::vector<double> radius2(triangulation_->NumberOfVertices(),startRadius);
 
 	properties::DegreeList(triangulation_,degree_);

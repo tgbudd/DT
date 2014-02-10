@@ -124,7 +124,14 @@ inline double Norm2D( const Vector2D & v )
 {
 	return std::sqrt(NormSquared2D(v));
 }
-
+inline Vector2D Normalize( const Vector2D & v )
+{
+	Vector2D v2;
+	double norm = Norm2D(v);
+	v2[0] = v[0]/norm;
+	v2[1] = v[1]/norm;
+	return v2;
+}
 inline void ResizeAndAdd(std::vector<int> & v, int index, int value)
 {
 	if(index >= static_cast<int>(v.size()))
@@ -213,6 +220,15 @@ inline Vector2D CenterOfCircle(const boost::array<Vector2D,3> & v)
 	return c;
 }
 
+inline Vector2D TransformByModulus(Vector2D domainVector, std::pair<double,double> modulus)
+{
+	return MakeVector2D(domainVector[0] + modulus.first * domainVector[1], modulus.second *  domainVector[1]);
+}
+inline double NormSquaredTransformedByModulus(Vector2D domainVector, std::pair<double,double> modulus)
+{
+	return ((domainVector[0] + modulus.first * domainVector[1])*(domainVector[0] + modulus.first * domainVector[1]) + (modulus.second * domainVector[1])*(modulus.second * domainVector[1]))/modulus.second;
+}
+
 class ParameterStream {
 public:
 	ParameterStream(int argc, char** argv) : argc_(argc), argv_(argv), current_(1) {}
@@ -253,8 +269,14 @@ namespace math {
 class ReusableFlag
 {
 public:
-	ReusableFlag(int n) : current_flag_(0) {
+	ReusableFlag(int n=0) : current_flag_(0) {
 		flag_.resize(n,0);
+	}
+	void ResetAndResize(int n)
+	{
+		flag_.resize(n);
+		std::fill(flag_.begin(),flag_.end(),0);
+		current_flag_=1;
 	}
 	void Reset() {
 		current_flag_++;
@@ -265,9 +287,13 @@ public:
 		}
 	}
 	bool isSet(int n) {
-		return flag_[n] == current_flag_;
+		return (static_cast<int>(flag_.size()) > n && flag_[n] == current_flag_);
 	}
 	void Set(int n, bool f=true) {
+		if( static_cast<int>(flag_.size()) <= n )
+		{
+			flag_.resize(n+1,current_flag_-1);
+		}
 		flag_[n] = (f ? current_flag_ : current_flag_-1 );
 	}
 private:

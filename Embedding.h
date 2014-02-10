@@ -102,6 +102,10 @@ public:
 				}
 			}*/
 		}
+		if( static_cast<int>(edge_measure_.size()) != NumberOfTriangles )
+		{
+			edge_measure_.resize(NumberOfTriangles);
+		}
 	}
 	void setMaxIterations(int iterations)
 	{
@@ -124,6 +128,7 @@ public:
 	{
 		accuracy_=accuracy;
 	}
+	void SaveEmbedding(std::string filename);
 private:
 	void Coderivative( const std::vector<boost::array<double,3> > & oneform, std::vector<double> & result );
 	void LoadInitialCoordinates( std::vector<double> & coordinates, int i, Vertex * startVertex ) const;

@@ -8,11 +8,21 @@ class HarmonicEmbedding :
 	public Embedding
 {
 public:
-	HarmonicEmbedding(Triangulation * const triangulation, CohomologyBasis * const cohomologybasis);
+	HarmonicEmbedding(const Triangulation * const triangulation, CohomologyBasis * const cohomologybasis);
 	~HarmonicEmbedding() {}
 	bool FindEdgeMeasure();
+	bool GetRadii(std::vector<double> & radii);
+
+	enum RadiusDefinition {
+		SQUARE_ROOT_OF_AREA,
+		CIRCUMSCRIBED_CIRCLE,
+		INSCRIBED_CIRCLE,
+		AVERAGE_EDGE_LENGTH
+	};
+	void SetRadiusDefintion( RadiusDefinition radiusdefinition );
 private:
 	const Triangulation * const triangulation_;
+	RadiusDefinition radiusdefinition_;
 };
 
 #endif

@@ -29,11 +29,12 @@ private:
 	const Triangulation * const triangulation_;
 
 	BabyUniverseDetector babyuniversedetector_;
-	
+	CohomologyBasis * cohomologybasis_;
+
 	std::vector<int> degree_;
 	std::vector<double> radius_;
 	std::vector<boost::array<double,3> > angles_;
-
+	
 
 	int max_iterations_;
 	double epsilon_, delta_;

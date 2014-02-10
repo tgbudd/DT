@@ -18,6 +18,7 @@ public:
 	void Output();
 
 	void AddConfigurationInfo(std::string info);
+	void SetDirectory(const std::string & dir);
 	std::string GetIdentifier() const;
 private:
 	void setStartTime();

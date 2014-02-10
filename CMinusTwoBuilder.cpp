@@ -1,11 +1,16 @@
 #include <stack>
 
 #include "CMinusTwoBuilder.h"
+#include "CohomologyBasis.h"
+#include "BabyUniverseRemover.h"
 #include "Triangle.h"
 #include "Edge.h"
 
 CMinusTwoBuilder::CMinusTwoBuilder(Triangulation * const triangulation, int Genus, int NumberOfTriangles)
-	: triangulation_(triangulation), genus_(Genus), n_triangles_(NumberOfTriangles)
+	: triangulation_(triangulation), 
+	genus_(Genus), 
+	n_triangles_(NumberOfTriangles),
+	remove_baby_universes_(false)
 {
 	BOOST_ASSERT( genus_ == 0 || genus_ == 1 );
 	BOOST_ASSERT( n_triangles_ >= 2 && n_triangles_ % 2 == 0 );
@@ -25,11 +30,31 @@ void CMinusTwoBuilder::DoSweep()
 	ApplyBoundaryMatching(matching_);
 	triangulation_->DetermineVertices();
 
+	BOOST_ASSERT( triangulation_->NumberOfTriangles() == 2*triangulation_->NumberOfVertices() - 4 );
+
 	if( genus_ == 1 )
 	{
 		GenusZeroToGenusOneMatching();
 		ApplyBoundaryMatching( matching_ );
 		triangulation_->DetermineVertices();
+	}
+
+	BOOST_ASSERT( triangulation_->NumberOfTriangles() == 2*triangulation_->NumberOfVertices() );
+
+	if( remove_baby_universes_ )
+	{
+		if( genus_ == 0 )
+		{
+			BabyUniverseRemover remover(triangulation_);
+			remover.RemoveBabyUniverses();
+		} else
+		{
+			CohomologyBasis cohom(triangulation_);
+			cohom.SetMakeUpToDateViaReinitialization(true);
+			cohom.MakeUpToDate();
+			BabyUniverseRemover remover(triangulation_,&cohom);
+			remover.RemoveBabyUniverses();
+		}
 	}
 }
 
@@ -106,16 +131,22 @@ void CMinusTwoBuilder::GenusZeroToGenusOneMatching()
 	for(int i=0;i<3;i++)
 	{
 		int v = triangulation_->RandomInteger(0,triangulation_->NumberOfVertices()-1-i);
-		for(int j=0;j<i;j++)
+		if( i == 1 && v >= vertices[0]->getId() )
 		{
-			if( v >= vertices[j]->getId() )
+			v++;
+		} else if( i == 2 && v >= std::min(vertices[0]->getId(),vertices[1]->getId()) )
+		{
+			v++;
+			if( v >= std::max(vertices[0]->getId(),vertices[1]->getId()) )
 			{
 				v++;
 			}
 		}
 		vertices[i] = triangulation_->getVertex(v);
 	}
-	
+	BOOST_ASSERT( vertices[0] != vertices[1] && vertices[1] != vertices[2] && vertices[2] != vertices[0] );
+
+
 	// For each edge we need to know what its position in the boundary is (if applicable).
 	/*boost::array<int,3> allMinusOne = {-1,-1,-1};
 	std::vector<boost::array<int,3> > edgeToBoundary(n_triangles_,allMinusOne);
@@ -205,7 +236,7 @@ double CMinusTwoBuilder::CentralCharge() const
 std::string CMinusTwoBuilder::ConfigurationData() const
 {
 	std::ostringstream stream;
-	stream << std::fixed << "{type -> \"cminustwobuilder\", centralcharge -> -2 }";
+	stream << std::fixed << "{type -> \"cminustwobuilder\", centralcharge -> -2, numberoftriangles -> " << n_triangles_ << "}";
 	return stream.str();
 }
 
@@ -223,3 +254,7 @@ void CMinusTwoBuilder::getSpanningTree(std::vector<boost::array<bool,3> > & intr
 	}
 }
 
+void CMinusTwoBuilder::setRemoveBabyUniverses(bool remove)
+{
+	remove_baby_universes_ = remove;
+}

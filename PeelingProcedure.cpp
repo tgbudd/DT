@@ -140,12 +140,15 @@ void PeelingProcedure::InitializePeeling(Triangle * startTriangle)
 	frontier_size_=3;
 	volume_within_frontier_=1;
 
+	in_mother_universe_.resize(triangulation_->NumberOfTriangles());
 	std::fill(in_mother_universe_.begin(),in_mother_universe_.end(),false);
 	in_mother_universe_[startTriangle->getId()] = true;
+	in_frontier_.resize(triangulation_->NumberOfVertices());
 	std::fill(in_frontier_.begin(),in_frontier_.end(),false);
 	in_frontier_[oppositeEdge->getOpposite()->getId()] = true;
 	in_frontier_[oppositeEdge->getNext()->getOpposite()->getId()] = true;
 	in_frontier_[oppositeEdge->getPrevious()->getOpposite()->getId()] = true;
+	vertex_in_mother_universe_.resize(triangulation_->NumberOfVertices());
 	std::fill(vertex_in_mother_universe_.begin(),vertex_in_mother_universe_.end(),false);
 	vertex_in_mother_universe_[oppositeEdge->getOpposite()->getId()] = true;
 	vertex_in_mother_universe_[oppositeEdge->getNext()->getOpposite()->getId()] = true;
@@ -176,7 +179,7 @@ void PeelingProcedure::DoPeeling()
 		{
 			// Fronteir has a figure-8 form and therefore a baby universe has been encountered.
 			std::list<const Edge*>::const_iterator secondLoopBegin = FindSecondLoopBegin();
-			ProcessBabyUniverse(secondLoopBegin,FirstLoopContainsFinalVertex(secondLoopBegin));
+			ProcessBabyUniverse(secondLoopBegin,!FirstLoopContainsFinalVertex(secondLoopBegin));
 		}
 		volume_within_frontier_++;
 		steps++;
@@ -187,6 +190,33 @@ void PeelingProcedure::DoPeeling()
 			distance_trajectory_.back().push_back(distance_[(*frontier_.begin())->getNext()->getOpposite()->getId()]);
 		}
 	}
+}
+	
+void PeelingProcedure::PreparePeelingOnSphere(Triangle * startTriangle)
+{
+	InitializePeeling(startTriangle);
+	final_vertex_ = ChooseFinalVertex();
+	properties::VertexDistanceList(triangulation_,final_vertex_,distance_to_final_);
+}
+
+bool PeelingProcedure::DoPeelingStepOnSphere()
+{
+	volume_within_frontier_++;
+	if(in_frontier_[final_vertex_->getId()])
+	{
+		int hy=0;
+	}
+	if( PeelingStep() )
+	{
+		// Fronteir has a figure-8 form and therefore a baby universe has been encountered.
+		std::list<const Edge*>::const_iterator secondLoopBegin = FindSecondLoopBegin();
+		ProcessBabyUniverse(secondLoopBegin,!FirstLoopContainsFinalVertex(secondLoopBegin));
+	}
+	if(in_frontier_[final_vertex_->getId()])
+	{
+		int hy=0;
+	}
+	return in_frontier_[final_vertex_->getId()];
 }
 
 void PeelingProcedure::DoPeelingOnTorus(Triangle * startTriangle)
@@ -352,7 +382,7 @@ void PeelingProcedure::ProcessBabyUniverse(std::list<const Edge*>::const_iterato
 Vertex * PeelingProcedure::ChooseFinalVertex()
 {
 	// Choose a random vertex of maximal distance.
-	int maxdist = 0;
+	/*int maxdist = 0;
 	int VerticesAtMaxDist = 0;
 	Vertex * vertex;
 	for(int i=0,endi=triangulation_->NumberOfVertices();i<endi;i++)
@@ -370,7 +400,21 @@ Vertex * PeelingProcedure::ChooseFinalVertex()
 				vertex = triangulation_->getVertex(i);
 			}
 		}
+	}*/
+
+	int avdist=0;
+	for(int i=0,endi=triangulation_->NumberOfVertices();i<endi;i++)
+	{
+		avdist += distance_[i];
 	}
+	avdist /= triangulation_->NumberOfVertices();
+
+	Vertex * vertex;
+	do
+	{
+		vertex = triangulation_->getRandomVertex();
+	} while( distance_[vertex->getId()] <= 4*avdist/3 );
+
 	return vertex;
 }
 

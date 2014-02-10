@@ -16,6 +16,15 @@ public:
 	~DiskCirclePacking() {}
 	bool FindEmbedding(const std::list<const Edge*> & boundary, const Edge * centerEdge);
 	void getCircles(std::vector<std::pair<Vertex*,std::pair<Vector2D,double> > > & circles);
+	void getBoundaryPositions(std::vector<double> & angles);
+	double getCenterRadius() const;
+	int getStepsUsed() const {
+		return steps_;
+	}
+	std::vector<Triangle *> getDiskTriangles()
+	{
+		return disk_triangles_;
+	}
 private:
 	bool FindDiskRadii(const std::list<const Edge*> & boundary);
 	bool DiskLayout(const std::list<const Edge*> & boundary, const Edge * centerEdge);
@@ -28,7 +37,11 @@ private:
 
 	const Triangulation * const triangulation_;
 	BabyUniverseDetector babyuniversedetector_;
+	
+	std::list<const Edge*> boundary_;
+	const Edge * center_edge_;
 
+	bool use_one_minus_radius_;
 	std::vector<int> degree_;
 	std::vector<double> radius_;
 	std::vector<boost::array<double,3> > angles_;
@@ -40,6 +53,9 @@ private:
 
 	int max_iterations_;
 	double epsilon_, delta_;
+	bool reset_radius_;
+
+	int steps_;
 };
 
 

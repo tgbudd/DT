@@ -16,6 +16,7 @@ public:
 	double CentralCharge() const;
 	std::string ConfigurationData() const;
 	void getSpanningTree(std::vector<boost::array<bool,3> > & intree) const;
+	void setRemoveBabyUniverses(bool remove);
 private:
 	void RandomDiskTriangulation();
 	void RandomBoundaryMatching();
@@ -25,6 +26,7 @@ private:
 	Triangulation * const triangulation_;
 	int n_triangles_;
 	int genus_;
+	bool remove_baby_universes_;
 
 	std::vector<Edge *> boundary_;
 	std::vector<int> tree_list_;

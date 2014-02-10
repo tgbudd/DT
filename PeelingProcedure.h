@@ -1,7 +1,7 @@
 #ifndef PEELING_PROCEDURE_H
 #define PEELING_PROCEDURE_H
 
-#include "observable.h"
+#include "Observable.h"
 #include "Triangulation.h"
 #include "Edge.h"
 #include "BabyUniverseDetector.h"
@@ -27,6 +27,8 @@ private:
 	void DoPeeling();
 	void DoPeelingOnTorus(Triangle * startTriangle);
 	bool DoPeelingStepOnTorus();
+	bool DoPeelingStepOnSphere();
+	void PreparePeelingOnSphere(Triangle * startTriangle);
 	void InitializePeeling();
 	void InitializePeeling(Triangle * startTriangle);
 	bool PeelingStep();
@@ -54,6 +56,7 @@ private:
 	Triangle * last_triangle_;
 	Triangle * start_triangle_;
 	Vertex * start_vertex_;
+	Vertex * final_vertex_;
 	std::vector<bool> vertex_in_mother_universe_;
 	std::vector<bool> in_mother_universe_;  // for each triangle
 	std::vector<bool> in_frontier_;			// for each vertex

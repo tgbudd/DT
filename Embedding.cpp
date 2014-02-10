@@ -1,6 +1,7 @@
 #include <queue>
 #include <vector>
 #include <map>
+#include <fstream>
 
 #include "Embedding.h"
 
@@ -90,12 +91,13 @@ bool Embedding::FindEmbedding()
 	}
 	//cohomologybasis_->Simplify();
 
+	setSize(triangulation_->NumberOfTriangles(),triangulation_->NumberOfVertices());
+
 	if( !FindEdgeMeasure() )
 	{
 		return false;
 	}
 
-	setSize(triangulation_->NumberOfTriangles(),triangulation_->NumberOfVertices());
 
 	LaplacianMatrix laplacian(triangulation_,edge_measure_);
 
@@ -232,4 +234,29 @@ bool Embedding::CheckClosedness()
 bool Embedding::GetRadii(std::vector<double> & radii)
 {
 	return false;
+}
+
+
+void Embedding::SaveEmbedding(std::string filename)
+{
+	std::ofstream file(filename.c_str());
+
+	std::pair<double,double> tau = CalculateModuli();
+	file << std::fixed << "{ modulus -> " << tau.first << " + I " << tau.second << ", points -> {";
+	for(int i=0,endi=triangulation_->NumberOfTriangles();i<endi;i++)
+	{
+		Triangle * triangle = triangulation_->getTriangle(i);
+		Vector2D x = coordinate_[triangle->getEdge(0)->getOpposite()->getId()];
+		x = AddVectors2D(x,ScaleVector2D(getForm(i,2),1/3.0));
+		x = AddVectors2D(x,ScaleVector2D(getForm(i,1),-1/3.0));
+		x[0] = properfmod(x[0],1.0);
+		x[1] = properfmod(x[1],1.0);
+		file << (i>0?",":"") << "{" << x[0] << ", " << x[1] << "}";
+	}
+	
+	/*for(int i=0,endi=coordinate_.size();i<endi;i++)
+	{
+		file << (i>0?",":"") << "{" << coordinate_[i][0] << ", " << coordinate_[i][1] << "}";
+	}*/
+	file << "}}\n";
 }

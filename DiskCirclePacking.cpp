@@ -1,4 +1,7 @@
 #include <queue>
+#include <fstream>
+
+//#define LOG_CIRCLE_PACKING
 
 #include "DiskCirclePacking.h"
 #include "TriangulationProperties.h"
@@ -7,9 +10,12 @@ DiskCirclePacking::DiskCirclePacking(Triangulation * const triangulation)
 	: triangulation_(triangulation),
 	  babyuniversedetector_(triangulation)
 {
+	use_one_minus_radius_ = false;
 	max_iterations_ = 5000;
 	epsilon_ = 1.0e-5;
-	delta_ = 0.04;
+	delta_ = 0.001;
+	//delta_ = 0.001;
+	reset_radius_ = true;
 }
 
 
@@ -18,7 +24,14 @@ double DiskCirclePacking::Angle(Edge * edge)
 	double radius = radius_[edge->getOpposite()->getId()];
 	double nbrRadius1 = radius_[edge->getPrevious()->getOpposite()->getId()];
 	double nbrRadius2 = radius_[edge->getNext()->getOpposite()->getId()];
-	double x = radius * (1.0-nbrRadius1) / (1.0-nbrRadius1 * radius) * (1.0-nbrRadius2) / (1.0-nbrRadius2 * radius);
+	double x;
+	if( use_one_minus_radius_ )
+	{
+		x = (1.0-radius) * nbrRadius1 / (nbrRadius1 * (1.0-radius) + radius) * nbrRadius2 / (nbrRadius2 * (1.0-radius) + radius);
+	} else
+	{
+		x = radius * (1.0-nbrRadius1) / (1.0-nbrRadius1 * radius) * (1.0-nbrRadius2) / (1.0-nbrRadius2 * radius);
+	}
 	BOOST_ASSERT( x >= 0.0 && x <= 1.0 );
 	return 2.0 * std::asin(std::sqrt( x ) );
 }
@@ -35,7 +48,6 @@ double DiskCirclePacking::AngleSum(int vertexId)
 	} while( edge != vertex->getParent() );
 	return angle;
 }
-
 
 bool DiskCirclePacking::FindDiskRadii(const std::list<const Edge*> & boundary)
 {
@@ -60,6 +72,28 @@ bool DiskCirclePacking::FindDiskRadii(const std::list<const Edge*> & boundary)
 		onBoundary[(*it)->getNext()->getOpposite()->getId()] = true;
 	}
 
+#ifdef LOG_CIRCLE_PACKING
+	std::vector<double> radius3(radius_);
+
+lab:
+	std::cin >> delta_;
+
+	std::ofstream file("log.txt");
+	file << std::fixed << "{0.0,{";
+	for(int i=0,endi=disk_vertices_.size();i<endi;i++)
+	{
+		int vertexId = disk_vertices_[i]->getId();
+		file << (i>0?",":"") << radius_[i];
+	}	
+	file << "},{";
+	for(int i=0,endi=disk_vertices_.size();i<endi;i++)
+	{
+		int vertexId = disk_vertices_[i]->getId();
+		file << (i>0?",":"") << AngleSum(vertexId);
+	}
+	file << "}}\n";
+#endif
+
 	disk_vertices_.clear();
 	std::vector<bool> indisk(triangulation_->NumberOfVertices(),false);
 	for(int i=0,endi=disk_triangles_.size();i<endi;i++)
@@ -69,14 +103,14 @@ bool DiskCirclePacking::FindDiskRadii(const std::list<const Edge*> & boundary)
 			Vertex * v = disk_triangles_[i]->getEdge(j)->getOpposite();
 			if( onBoundary[v->getId()] )
 			{
-				radius_[v->getId()] = almostZero;
+				radius_[v->getId()] = (use_one_minus_radius_? 1.0-almostZero : almostZero);
 			}else if( !indisk[v->getId()] )
 			{
 				disk_vertices_.push_back(v);
 				indisk[v->getId()] = true;
-				if( radius_[v->getId()] <= 1.5 * almostZero || radius_[v->getId()] >= 1.0 )
+				if( reset_radius_ || radius_[v->getId()] <= 1.2*almostZero || radius_[v->getId()] >= 1.0 )
 				{
-					radius_[v->getId()] = startRadius;
+					radius_[v->getId()] = (use_one_minus_radius_? 1.0-startRadius:startRadius);
 				}
 			}
 		}
@@ -86,33 +120,83 @@ bool DiskCirclePacking::FindDiskRadii(const std::list<const Edge*> & boundary)
 
 	properties::DegreeList(triangulation_,degree_);
 
+	//// TEST /////
+	std::vector<Vertex *> order;
+	std::queue<Vertex *> q;
+	std::vector<bool> visited(triangulation_->NumberOfVertices(),false);
+	for(std::list<const Edge*>::const_iterator it = boundary.begin();it != boundary.end();it++)
+	{
+		q.push((*it)->getPrevious()->getOpposite());
+		visited[(*it)->getPrevious()->getOpposite()->getId()] = true;
+	}
+	while( !q.empty() )
+	{
+		Vertex * v = q.front();
+		q.pop();
+		
+		Edge * edge = v->getParent()->getPrevious();
+		do {
+			Vertex * nbr = edge->getPrevious()->getOpposite();
+			if( indisk[nbr->getId()] && !visited[nbr->getId()] )
+			{
+				order.push_back(nbr);
+				visited[nbr->getId()] = true;
+				q.push(nbr);
+			}
+			edge = edge->getAdjacent()->getNext();
+		} while( edge != v->getParent()->getPrevious());
+	}
+	//////////////
+
+
 	double c = epsilon_ + 1;
 	double lambda = -1.0;
 	bool flag = false;
-	int steps = 0;
+	steps_ = 0;
 	while(c > epsilon_ )
 	{
 		double c0 = c;
 		c = 0.0;
 		double lambda0 = lambda;
 		bool flag0 = flag;
+		
+		/// TEST
+		std::copy(radius_.begin(),radius_.end(),radius2.begin());
 
-		for(int i=0,endi=disk_vertices_.size();i<endi;i++)
+		//for(int i=0,endi=disk_vertices_.size();i<endi;i++)
+		for( std::vector<Vertex *>::iterator it = order.begin();it!=order.end();it++)
 		{
 			// See Colling, Stephenson (2003): p. 244
-			int vertexId = disk_vertices_[i]->getId();
+			//int vertexId = disk_vertices_[i]->getId();
+			int vertexId = (*it)->getId();
 			double theta = AngleSum(vertexId);
 			double sintheta = std::sin(theta/(2*degree_[vertexId]));
 			double sintarget = std::sin(PI/degree_[vertexId]);
-			double vhat = (sintheta - std::sqrt(radius_[vertexId]))/(sintheta*radius_[vertexId] - std::sqrt(radius_[vertexId]));
-			if( vhat < 0.0 )
+			if( use_one_minus_radius_ )
 			{
-				vhat = 0.0;
+				double oneminvhat = sintheta * radius_[vertexId] / (std::sqrt(1.0-radius_[vertexId]) - sintheta * (1.0-radius_[vertexId]));
+				if( oneminvhat > 1.0 )
+				{
+					oneminvhat = 1.0;
+				}
+				//radius2[vertexId] = oneminvhat * (-oneminvhat + 2.0 * (oneminvhat-1.0) * sintarget * sintarget + std::sqrt(oneminvhat * oneminvhat + 4.0 * (1.0-oneminvhat) * sintarget * sintarget)) 
+				//	/ ( 2.0 * (1.0-oneminvhat) * (1.0-oneminvhat) * sintarget * sintarget );
+				radius_[vertexId] = oneminvhat * (-oneminvhat + 2.0 * (oneminvhat-1.0) * sintarget * sintarget + std::sqrt(oneminvhat * oneminvhat + 4.0 * (1.0-oneminvhat) * sintarget * sintarget)) 
+					/ ( 2.0 * (1.0-oneminvhat) * (1.0-oneminvhat) * sintarget * sintarget );			
+			} else
+			{
+				double vhat = (sintheta - std::sqrt(radius_[vertexId]))/(sintheta*radius_[vertexId] - std::sqrt(radius_[vertexId]));
+				if( vhat < 0.0 )
+				{
+					vhat = 0.0;
+				}
+				double t = 2.0 * sintarget / (std::sqrt((1.0-vhat)*(1.0-vhat)+4.0*sintarget*sintarget*vhat)+1.0-vhat);
+				//radius2[vertexId] = t*t;
+				radius_[vertexId] = t*t;
 			}
-			double t = 2.0 * sintarget / (std::sqrt((1.0-vhat)*(1.0-vhat)+4.0*sintarget*sintarget*vhat)+1.0-vhat);
-			radius2[vertexId] = t*t;
 			c += (theta - 2.0 * PI)*(theta - 2.0 * PI);
 		}
+		std::swap(radius_,radius2);
 		c = std::sqrt(c);
 		lambda = c / c0;
 		flag = true;
@@ -151,18 +235,48 @@ bool DiskCirclePacking::FindDiskRadii(const std::list<const Edge*> & boundary)
 				radius_[vertexId] = radius2[vertexId];
 			}
 		}
-		steps++;
-		if( steps > max_iterations_ )
+
+#ifdef LOG_CIRCLE_PACKING
+	file << "{0.0,{";
+	for(int i=0,endi=disk_vertices_.size();i<endi;i++)
+	{
+		int vertexId = disk_vertices_[i]->getId();
+		file << (i>0?",":"") << radius_[vertexId];
+	}	
+	file << "},{";
+	for(int i=0,endi=disk_vertices_.size();i<endi;i++)
+	{
+		int vertexId = disk_vertices_[i]->getId();
+		file << (i>0?",":"") << radius2[vertexId];
+	}	
+	file << "},{";
+	for(int i=0,endi=disk_vertices_.size();i<endi;i++)
+	{
+		int vertexId = disk_vertices_[i]->getId();
+		file << (i>0?",":"") << AngleSum(vertexId);
+	}
+	file << "}}\n";
+#endif
+		steps_++;
+		if( steps_ > max_iterations_ )
 		{
 			return false;
 		}
 	}
+#ifdef LOG_CIRCLE_PACKING
+file.close();
+radius_ = radius3;
+goto lab;
 
+#endif
 	return true;
 }
 
 bool DiskCirclePacking::FindEmbedding(const std::list<const Edge*> & boundary,  const Edge * centerEdge)
 {
+	boundary_ = boundary;
+	center_edge_ = centerEdge;
+
 	if( !FindDiskRadii( boundary ) )
 	{
 		return false;
@@ -253,4 +367,18 @@ bool DiskCirclePacking::DiskLayout(const std::list<const Edge*> & boundary, cons
 		}
 	}
 	return true;
+}
+
+void DiskCirclePacking::getBoundaryPositions(std::vector<double> & angles)
+{
+	angles.clear();
+	for(std::list<const Edge*>::const_iterator it = boundary_.begin(); it!=boundary_.end();it++)
+	{
+		angles.push_back( VectorAngle(hyp_coordinate_[(*it)->getNext()->getOpposite()->getId()]) );
+	}
+}
+
+double DiskCirclePacking::getCenterRadius() const
+{
+	return euclidean_radius_[center_edge_->getNext()->getOpposite()->getId()];
 }

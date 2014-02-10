@@ -1,7 +1,7 @@
 #ifndef HARMONIC_DIFFUSION_H
 #define HARMONIC_DIFFUSION_H
 
-#include "observable.h"
+#include "Observable.h"
 #include "Triangulation.h"
 #include "Edge.h"
 #include "Embedding.h"

@@ -4,7 +4,7 @@
 #include <map>
 
 #include "Triangulation.h"
-#include "observable.h"
+#include "Observable.h"
 #include "CohomologyBasis.h"
 
 class DistanceDistribution :

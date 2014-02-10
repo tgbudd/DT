@@ -27,6 +27,7 @@ public:
 
 	void LoadRegularLattice(int width, int height);
 	void LoadFromAdjacencyList(const std::vector<boost::array<std::pair<int,int>,3 > > & adj);
+	void LoadSphericalBySubdivision(int NumberOfTriangles);
 
 	int NumberOfTriangles() const
 	{
@@ -80,6 +81,8 @@ public:
 	}
 
 	Triangle * NewTriangle();
+	Triangle * NewTriangle(const Triangle & triangle);
+	void DeleteTriangle(Triangle * triangle);
 
 	void Clear();
 	void DetermineVertices();
@@ -89,7 +92,11 @@ public:
 	int CalculateGenus() const;
 
 	void SetCustomSweepSize(int n);
+
+	void RemoveBabyUniverses();
 private:
+	void LoadTetrahedron();
+	void Subdivide(Triangle * triangle);
 	void IncreaseState();
 	bool CheckVertexNeighbourhood(const Vertex * const vertex) const;
 

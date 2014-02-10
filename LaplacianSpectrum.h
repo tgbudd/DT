@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Triangulation.h"
-#include "observable.h"
+#include "Observable.h"
 
 class LaplacianSpectrum :
 	public Observable

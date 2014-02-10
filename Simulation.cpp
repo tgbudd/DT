@@ -81,7 +81,7 @@ void Simulation::Run()
 				observable->first->Measure();
 			}
 		}
-		if( sweeps_ % 5 == 0 )
+		if( true )
 		{
 			time_t current_time = time(NULL);
 			if( static_cast<int>(difftime(current_time,last_output)) > seconds_per_output_ )
@@ -97,6 +97,11 @@ void Simulation::Run()
 void Simulation::setStartTime()
 {
 	start_time_ = time(NULL);
+}
+
+void Simulation::SetDirectory(const std::string & dir)
+{
+	directory_ = dir;
 }
 
 void Simulation::Output()
