@@ -22,14 +22,12 @@ Thumbs.db
 *.a
 *.vcxproj.filters
 *.vcxproj.user
-*.dll
 *.bmp
 *.eps
 *.txt
 *.pov
 [Bb]in
 [Dd]ebug*/
-*.lib
 *.sbr
 [Rr]elease*/
 _ReSharper*/

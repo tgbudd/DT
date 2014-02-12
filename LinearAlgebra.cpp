@@ -1,9 +1,17 @@
 #include <cmath>
-
-#include "LinearAlgebra.h"
+#include <fstream>
+#include <complex>
 
 #include "boost/random/mersenne_twister.hpp"
 #include "boost/random/uniform_real.hpp"
+
+
+#include "LinearAlgebra.h"
+#include "utilities.h"
+
+#define lapack_complex_float std::complex<float>
+#define lapack_complex_double std::complex<double>
+#include "lapacke.h"
 
 void linearalgebra::Scale( double factor, std::vector<double> & x )
 {
@@ -169,4 +177,58 @@ double linearalgebra::Matrix::GetEigenvalue(int i) const
 double linearalgebra::Matrix::GetEigenvector(int i, int vertex) const
 {
 	return eigenvectors_[i][vertex];
+}
+
+linearalgebra::DenseMatrix::DenseMatrix(int n) :
+	Matrix(n),
+	size_(n)
+{
+	matrix_.resize(n*n,0.0);
+}
+
+
+void linearalgebra::DenseMatrix::MultiplyVector(const std::vector<double> & from, std::vector<double> & to) const
+{
+	for(int i=0;i<size_;i++)
+	{
+		to[i] = 0.0;
+		for(int j=0;j<size_;j++)
+		{
+			to[i] += matrix_[size_*i + j] * from[j];
+		}
+	}
+
+}
+
+void linearalgebra::DenseMatrix::Set(int x, int y, double value)
+{
+	matrix_[size_*x + y] = value;
+}
+
+double linearalgebra::DenseMatrix::Get(int x, int y) const
+{
+	return (x>y?matrix_[size_*x+y]:matrix_[size_*y+x]);
+}
+
+linearalgebra::PositiveDefiniteDenseMatrix::PositiveDefiniteDenseMatrix(int n) :
+	DenseMatrix(n)
+{
+	ipiv_.resize(n);
+	workspace_.resize(n*n);
+}
+
+
+
+bool linearalgebra::PositiveDefiniteDenseMatrix::ComputeInverse()
+{
+	std::cout << "LU - ";
+	int info=LAPACKE_dpotrf(LAPACK_COL_MAJOR,'U',size_,&matrix_[0],size_);
+	if( info != 0)
+	{
+		return false;
+	}
+	std::cout << "invert - ";
+	info = LAPACKE_dpotri(LAPACK_COL_MAJOR,'U',size_,&matrix_[0],size_);
+	std::cout << "done.\n";
+	return info == 0;
 }

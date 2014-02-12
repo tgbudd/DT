@@ -37,9 +37,9 @@ void CMinusTwoBuilder::DoSweep()
 		GenusZeroToGenusOneMatching();
 		ApplyBoundaryMatching( matching_ );
 		triangulation_->DetermineVertices();
+		BOOST_ASSERT( triangulation_->NumberOfTriangles() == 2*triangulation_->NumberOfVertices() );
 	}
 
-	BOOST_ASSERT( triangulation_->NumberOfTriangles() == 2*triangulation_->NumberOfVertices() );
 
 	if( remove_baby_universes_ )
 	{

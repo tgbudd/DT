@@ -30,7 +30,7 @@ inline void PrintToCout(Iter it, Iter end) {
 }
 
 template <typename Iter>
-inline void PrintToStream(std::ostringstream & stream,Iter it, Iter end) {
+inline void PrintToStream(std::ostream & stream,Iter it, Iter end) {
     stream << "{";
 	bool first = true;
 	for (; it!=end; ++it) 
@@ -42,7 +42,7 @@ inline void PrintToStream(std::ostringstream & stream,Iter it, Iter end) {
 }
 
 template <typename Iter>
-inline void PrintToStream2D(std::ostringstream & stream,Iter it, Iter end) {
+inline void PrintToStream2D(std::ostream & stream,Iter it, Iter end) {
     stream << "{";
 	bool first = true;
 	for (; it!=end; ++it) 

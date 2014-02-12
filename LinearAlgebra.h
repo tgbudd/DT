@@ -55,6 +55,28 @@ namespace linearalgebra {
 		std::vector<double> eigenvalues_;
 		std::vector<std::vector<double> > eigenvectors_;
 	};
+
+	class DenseMatrix : public Matrix
+	{
+	public:
+		DenseMatrix(int n);
+		void MultiplyVector(const std::vector<double> & from, std::vector<double> & to) const;
+		void Set(int x, int y, double value);
+		double Get(int x, int y) const;
+	protected:
+		const int size_;
+		std::vector<double> matrix_;
+	};
+
+	class PositiveDefiniteDenseMatrix : public DenseMatrix
+	{
+	public:
+		PositiveDefiniteDenseMatrix(int n);
+		bool ComputeInverse();
+	private:
+		std::vector<int> ipiv_;
+		std::vector<double> workspace_;
+	};
 }
 
 #endif
