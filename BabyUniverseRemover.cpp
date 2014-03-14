@@ -21,18 +21,18 @@ BabyUniverseRemover::BabyUniverseRemover(Triangulation * triangulation, Cohomolo
 
 }
 
-void BabyUniverseRemover::RemoveBabyUniverses()
+void BabyUniverseRemover::RemoveBabyUniverses(Triangle * triangle)
 {
 	if( genus_ == 0 )
 	{
-		RemoveBabyUniversesSpherical();
+		RemoveBabyUniversesSpherical(triangle);
 	} else
 	{
 		RemoveBabyUniversesHigherGenus();
 	}
 }
 
-void BabyUniverseRemover::RemoveBabyUniversesSpherical()
+void BabyUniverseRemover::RemoveBabyUniversesSpherical(Triangle * triangle)
 {
 	// Identify all pairs of edges that form a neck of length 2
 	std::vector<boost::array<Edge *,3> > newNbr(triangulation_->NumberOfTriangles());
@@ -72,6 +72,8 @@ void BabyUniverseRemover::RemoveBabyUniversesSpherical()
 		}
 	}
 
+	bool useLargest = ( triangle == NULL );
+
 	// Determine largest component
 	std::vector<int> flag(triangulation_->NumberOfTriangles(),-1);
 	int largest = 0;
@@ -89,6 +91,10 @@ void BabyUniverseRemover::RemoveBabyUniversesSpherical()
 		{
 			Triangle * t = q.front();
 			q.pop();
+			if( !useLargest && t == triangle )
+			{
+				largestFlag = flag[t->getId()];
+			}
 			size++;
 			for(int j=0;j<3;j++)
 			{
@@ -101,7 +107,7 @@ void BabyUniverseRemover::RemoveBabyUniversesSpherical()
 				}
 			}
 		}
-		if( size > largest )
+		if( useLargest && size > largest )
 		{
 			largest = size;
 			largestFlag = i;

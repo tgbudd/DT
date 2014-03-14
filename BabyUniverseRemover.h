@@ -10,9 +10,9 @@ public:
 	BabyUniverseRemover(Triangulation * triangulation);
 	BabyUniverseRemover(Triangulation * triangulation, CohomologyBasis * cohomologybasis);
 
-	void RemoveBabyUniverses();
+	void RemoveBabyUniverses(Triangle * triangle = NULL);
 private:
-	void RemoveBabyUniversesSpherical();
+	void RemoveBabyUniversesSpherical(Triangle * triangle);
 	void RemoveBabyUniversesHigherGenus();
 	Triangulation * triangulation_;
 	CohomologyBasis * cohomologybasis_;

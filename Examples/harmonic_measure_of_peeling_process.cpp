@@ -11,12 +11,15 @@
 #include "CMinusTwoBuilder.h"
 #include "LinearAlgebra.h"
 
+#include <Eigen/Sparse>
+
 class PeelingMeasurement : public Observable {
 public:
 	PeelingMeasurement( Triangulation * triangulation );
 	void Measure();
-	std::string OutputData();
-
+	std::string OutputData() const;
+	void SetVolumeWindow(int vmin, int vmax);
+	void SetLengthWindow(int lmin, int lmax);
 private:
 	void MeasureBoundary();
 	Triangle * SelectTriangle();
@@ -25,27 +28,61 @@ private:
 	PeelingProcedure peelingprocedure_;
 	BabyUniverseDetector babyuniversedetector_;
 
+	bool use_window_;
+	int vmin_, vmax_;
+	int lmin_, lmax_;
+
 	std::list<const Edge *> boundary_;
-	std::vector<double> measure_;
-	std::vector<boost::array<int,3> > in_boundary_;
-	std::vector<int> walk_end_;
+	std::vector<Triangle *> triangles_;
 
-	int random_walks_;
-	void DoRandomWalk();
-	int max_diffusion_steps_;
-	boost::array<std::vector<double>,2> field_;
-	void DoDiffusion();
+	Eigen::MatrixXd invLaplacian_;
+	bool DetermineInverseLaplacian();
+	void UpdateHistogram();
 
-	void InvertMatrix();
+	int max_delta_;
+	double minlogmeasure_, maxlogmeasure_;
+	int measure_bins_;
+	std::vector<std::vector<int> > measure_histogram_;
+	std::vector<int> measurements_;
+
+	int max_volume_, d_volume_;
+	std::vector<int> volume_histogram_;
+	int max_length_, d_length_;
+	std::vector<int> length_histogram_;
 };
 
 PeelingMeasurement::PeelingMeasurement(Triangulation * triangulation ) 
 	: triangulation_(triangulation), 
 	  peelingprocedure_(triangulation),
-	  random_walks_(100),
-	  max_diffusion_steps_(100000),
-	  babyuniversedetector_(triangulation)
+	  babyuniversedetector_(triangulation),
+	  max_delta_(100),
+	  minlogmeasure_(-15.0),
+	  maxlogmeasure_(0.0),
+	  measure_bins_(300),
+	  max_volume_(triangulation->NumberOfTriangles()),
+	  d_volume_(20),
+	  max_length_(2000),
+	  d_length_(1),
+	  use_window_(false)
 {
+	measure_histogram_.resize(max_delta_,std::vector<int>(measure_bins_,0));
+	measurements_.resize(max_delta_,0);
+	volume_histogram_.resize(max_volume_/d_volume_,0);
+	length_histogram_.resize(max_length_/d_length_,0);
+}
+
+void PeelingMeasurement::SetVolumeWindow(int vmin, int vmax)
+{
+	vmin_ = vmin;
+	vmax_ = vmax;
+	use_window_=true;
+}
+
+void PeelingMeasurement::SetLengthWindow(int lmin, int lmax)
+{
+	lmin_ = lmin;
+	lmax_ = lmax;
+	use_window_=true;
 }
 
 void PeelingMeasurement::Measure()
@@ -55,9 +92,17 @@ void PeelingMeasurement::Measure()
 	peelingprocedure_.PreparePeelingOnSphere( triangle );
 	Edge * centerEdge = peelingprocedure_.final_vertex_->getParent()->getPrevious();
 	do {
-		if( peelingprocedure_.volume_within_frontier_ > triangulation_->NumberOfTriangles()/2)
+		if( peelingprocedure_.volume_within_frontier_ > (use_window_?triangulation_->NumberOfTriangles()-vmax_:triangulation_->NumberOfTriangles()/2))
 		{
+			if( use_window_ && peelingprocedure_.volume_within_frontier_ > triangulation_->NumberOfTriangles()-vmin_ )
+			{
+				break;
+			}
 			boundary_ = peelingprocedure_.frontier_;
+			if( use_window_ && (static_cast<int>(boundary_.size()) < lmin_ || static_cast<int>(boundary_.size()) > lmax_) )
+			{
+				break;
+			}
 			boundary_.reverse();
 			for(std::list<const Edge *>::iterator it = boundary_.begin(); it != boundary_.end(); it++)
 			{
@@ -72,165 +117,105 @@ void PeelingMeasurement::Measure()
 
 void PeelingMeasurement::MeasureBoundary()
 {
-	measure_.resize(boundary_.size());
-	std::fill(measure_.begin(),measure_.end(),0.0);
-	walk_end_.resize(boundary_.size());
-	std::fill(walk_end_.begin(),walk_end_.end(),0);
-	boost::array<int,3> allminusone = {-1,-1,-1};
-	in_boundary_.resize(triangulation_->NumberOfTriangles());
-	std::fill(in_boundary_.begin(),in_boundary_.end(),allminusone);
-	int index=0;
-	for(std::list<const Edge *>::const_iterator it=boundary_.begin();it!=boundary_.end();it++,index++)
+	triangles_.clear();
+	babyuniversedetector_.EnclosedTriangles(boundary_,triangles_,true);
+
+	if( DetermineInverseLaplacian() )
 	{
-		in_boundary_[(*it)->getParent()->getId()][(*it)->getId()] = index;
+		UpdateHistogram();
+		std::cout << "Measurement succesful.\n";
 	}
-
-	InvertMatrix();
-
-
-/*	for(int i=0;i<random_walks_;i++)
-	{
-		DoRandomWalk();
-	}
-	DoDiffusion();
-	*/
-
-	double tot=0.0;
-	for(int i=0,endi=measure_.size();i<endi;i++)
-	{
-		tot+=measure_[i];
-	}
-	std::cout << "Total measure = " << std::fixed << tot << "\n";
 }
 
-void PeelingMeasurement::DoRandomWalk()
+bool PeelingMeasurement::DetermineInverseLaplacian()
 {
-	Vertex * vertex = peelingprocedure_.final_vertex_;
-	int degree = vertex->getDegree();
-	int direction = triangulation_->RandomInteger(0,degree-1);
-	Edge * edge = vertex->getParent();
-	for(int i=0;i<direction;i++)
-	{
-		edge = edge->getNext()->getAdjacent()->getNext();
-	}
-	Triangle * triangle = edge->getParent();
+	int size = triangles_.size();
 
-	int inboundary = -1;
-	while( inboundary == -1 )
-	{
-		int nbr = triangulation_->RandomInteger(0,2);
-		inboundary = in_boundary_[triangle->getId()][nbr];
-		triangle = triangle->getEdge(nbr)->getAdjacent()->getParent();
-	}
-
-	walk_end_[inboundary]++;
-}
-
-void PeelingMeasurement::DoDiffusion()
-{
-	field_[0].resize(triangulation_->NumberOfTriangles());
-	field_[1].resize(triangulation_->NumberOfTriangles());
-	std::fill(field_[0].begin(),field_[0].end(),0.0);
-	std::fill(field_[1].begin(),field_[1].end(),0.0);
-
-	Vertex * vertex = peelingprocedure_.final_vertex_;
-	double initial = 1.0/vertex->getDegree();
-	Edge * edge = vertex->getParent();
-	do
-	{
-		field_[0][edge->getParent()->getId()] = initial;
-		edge = edge->getNext()->getAdjacent()->getNext();
-	} while( edge != vertex->getParent() );
-
-	std::vector<Triangle *> triangles;
-	babyuniversedetector_.EnclosedTriangles(boundary_,triangles,true);
-
-	int currentField = 0, nextField = 1;
-	double totalBoundaryMeasure = 0.0;
-	int steps = 0;
-	std::cout << "start - ";
-	double prevsave=totalBoundaryMeasure;
-	while( totalBoundaryMeasure < 0.999 && steps < max_diffusion_steps_ )
-	{
-		int index=0;
-		for(std::list<const Edge *>::const_iterator it=boundary_.begin();it!=boundary_.end();it++,index++)
-		{
-			double toboundary = field_[currentField][(*it)->getParent()->getId()]/3.0;
-			measure_[index] += toboundary;
-			totalBoundaryMeasure += toboundary;
-		}
-		for(std::vector<Triangle *>::const_iterator it=triangles.begin();it!=triangles.end();it++)
-		{
-			int id = (*it)->getId();
-			double newField=0.0;
-			for(int j=0;j<3;j++)
-			{
-				newField += field_[currentField][(*it)->getEdge(j)->getAdjacent()->getParent()->getId()];
-			}
-			field_[nextField][id] = newField/3.0;
-		}
-		std::swap(currentField,nextField);
-		steps++;
-
-		//////
-		/*if( totalBoundaryMeasure - prevsave > 0.1 || (totalBoundaryMeasure > 0.95 && totalBoundaryMeasure - prevsave > 0.001 ) )
-		{
-			std::ofstream file("measure.txt",std::ios::app);
-			file << "{" << std::fixed << totalBoundaryMeasure << "," << steps << ",";
-			PrintToStream(file,measure_.begin(),measure_.end());
-			file << "}\n";
-			prevsave = totalBoundaryMeasure;
-		}*/
-	}
-
-}
-
-void PeelingMeasurement::InvertMatrix()
-{
-	std::vector<Triangle *> triangles;
-	babyuniversedetector_.EnclosedTriangles(boundary_,triangles,true);
-
-	linearalgebra::PositiveDefiniteDenseMatrix matrix(triangles.size());
-
+	std::vector<Eigen::Triplet<double> > rules;
+	rules.reserve(4*size);
 	std::vector<int> trianglePosition(triangulation_->NumberOfTriangles(),-1);
-	for(int i=0,endi=triangles.size();i<endi;i++)
+	for(int i=0;i<size;i++)
 	{
-		trianglePosition[triangles[i]->getId()] = i;
+		trianglePosition[triangles_[i]->getId()] = i;
 	}
 	double minusonethird = -1/3.0;
-	for(int i=0,endi=triangles.size();i<endi;i++)
+	for(int i=0;i<size;i++)
 	{
 		for(int j=0;j<3;j++)
 		{
-			int pos = trianglePosition[triangles[i]->getEdge(j)->getAdjacent()->getParent()->getId()];
+			int pos = trianglePosition[triangles_[i]->getEdge(j)->getAdjacent()->getParent()->getId()];
 			if( pos >= 0 )
 			{
-				matrix.Set(i,pos,minusonethird);
+				rules.push_back(Eigen::Triplet<double>(i,pos,minusonethird));
 			}
 		}
-		matrix.Set(i,i,1.0);
+		rules.push_back(Eigen::Triplet<double>(i,i,1.0));
 	}
 
-	if( matrix.ComputeInverse() )
+	Eigen::SparseMatrix<double> matrix(size,size);
+	matrix.setFromTriplets(rules.begin(),rules.end());
+
+	Eigen::SimplicialCholesky<Eigen::SparseMatrix<double> > chol(matrix);
+
+	if( chol.info() != Eigen::Success )
 	{
-		std::cout << "Inverse computed.\n";
-		int index=0;
-		for(std::list<const Edge *>::const_iterator it=boundary_.begin();it!=boundary_.end();it++,index++)
+		return false;
+	}
+
+	Eigen::SparseMatrix<double> boundaryMatrix(size,boundary_.size());
+	boundaryMatrix.reserve(Eigen::VectorXi::Constant(boundary_.size(),1));
+	int index = 0;
+	for(std::list<const Edge *>::const_iterator it=boundary_.begin();it!=boundary_.end();it++,index++)
+	{
+		boundaryMatrix.insert(trianglePosition[(*it)->getParent()->getId()],index) = 1.0;
+	}
+
+	Eigen::SparseMatrix<double> invLapl = chol.solve(boundaryMatrix);
+	invLaplacian_ = invLapl.toDense();
+	if( chol.info() != Eigen::Success )
+	{
+		return false;
+	}
+
+	return true;
+}
+
+void PeelingMeasurement::UpdateHistogram()
+{
+	int bSize = boundary_.size();
+	int tSize = triangles_.size();
+	for(int n=1;n <= max_delta_ && n <= bSize;n++)
+	{
+		for(int t=0;t<tSize;t++)
 		{
-			measure_[index] = 0.0;
-				
-			Vertex * vertex = peelingprocedure_.final_vertex_;
-			double factor = 1.0/vertex->getDegree()/3.0;
-			Edge * edge = vertex->getParent();
-			do
+			double measure = 0.0;
+			for(int i=0;i<n;i++)
 			{
-				measure_[index] += factor * matrix.Get(trianglePosition[(*it)->getParent()->getId()],trianglePosition[edge->getParent()->getId()]);
-				edge = edge->getNext()->getAdjacent()->getNext();
-			} while( edge != vertex->getParent() );
+				measure += invLaplacian_(t,i);
+			}
+			for(int i=0;i<bSize;i++)
+			{
+				if( measure >= 0.0 )
+				{
+					int bin = static_cast<int>(std::floor((std::log(measure/3.0) - minlogmeasure_)/(maxlogmeasure_ - minlogmeasure_)*measure_bins_));
+					if( bin >= 0 && bin < measure_bins_ )
+					{
+						measure_histogram_[n-1][bin]++;
+					}
+				}
+				measure += invLaplacian_(t,(i+n)%bSize) - invLaplacian_(t,i);
+			}
 		}
-	} else
+		measurements_[n-1] += tSize;
+	}
+
+	if( tSize/d_volume_ < static_cast<int>(volume_histogram_.size()) )
 	{
-		std::cout << "Inverse failed.\n";
+		volume_histogram_[tSize/d_volume_]++;
+	}
+	if( bSize/d_length_ < static_cast<int>(length_histogram_.size()) )
+	{
+		length_histogram_[bSize/d_length_]++;
 	}
 }
 
@@ -239,9 +224,21 @@ Triangle * PeelingMeasurement::SelectTriangle()
 	return triangulation_->getRandomTriangle();
 }
 
-std::string PeelingMeasurement::OutputData() 
+std::string PeelingMeasurement::OutputData() const 
 { 
-	return ""; 
+	std::ostringstream stream;
+	stream << std::fixed << "peelingmeasurement -> {minlogmeasure -> ";
+	stream << minlogmeasure_ << ", maxlogmeasure -> " << maxlogmeasure_;
+	stream << ",measurebins -> " << measure_bins_ << ", measurements ->";
+	PrintToStream(stream, measurements_.begin(), measurements_.end());
+	stream << ", histogram -> ";
+	PrintToStream2D(stream, measure_histogram_.begin(), measure_histogram_.end());
+	stream << ", volumehistogram -> ";
+	PrintToStream(stream, volume_histogram_.begin(), volume_histogram_.end());
+	stream << ", lengthhistogram -> ";
+	PrintToStream(stream, length_histogram_.begin(), length_histogram_.end());
+	stream << "}";
+	return stream.str();
 }
 
 
@@ -250,6 +247,10 @@ int main(int argc, char* argv[])
 	ParameterStream param(argc,argv);
 
 	int n = param.Read<int>("N");
+	int volumewindow = param.Read<int>("volume window size");
+	int lengthmin = param.Read<int>("min length");
+	int lengthmax = param.Read<int>("max length");
+	int secondsperoutput = param.Read<int>("seconds per output");
 	bool output = param.UserInput();
 
 	Triangulation triangulation;
@@ -258,9 +259,11 @@ int main(int argc, char* argv[])
 	triangulation.setDominantMatter(&builder);
 	triangulation.DoSweep();
 
-	Simulation simulation( &triangulation, 0, 10000, output );
+	Simulation simulation( &triangulation, 0, secondsperoutput, output );
 
 	PeelingMeasurement peelingmeasurement( &triangulation );
+	peelingmeasurement.SetVolumeWindow(static_cast<int>(0.27*n)-volumewindow/2,static_cast<int>(0.27*n)+volumewindow/2);
+	peelingmeasurement.SetLengthWindow(lengthmin,lengthmax);
 
 	simulation.AddObservable( &peelingmeasurement, 1 );
 

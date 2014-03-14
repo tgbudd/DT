@@ -53,6 +53,7 @@ public:
 	double RandomReal() const;
 	double RandomReal(double min, double max) const;
 	double RandomNormal(double mean, double sigma) const;
+	void RandomSample(int min, int max, int n, std::vector<int> & sample) const;
 	void setDominantMatter(DominantMatter * const & dominantmatter);
 	void clearDominantMatter();
 	void AddMatter(Matter * matter);

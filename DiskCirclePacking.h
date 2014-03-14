@@ -3,6 +3,8 @@
 
 #include "boost/array.hpp"
 
+#include <Eigen/Sparse>
+
 #include "Triangulation.h"
 #include "LinearAlgebra.h"
 #include "Edge.h"
@@ -16,6 +18,7 @@ public:
 	~DiskCirclePacking() {}
 	bool FindEmbedding(const std::list<const Edge*> & boundary, const Edge * centerEdge);
 	void getCircles(std::vector<std::pair<Vertex*,std::pair<Vector2D,double> > > & circles);
+	void getHyperbolicCoordinates(std::vector<std::pair<Vertex*,Vector2D> > & coor) const;
 	void getBoundaryPositions(std::vector<double> & angles);
 	double getCenterRadius() const;
 	int getStepsUsed() const {
@@ -28,12 +31,25 @@ public:
 private:
 	bool FindDiskRadii(const std::list<const Edge*> & boundary);
 	bool DiskLayout(const std::list<const Edge*> & boundary, const Edge * centerEdge);
+	bool FindFlatEmbedding();
+	void LayoutBoundary(std::vector<double> & radius, std::vector<Vector2D> & coordinate, int bLength); 
+	void scaleRadii(std::vector<double> & radius, int bLength);
 
 	std::vector<Triangle *> disk_triangles_;
 	std::vector<Vertex *> disk_vertices_;
 
+	std::vector<Eigen::Triplet<double> > lapl_rules_;
+	std::vector<Eigen::Triplet<double> > boundary_rules_;
+	std::vector<double> vertex_weight_;
+
+	std::vector<boost::array<int,4> > edge_to_vert_;
+
 	double Angle(Edge * edge);
 	double AngleSum(int vertexId);
+	double Angle(Edge * edge, const std::vector<int> & vertexPos, const std::vector<double> & radius);
+
+	double boundaryAngle(std::vector<double> & radius, int bLength, double r);
+	double boundaryAngleDerivative(std::vector<double> & radius, int bLength, double r);
 
 	const Triangulation * const triangulation_;
 	BabyUniverseDetector babyuniversedetector_;

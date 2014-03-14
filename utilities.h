@@ -200,6 +200,11 @@ inline double PoincareDistance(const Vector2D & z1, const Vector2D & z0)
 	double r = Norm2D(MobiusTransform(z1,z0));
 	return std::log(1+r) - std::log(1-r);
 }
+inline double TanhPoincareDistance(const Vector2D & z1, const Vector2D & z0)
+{
+	double r = Norm2D(MobiusTransform(z1,z0));
+	return 2*r/(1.0+r*r);
+}
 inline std::pair<Vector2D,double> EuclideanCircle(const Vector2D & z, double exprad)
 {
 	// Give the Euclidean center and radius of the hyperbolic circle around z with hyperbolic radius -log(exprad)/2

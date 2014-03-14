@@ -1,4 +1,5 @@
 #include <map>
+#include <set>
 #include <queue>
 
 #include "boost/random/uniform_int.hpp"
@@ -86,6 +87,40 @@ double Triangulation::RandomNormal(double mean, double sigma) const
 	boost::normal_distribution<> distribution(mean,sigma);
 	boost::variate_generator< boost::mt19937, boost::normal_distribution<> > generator(rng_,distribution);
 	return generator();
+}
+
+void Triangulation::RandomSample(int min, int max, int n, std::vector<int> & sample) const
+{
+	BOOST_ASSERT( n <= max-min+1);
+	sample.clear();
+	sample.reserve(n);
+
+	if( 10*n > max-min+1 )
+	{
+		for(int i=0;i<n;i++)
+		{
+			sample.push_back(min+i);
+		}
+		for(int i=n;i<=max-min;i++)
+		{
+			int p = RandomInteger(0,i);
+			if( p < n )
+			{
+				sample[p] = min+i;
+			}
+		}
+	}else
+	{
+		std::set<int> nums;
+		while(static_cast<int>(nums.size()) < n)
+		{
+			int x = RandomInteger(min,max);
+			if( nums.insert(x).second )
+			{
+				sample.push_back(x);
+			}
+		}
+	}
 }
 
 void Triangulation::setDominantMatter(DominantMatter * const & dominantmatter)

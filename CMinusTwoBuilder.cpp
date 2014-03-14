@@ -1,4 +1,7 @@
 #include <stack>
+#include <queue>
+
+#include "boost/assert.hpp"
 
 #include "CMinusTwoBuilder.h"
 #include "CohomologyBasis.h"
@@ -6,15 +9,67 @@
 #include "Triangle.h"
 #include "Edge.h"
 
-CMinusTwoBuilder::CMinusTwoBuilder(Triangulation * const triangulation, int Genus, int NumberOfTriangles)
+LogFactorialTable::LogFactorialTable(int max) : max_(max), veryNegative_(-1.0e100)
+{
+	logfactorial_.reserve(max+1);
+	logfactorial_.push_back(0.0);
+	logfactorial_.push_back(0.0);
+	for(int i=2;i<=max;i++)
+	{
+		logfactorial_.push_back(logfactorial_.back() + std::log(static_cast<double>(i)));
+	}
+}
+
+double LogFactorialTable::LogFactorial(int n) const
+{
+	BOOST_ASSERT( n>=0 && n<=max_ );
+	return logfactorial_[n];
+}
+
+double LogFactorialTable::LogBinomial(int n, int k) const
+{
+	BOOST_ASSERT( n >= k && k >= 0 && n <= max_ );
+	return LogFactorial(n) - LogFactorial(k) - LogFactorial(n-k);
+}
+
+double LogFactorialTable::LogBinomialDifference(int n, int k1, int k2) const
+{
+	// gives log( binomial(n,k1)-binomial(n,k2) )
+	double logb1 = LogBinomial(n,k1);
+	if( k2 < 0 )
+	{
+		return logb1;
+	}
+	double logb2 = LogBinomial(n,k2);
+	return logb1 + std::log(1.0-std::exp(logb2-logb1));
+}
+
+double LogFactorialTable::LogNumberWalksMark(int u, int d, int q) const
+{
+	if( u <= 0 || d <= q )
+	{
+		return veryNegative_;
+	} 
+	return LogBinomialDifference(d+u, (d-u>=q ? u-1 : d-q-1), u-q-2);
+}
+
+double LogFactorialTable::LogNumberWalks(int u, int d) const
+{
+	return std::log(static_cast<double>(d-u+1)/static_cast<double>(d+1)) + LogBinomial(d+u,d);
+}
+
+CMinusTwoBuilder::CMinusTwoBuilder(Triangulation * const triangulation, int Genus, int NumberOfTriangles, int boundaryLength)
 	: triangulation_(triangulation), 
 	genus_(Genus), 
 	n_triangles_(NumberOfTriangles),
-	remove_baby_universes_(false)
+	remove_baby_universes_(false),
+	table_( (boundaryLength == 0 ? 1 : NumberOfTriangles+2 ) ),
+	boundary_length_(boundaryLength)
 {
 	BOOST_ASSERT( genus_ == 0 || genus_ == 1 );
 	BOOST_ASSERT( n_triangles_ >= 2 && n_triangles_ % 2 == 0 );
 	tree_list_.resize(2*n_triangles_ + 1,0);
+	make_disk_ = (boundaryLength > 0);
 }
 
 
@@ -26,8 +81,21 @@ void CMinusTwoBuilder::DoSweep()
 {
 	triangulation_->Clear();
 	RandomDiskTriangulation();
-	RandomBoundaryMatching();
+	if( make_disk_ )
+	{
+		RandomBoundaryMatchingDisk();
+	} else
+	{
+		RandomBoundaryMatching();
+	}
 	ApplyBoundaryMatching(matching_);
+
+	if( remove_baby_universes_ && genus_ == 0 && make_disk_ )
+	{
+		InsertDiskAtBoundary();
+
+	}
+
 	triangulation_->DetermineVertices();
 
 	BOOST_ASSERT( triangulation_->NumberOfTriangles() == 2*triangulation_->NumberOfVertices() - 4 );
@@ -46,7 +114,14 @@ void CMinusTwoBuilder::DoSweep()
 		if( genus_ == 0 )
 		{
 			BabyUniverseRemover remover(triangulation_);
-			remover.RemoveBabyUniverses();
+			if( make_disk_ )
+			{
+				// make sure to keep the inserted disk (to which the newest triangle belongs)
+				remover.RemoveBabyUniverses(triangulation_->getTriangle(triangulation_->NumberOfTriangles()-1));
+			} else
+			{
+				remover.RemoveBabyUniverses();
+			}
 		} else
 		{
 			CohomologyBasis cohom(triangulation_);
@@ -220,11 +295,135 @@ void CMinusTwoBuilder::RandomBoundaryMatching()
 
 }
 
+int CMinusTwoBuilder::ChooseRandomWithLogWeights(const std::vector<double> & w) const
+{
+	double max=-1e-10;
+	for(int i=0,endi=w.size();i<endi;i++)
+	{
+		if( w[i] > max )
+		{
+			max = w[i];
+		}
+	}
+	std::vector<double> expw;
+	expw.reserve(w.size());
+	double total = 0.0;
+	for(int i=0,endi=w.size();i<endi;i++)
+	{
+		expw.push_back(std::exp(w[i]-max));
+		total += expw[i];
+	}
+	double x = triangulation_->RandomReal(0.0,total);
+	total = 0.0;
+	for(int i=0,endi=w.size()-1;i<endi;i++)
+	{
+		total += expw[i];
+		if( total > x )
+		{
+			return i;
+		}
+	}
+	return w.size()-1;
+}
+
+void CMinusTwoBuilder::RandomBoundaryMatchingDisk()
+{
+	int TotalSteps = n_triangles_+2;
+	int upStepsLeft = TotalSteps/2;
+	int downStepsLeft = TotalSteps/2;
+	int markLevel = boundary_length_/2-1;
+	bool marked = false;
+	boundary_positions_.resize(boundary_length_/2);
+
+	BOOST_ASSERT( TotalSteps > 2*markLevel );
+
+	matching_.clear();
+	std::stack<int> levels;
+
+	for( int currentStep = 0; currentStep < TotalSteps; currentStep++)
+	{
+		bool goDown = false;
+		bool markHere = false;
+		if( marked )
+		{
+			int x = triangulation_->RandomInteger(0,(downStepsLeft+upStepsLeft)*(downStepsLeft-upStepsLeft+1)-1);
+			goDown = x < (downStepsLeft+1)*(downStepsLeft-upStepsLeft);
+		} else if( downStepsLeft != upStepsLeft )
+		{
+			int m = downStepsLeft+upStepsLeft-1;
+			std::vector<double> logWeights;
+			logWeights.push_back( table_.LogNumberWalksMark(upStepsLeft-1,downStepsLeft,markLevel) );
+			logWeights.push_back( table_.LogNumberWalksMark(upStepsLeft,downStepsLeft-1,markLevel) );
+			if( markLevel == downStepsLeft-upStepsLeft )
+			{
+				logWeights.push_back( table_.LogNumberWalks(upStepsLeft-1,downStepsLeft) );
+			}
+
+			int p = ChooseRandomWithLogWeights(logWeights);
+			goDown = (p==1);
+			markHere = (p==2);
+		}
+		if( goDown )
+		{
+			matching_.push_back(std::pair<int,int>(levels.top(),currentStep));
+			levels.pop();
+			downStepsLeft--;
+		}else
+		{
+			if( !marked && downStepsLeft-upStepsLeft < boundary_length_/2)
+			{
+				boundary_positions_[downStepsLeft-upStepsLeft] = currentStep;
+			}
+			if( markHere )
+			{
+				marked = true;
+			}
+			levels.push(currentStep);
+			upStepsLeft--;
+		}
+	}
+
+}
+
 void CMinusTwoBuilder::ApplyBoundaryMatching(const std::vector<std::pair<int,int> > & matching)
 {
 	for(std::vector<std::pair<int,int> >::const_iterator it = matching.begin(); it != matching.end(); ++it)
 	{
 		boundary_[it->first]->bindAdjacent(boundary_[it->second]);
+	}
+}
+
+void CMinusTwoBuilder::getDiskBoundary(std::list<const Edge *> & boundary) const
+{
+	boundary.clear();
+	if( remove_baby_universes_ )
+	{
+		for(std::list<const Edge *>::const_iterator it = reverse_boundary_.begin();it!=reverse_boundary_.end();it++)
+		{
+			boundary.push_front((*it)->getAdjacent());
+		}
+	} else
+	{
+		for(int i=0,endi=boundary_positions_.size();i<endi;i++)
+		{
+			boundary.push_back(boundary_[boundary_positions_[i]]);
+		}
+		for(int i=boundary_positions_.size()-1;i>=0;i--)
+		{
+			boundary.push_back(boundary_[boundary_positions_[i]]->getAdjacent());
+		}
+	}
+}
+void CMinusTwoBuilder::getDiskBoundary(std::list<Edge *> & boundary) const
+{
+	boundary.clear();
+	for(int i=0,endi=boundary_positions_.size();i<endi;i++)
+	{
+		boundary.push_back(boundary_[boundary_positions_[i]]);
+	}
+	for(int i=boundary_positions_.size()-1;i>=0;i--)
+	{
+		boundary.push_back(boundary_[boundary_positions_[i]]->getAdjacent());
 	}
 }
 
@@ -236,7 +435,12 @@ double CMinusTwoBuilder::CentralCharge() const
 std::string CMinusTwoBuilder::ConfigurationData() const
 {
 	std::ostringstream stream;
-	stream << std::fixed << "{type -> \"cminustwobuilder\", centralcharge -> -2, numberoftriangles -> " << n_triangles_ << "}";
+	stream << std::fixed << "{type -> \"cminustwobuilder\", centralcharge -> -2, numberoftriangles -> " << n_triangles_;
+	if( boundary_length_ > 0 )
+	{
+		stream << ", boundarylength -> " << boundary_length_;
+	}
+	stream << "}";
 	return stream.str();
 }
 
@@ -257,4 +461,63 @@ void CMinusTwoBuilder::getSpanningTree(std::vector<boost::array<bool,3> > & intr
 void CMinusTwoBuilder::setRemoveBabyUniverses(bool remove)
 {
 	remove_baby_universes_ = remove;
+}
+
+void CMinusTwoBuilder::getPath(const Vertex * v0, const Vertex * v1, std::list<const Edge *> & path) const
+{
+	std::vector<std::list<const Edge *> > vertToEdge(triangulation_->NumberOfVertices());
+	BOOST_FOREACH(const Edge * edge, boundary_)
+	{
+		vertToEdge[edge->getNext()->getOpposite()->getId()].push_back(edge);
+	}
+	std::queue<const Vertex *> q;
+	q.push(v0);
+	std::vector<const Edge *> pathEdge(triangulation_->NumberOfVertices(),NULL);
+	bool found = false;
+	while(!found )
+	{
+		const Vertex * v = q.front();
+		q.pop();
+		BOOST_FOREACH(const Edge * edge, vertToEdge[v->getId()])
+		{
+			Vertex * nextv = edge->getPrevious()->getOpposite();
+			if( nextv != v0 && pathEdge[nextv->getId()] == NULL )
+			{
+				pathEdge[nextv->getId()] = edge;
+				q.push(nextv);
+				if( nextv == v1 )
+				{
+					found = true;
+					break;
+				}
+			}
+		}
+	}
+
+	path.clear();
+	const Vertex * v = v1;
+	while( v != v0 )
+	{
+		path.push_front(pathEdge[v->getId()]);
+		v = pathEdge[v->getId()]->getNext()->getOpposite();
+	}
+}
+
+void CMinusTwoBuilder::InsertDiskAtBoundary()
+{
+	std::list<Edge *> boundary;
+	getDiskBoundary(boundary);
+	std::vector<Triangle *> triangles;
+	reverse_boundary_.clear();
+	for(int i=0,endi=boundary.size();i<endi;i++)
+	{
+		triangles.push_back(triangulation_->NewTriangle());
+	}
+	int i=0;
+	for(std::list<Edge *>::iterator it=boundary.begin();it!=boundary.end();it++,i++)
+	{
+		triangles[i]->getEdge(0)->bindAdjacent(*it);
+		triangles[i]->getEdge(2)->bindAdjacent(triangles[(i+1)%triangles.size()]->getEdge(1));
+		reverse_boundary_.push_front(triangles[i]->getEdge(0));
+	}
 }
