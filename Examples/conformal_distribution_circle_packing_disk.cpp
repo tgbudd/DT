@@ -93,9 +93,10 @@ void DiskConformalDistribution::Measure()
 	}
 
 	builder_->getDiskBoundary(boundary_);
-	const Edge * edge = chooseEdge();
-	if( diskcirclepacking_.FindEmbedding(boundary_,edge))
+	//const Edge * edge = chooseEdge();
+	if( diskcirclepacking_.FindEmbedding(boundary_))
 	{
+		std::cout << "Embedding found.\n";
 		coor_.clear();
 		diskcirclepacking_.getHyperbolicCoordinates(coor_);
 		

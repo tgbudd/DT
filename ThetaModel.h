@@ -30,7 +30,7 @@ public:
 		firsttheta = (theta_[edge->getAdjacent()->getParent()->getId()][edge->getAdjacent()->getId()] += theta);
 		BOOST_ASSERT( firsttheta > 0 && firsttheta < 2 * pi_in_units_ );
 	}
-	int getTheta(Edge * const & edge) const {
+	int getTheta(const Edge * const & edge) const {
 		return theta_[edge->getParent()->getId()][edge->getId()]; 
 	}
 	int getTheta(int triangleId, int edgeId) const {
@@ -59,6 +59,11 @@ public:
 	bool TestAllCutConditions() const; // for debugging
 
 	std::string ExportState() const;
+
+	void FindAllShortCurves(int maxtheta, std::list<std::pair<int,std::list<const Edge*> > > & paths) const; 
+	int getPiInUnits() const {
+		return pi_in_units_;
+	}
 private:
 	double cosine(int theta) {
 		return std::cos( static_cast<double>(theta * PI/pi_in_units_) );
@@ -79,6 +84,9 @@ private:
 	bool TestCutConditionOld(Edge *, Edge *, const IntForm2D &, int theta) const;
 	bool TestCutCondition(Edge *) const;
 
+	void FindShortCurve(Edge *, int maxtheta, std::pair<int,std::list<const Edge*> > & path) const;
+
+
 	Edge * previousEdge(Edge * edge);  // functions of which pointers are used in the thetamove
 	Edge * nextEdge(Edge * edge);
 
@@ -92,6 +100,8 @@ private:
 		bool operator<(const triangleNode & node) const { return distance > node.distance; }
 	};
 	mutable std::vector<std::map<IntForm2D,int> > distance_; // used in the Dijkstra algorithm of TestCutCondition
+	void RetrievePath(const Edge * lastEdge, const triangleNode & end, const triangleNode & begin, std::pair<int,std::list<const Edge*> > & path) const;
+
 };
 
 #endif

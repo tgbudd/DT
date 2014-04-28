@@ -8,6 +8,7 @@
 #include "CMinusTwoBuilder.h"
 #include "CohomologyBasis.h"
 #include "HarmonicEmbedding.h"
+#include "ConnectivityRestrictor.h"
 
 int ProperFloor(double x)
 {
@@ -19,6 +20,12 @@ int main(int argc, char* argv[])
 	ParameterStream param(argc,argv);
 
 	int n = param.Read<int>("N");
+	int c = param.Read<int>("central charge (-2 or 0)");
+	int sweeps=0;
+	if( c==0 )
+	{
+		sweeps = param.Read<int>("sweeps");
+	}
 	std::string filename = param.Read<std::string>("file");
 
 	Triangulation triangulation;
@@ -27,8 +34,17 @@ int main(int argc, char* argv[])
 	triangulation.setDominantMatter(&builder);
 	triangulation.DoSweep();
 
+	if( c==0 )
+	{
+		ConnectivityRestrictor conn(&triangulation,ConnectivityRestrictor::NO_DOUBLE_EDGES);
+		triangulation.clearDominantMatter();
+		triangulation.AddMatter(&conn);
+		triangulation.DoSweep(sweeps);
+	}
+
 	CohomologyBasis cohom( &triangulation );
 	cohom.SetMakeUpToDateViaReinitialization(true);
+
 
 	HarmonicEmbedding embedding( &triangulation, &cohom );
 	embedding.SetAccuracy( 1.0e-8 );

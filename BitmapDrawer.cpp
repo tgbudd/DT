@@ -112,6 +112,17 @@ DiscreteColorScheme::DiscreteColorScheme( DiscreteColorScheme::Scheme scheme ) :
 				schemedata_[i][j] = data[i][j];
 			}
 		}
+	} else if( scheme_ == TEMPERATURE_MAP )
+	{
+		schemedata_.resize(7);
+		double data[7][3] = {{0.343142, 0.444315, 0.946801}, {0.562654, 0.65365, 0.960085}, {0.855987, 0.887438, 0.986154}, {0.987354, 0.990185, 0.929314}, {0.994002, 0.989098, 0.540301}, {0.923382, 0.726399, 0.393438}, {0.853855, 0.307302, 0.331374}};
+		for(int i=0;i<7;i++)
+		{
+			for(int j=0;j<3;j++)
+			{
+				schemedata_[i][j] = data[i][j];
+			}
+		}
 	}
 }
 

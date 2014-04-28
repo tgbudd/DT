@@ -56,7 +56,7 @@
     <IncludePath>$(SolutionDir);$(IncludePath);C:\Libraries\eigen</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>$(SolutionDir);$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSdkDir)include;$(FrameworkSDKDir)\include;;C:\Libraries\eigen\Eigen</IncludePath>
+    <IncludePath>$(SolutionDir);$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSdkDir)include;$(FrameworkSDKDir)\include;C:\Libraries\eigen</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -127,6 +127,7 @@
     <ClInclude Include="Embedding.h" />
     <ClInclude Include="HarmonicDiffusion.h" />
     <ClInclude Include="HarmonicEmbedding.h" />
+    <ClInclude Include="HyperbolicStructure.h" />
     <ClInclude Include="LaplacianDeterminant.h" />
     <ClInclude Include="LaplacianMatrix.h" />
     <ClInclude Include="LaplacianSpectrum.h" />
@@ -183,13 +184,18 @@
     <ClCompile Include="Examples\circle_packing_peeling_process_sphere.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (disable asserts)|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Examples\circle_packing_peeling_process_torus.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (disable asserts)|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="Examples\conformal_distribution_circle_packing_disk.cpp" />
+    <ClCompile Include="Examples\conformal_distribution_circle_packing_disk.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (disable asserts)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Examples\conformal_distribution_torus.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -220,6 +226,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (disable asserts)|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="Examples\modulus_constrained_shortest_cycle.cpp" />
     <ClCompile Include="examples\save_torus_triangulation.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (disable asserts)|Win32'">true</ExcludedFromBuild>
@@ -272,6 +279,7 @@
     </ClCompile>
     <ClCompile Include="HarmonicDiffusion.cpp" />
     <ClCompile Include="HarmonicEmbedding.cpp" />
+    <ClCompile Include="HyperbolicStructure.cpp" />
     <ClCompile Include="LaplacianDeterminant.cpp" />
     <ClCompile Include="LaplacianMatrix.cpp" />
     <ClCompile Include="LaplacianSpectrum.cpp" />

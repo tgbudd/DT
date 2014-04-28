@@ -9,41 +9,33 @@
 #include "CirclePattern.h"
 #include "ModuliObservable.h"
 #include "AngleHistogram.h"
+#include "ThetaHistogram.h"
+#include "utilities.h"
+#include "HyperbolicStructure.h"
+//#include "LaplacianDeterminant.h"
 
 int main(int argc, char* argv[])
 {
-	bool output = true;
-	int w,h;
-	int thermalizationSweeps, MeasurementSweeps, OutputSweeps;
-	if( argc < 6 )
-	{
-		std::cout << "width = ";
-		std::cin >> w;
-		std::cout << "height = ";
-		std::cin >> h;
-		std::cout << "thermalization sweeps = ";
-		std::cin >> thermalizationSweeps;
-		std::cout << "measurement sweeps = ";
-		std::cin >> MeasurementSweeps;
-		std::cout << "output sweeps = ";
-		std::cin >> OutputSweeps;
-	}else
-	{
-		std::istringstream is(argv[1]);
-		is >> w;
-		std::istringstream is2(argv[2]);
-		is2 >> h;
-		std::istringstream is3(argv[3]);
-		is3 >> thermalizationSweeps;
-		std::istringstream is4(argv[4]);
-		is4 >> MeasurementSweeps;
-		std::istringstream is5(argv[5]);
-		is5 >> OutputSweeps;
-		output = false;
-	}
+	ParameterStream param(argc,argv);
+
+	int w =	param.Read<int>("width");
+	int h = param.Read<int>("height");
+	int thermalizationSweeps = param.Read<int>("thermalization sweeps");
+	int	measurementSweeps = param.Read<int>("measurement sweeps");
+	int secondsperoutput = param.Read<int>("seconds per output");
+	double maxtheta = param.Read<double>("maxtheta (x PI)");
+//	double pow = param.Read<double>("cosine power");
+//	double c = param.Read<double>("central charge");
+	//int seed = param.Read<int>("seed");
+	bool output = param.UserInput();
+
 
 	Triangulation triangulation;
 	triangulation.LoadRegularLattice(w,h);
+	
+	//////
+	//triangulation.SeedRandom(seed);
+	//////
 	
 	DualCohomologyBasis dualcohomologybasis( &triangulation );
 	dualcohomologybasis.Initialize(w,h);
@@ -53,17 +45,35 @@ int main(int argc, char* argv[])
 	triangulation.setDominantMatter( &thetamodel );
 	thetamodel.Initialize();
 
-	Simulation simulation( &triangulation, thermalizationSweeps, OutputSweeps );
+/*	if( std::fabs(pow) > 0.001 )
+	{
+		thetamodel.setCosinePower(pow);
+	}
+	*/
+/*	LaplacianDeterminant lapl(&triangulation, c );
+	if( std::fabs(c) > 0.0001 )
+	{
+		triangulation.AddMatter(&lapl);
+	}
+*/
+
+	Simulation simulation( &triangulation, thermalizationSweeps, secondsperoutput, output );
 
 	CohomologyBasis cohom( &triangulation, dualcohomologybasis );
-	cohom.SetMakeUpToDateVia( &dualcohomologybasis );
+	cohom.SetMakeUpToDateViaReinitialization(true);
 
 	CirclePattern circlepattern( &triangulation, &cohom, &thetamodel );
 
-	ModuliObservable moduli( &circlepattern );
-	simulation.AddObservable( &moduli, MeasurementSweeps );
-	AngleHistogram angle( &circlepattern );
-	simulation.AddObservable( &angle, MeasurementSweeps );
+	//ModuliObservable moduli( &circlepattern );
+	//simulation.AddObservable( &moduli, measurementSweeps );
+	AngleHistogram angle( &circlepattern, &triangulation );
+	simulation.AddObservable( &angle, measurementSweeps );
+	//ThetaHistogram theta( &thetamodel );
+	//simulation.AddObservable( &theta, measurementSweeps );
+	
+	HyperbolicStructure hyp(&triangulation,&thetamodel,&circlepattern);
+	hyp.setMaxTheta(maxtheta*PI);
+	simulation.AddObservable( &hyp, measurementSweeps );
 
 	simulation.Run();
 

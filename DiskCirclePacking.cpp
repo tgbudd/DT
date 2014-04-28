@@ -295,26 +295,33 @@ bool DiskCirclePacking::FindEmbedding(const std::list<const Edge*> & boundary,  
 		return false;
 	}
 	*/
-	FindFlatEmbedding();
+	return FindFlatEmbedding();
 
-	return true;
 }
 
 void DiskCirclePacking::getCircles(std::vector<std::pair<Vertex*,std::pair<Vector2D,double> > > & circles)
 {
 	circles.clear();
-	for(int i=0,endi=circle_order_.size();i<endi;i++)
+	/*for(int i=0,endi=circle_order_.size();i<endi;i++)
 	{
 		circles.push_back(std::pair<Vertex*,std::pair<Vector2D,double> >(triangulation_->getVertex(circle_order_[i]),std::pair<Vector2D,double>(coordinate_[circle_order_[i]],euclidean_radius_[circle_order_[i]])));
+	}*/
+	for(int i=0,endi=disk_vertices_.size();i<endi;i++)
+	{
+		circles.push_back(std::pair<Vertex*,std::pair<Vector2D,double> >(disk_vertices_[i],std::pair<Vector2D,double>(coordinate_[i],euclidean_radius_[i])));
 	}
 }
 
 void DiskCirclePacking::getHyperbolicCoordinates(std::vector<std::pair<Vertex*,Vector2D> > & coor) const
 {
 	coor.clear();
-	for(int i=0,endi=circle_order_.size();i<endi;i++)
+	/*for(int i=0,endi=circle_order_.size();i<endi;i++)
 	{
 		coor.push_back(std::pair<Vertex*,Vector2D >(triangulation_->getVertex(circle_order_[i]),hyp_coordinate_[circle_order_[i]]));
+	}*/
+	for(int i=0,endi=disk_vertices_.size();i<endi;i++)
+	{
+		coor.push_back(std::pair<Vertex*,Vector2D >(disk_vertices_[i],hyp_coordinate_[i]));
 	}
 }
 
@@ -580,6 +587,25 @@ bool DiskCirclePacking::FindFlatEmbedding()
 		//std::cout << totalerror << " " << maxradius << "\n";
 	}
 	//file.close();
+
+	euclidean_radius_ = radius;
+	coordinate_ = coordinate;
+	disk_vertices_ = diskVertices;
+
+	hyp_coordinate_.resize(coordinate.size());
+
+	for(int i=0,endi=coordinate.size();i<endi;i++)
+	{
+		double radial = Norm2D(coordinate[i]);
+		double scale = 1.0/radial;
+		if( radial + radius[i] < 1.0 )
+		{
+			double sqrt1 = std::sqrt( (1.0+radial)*(1.0+radial) - radius[i]*radius[i] );
+			double sqrt2 = std::sqrt( (1.0-radial)*(1.0-radial) - radius[i]*radius[i] );
+			scale *= (sqrt1 - sqrt2)/(sqrt1 + sqrt2);
+		}
+		hyp_coordinate_[i] = ScaleVector2D(coordinate[i],scale);
+	}
 
 	return true;
 }

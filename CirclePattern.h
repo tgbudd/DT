@@ -32,6 +32,8 @@ public:
 
 	bool FindEdgeMeasure();
 
+	double getTheta(Edge * edge) { return thetamodel_->getRealTheta(edge); }
+	double getShear(const Edge * edge) const;
 private:
 	void EuclideanGradient(const std::vector<double> & rho, std::vector<double> & grad);
 	double EuclideanFunctional(const std::vector<double> & rho);
@@ -43,6 +45,7 @@ private:
 
 	std::vector<double> logradius_;
 	std::vector<boost::array<double,3> > angles_;
+	double max_angle_error_;
 
 	int max_newton_iterations_;
 };

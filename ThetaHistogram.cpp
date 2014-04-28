@@ -8,7 +8,6 @@ ThetaHistogram::ThetaHistogram(const ThetaModel * const thetamodel, int bins, do
 	measurements_=0;
 }
 
-
 ThetaHistogram::~ThetaHistogram(void)
 {
 }

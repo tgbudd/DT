@@ -81,7 +81,8 @@ void CirclePatternHessian::MultiplyVector(const std::vector<double> & from, std:
 }
 
 CirclePattern::CirclePattern(Triangulation * const triangulation, CohomologyBasis * const cohomologybasis, const ThetaModel * const thetamodel)
-	: triangulation_(triangulation), thetamodel_(thetamodel), Embedding(triangulation,cohomologybasis)
+	: triangulation_(triangulation), thetamodel_(thetamodel), Embedding(triangulation,cohomologybasis),
+	max_angle_error_(0.001)
 {
 	max_newton_iterations_ = 50;
 }
@@ -93,6 +94,25 @@ bool CirclePattern::FindEdgeMeasure()
 		return false;
 	}
 	RadiiToAngles();
+
+	for(int i=0, end=triangulation_->NumberOfTriangles();i<end;i++)
+	{
+		double totangle=0.0;
+		for(int j=0;j<3;j++)
+		{
+			Edge * adjEdge = triangulation_->getTriangle(i)->getEdge(j)->getAdjacent();
+			double angle = PI - angles_[i][j] - angles_[adjEdge->getParent()->getId()][adjEdge->getId()];
+			if( std::fabs(angles_[i][j] - PI/2) > PI/2 || std::fabs(thetamodel_->getRealTheta(i,j)-angle) > max_angle_error_ )
+			{
+				return false;
+			}
+			totangle += angles_[i][j];
+		}
+		if(std::fabs(totangle-PI) > max_angle_error_)
+		{
+			return false;
+		}
+	}
 
 	for(int i=0, end=triangulation_->NumberOfTriangles();i<end;i++)
 	{
@@ -136,7 +156,7 @@ bool CirclePattern::FindRadii()
 			if( fabs(grad[i]) > maxgrad )
 				maxgrad = fabs(grad[i]);
 		}
-		if( maxgrad < 1e-7 )
+		if( maxgrad < 1e-8 )
 			break;
 
 		CirclePatternHessian hessian(triangulation_,thetamodel_,logradius_);
@@ -147,7 +167,7 @@ bool CirclePattern::FindRadii()
 		{
 			lambda += -grad[i]*change[i];
 		}
-		if( lambda*lambda/2.0 < 1e-8 )
+		if( lambda*lambda/2.0 < 1e-9 )
 		{
 			break;
 		}
@@ -235,4 +255,24 @@ double CirclePattern::EuclideanFunctional(const std::vector<double> & rho)
 		}
 	}
 	return action;
+}
+
+double CirclePattern::getShear(const Edge * edge) const
+{
+	boost::array<const Edge *,4> edges = {edge->getNext(),edge->getPrevious(),edge->getAdjacent()->getNext(),edge->getAdjacent()->getPrevious()};
+	double shear = 0.0;
+	for(int i=0;i<4;i++)
+	{
+		double angle = angles_[edges[i]->getParent()->getId()][edges[i]->getId()];
+		double logsin = 0.0;
+		if( angle <= 0.0 || angle >= PI )
+		{
+			logsin = -1000.0;
+		} else
+		{
+			logsin = std::log( std::sin(angle) );
+		}
+		shear += (i%2==0?logsin:-logsin);
+	}
+	return shear;
 }

@@ -13,6 +13,7 @@ public:
 
 	void Measure();
 	std::string OutputData() const;
+
 private:
 	const ThetaModel * const thetamodel_;
 	std::vector<int> histogram_;

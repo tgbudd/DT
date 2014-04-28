@@ -136,6 +136,11 @@ bool ThetaModel::TryThetaMove(Edge * moveEdge)
 		}
 	}
 
+	//////////
+	// NOTE: For non-spherical topology I expect the following checks to be not quite sufficient!
+	// It is possible for a short path to pass more than once through the affected triangles, although
+	// it is very unlikely to happen for triangulations with more than a few triangles.
+	//////////
 	if( dTheta < 0 )
 	{
 		// Construct the integral of omega which is needed by TestCutCondition to distinguish contractible
@@ -226,8 +231,8 @@ bool ThetaModel::TryThetaMove(Edge * moveEdge)
 		}
 	}
 
-	/*// TESTS
-	BOOST_ASSERT(getTheta(kiteEdge) == getTheta(kiteEdge->getAdjacent()));
+	// TESTS
+	/*BOOST_ASSERT(getTheta(kiteEdge) == getTheta(kiteEdge->getAdjacent()));
 	BOOST_ASSERT(getTheta(moveEdge) == getTheta(moveEdge->getAdjacent()));
 	BOOST_ASSERT(getTheta(moveEdge->getPrevious()) == getTheta(moveEdge->getPrevious()->getAdjacent()));
 	
@@ -246,8 +251,8 @@ bool ThetaModel::TryThetaMove(Edge * moveEdge)
 	BOOST_ASSERT( TestCutCondition(otherEdge->getNext()) );
 	BOOST_ASSERT( TestCutCondition(otherEdge->getPrevious()) );
 	BOOST_ASSERT( TestCutCondition(kiteEdge->getNext()) );
-	BOOST_ASSERT( TestCutCondition(kiteEdge->getPrevious()) );*/
-
+	BOOST_ASSERT( TestCutCondition(kiteEdge->getPrevious()) );
+	*/
 	return true;
 }
 
@@ -399,3 +404,164 @@ std::string ThetaModel::ExportState() const
 	return stream.str();
 }
 
+void ThetaModel::FindShortCurve(Edge * edge, int maxtheta, std::pair<int,std::list<const Edge*> > & path) const
+{
+
+	if( distance_.empty() )
+	{
+		distance_.resize(triangulation_->NumberOfTriangles());
+	}
+
+	Edge * fromEdge = edge->getAdjacent()->getPrevious()->getAdjacent();
+	Edge * toEdge = edge->getPrevious()->getAdjacent();
+
+	IntForm2D integral = dualcohomologybasis_->getOmega(toEdge);
+	int dist = getTheta(toEdge);
+	distance_[edge->getParent()->getId()].insert(std::pair<IntForm2D,int>(integral,dist));
+	integral = AddForms(integral, dualcohomologybasis_->getOmega(edge));
+	dist += getTheta(edge);
+	distance_[edge->getAdjacent()->getParent()->getId()].insert(std::pair<IntForm2D,int>(integral,dist));
+	integral = AddForms(integral, dualcohomologybasis_->getOmega(fromEdge->getAdjacent()));
+	dist += getTheta(fromEdge);
+
+	std::priority_queue<triangleNode> q;
+	triangleNode startNode;
+	startNode.triangle = fromEdge->getParent();
+	startNode.integral = integral;
+	startNode.distance = dist;
+	q.push(startNode);
+	distance_[startNode.triangle->getId()].insert(std::pair<IntForm2D,int>(startNode.integral,startNode.distance));
+
+	path.second.clear();
+	path.first = 0;
+
+	while( !q.empty() )
+	{
+		triangleNode node = q.top();
+		q.pop();
+
+		if( node.distance > distance_[node.triangle->getId()][node.integral] )
+			continue;
+
+		for(int i=0;i<3;i++)
+		{
+			Edge * edge1 = node.triangle->getEdge(i);
+			if( edge1 == fromEdge )
+				continue;
+
+			triangleNode nextNode(node);			
+			nextNode.triangle = edge1->getAdjacent()->getParent();
+			nextNode.distance += getTheta(edge1);
+			if( nextNode.distance <= maxtheta )	// we only need to search nodes that are closer than totalTheta from the start
+			{
+				nextNode.integral = AddForms( nextNode.integral, dualcohomologybasis_->getOmega(edge1) );
+				if( nextNode.triangle == toEdge->getParent() && FormIsZero(nextNode.integral) )
+				{
+					// found a path with total theta smaller than (or equal to) maxTheta
+					RetrievePath(toEdge, nextNode,startNode,path);
+					path.second.push_front(fromEdge->getAdjacent());
+					path.second.push_front(edge);
+					path.second.push_back(toEdge);
+					path.first += getTheta(toEdge) + getTheta(fromEdge) + getTheta(edge);
+
+					if( nextNode.distance <= 2*pi_in_units_ || path.first != nextNode.distance )
+					{
+						path.second.clear();
+						path.first = 0;
+					}
+					//BOOST_ASSERT( nextNode.distance > 2*pi_in_units_ );
+
+					CleanUpDistance(startNode.triangle);
+					return;
+				}
+				std::pair<std::map<IntForm2D,int>::iterator,bool> returnValue = distance_[nextNode.triangle->getId()].insert(std::pair<IntForm2D,int>(nextNode.integral,nextNode.distance));
+				if( returnValue.second )
+				{
+					q.push(nextNode);
+				}else
+				{
+					if( nextNode.distance < returnValue.first->second )
+					{
+						returnValue.first->second = nextNode.distance;
+						q.push(nextNode);
+					}
+				}
+			}
+		}
+	}
+	CleanUpDistance(startNode.triangle);
+	return;
+}
+
+void ThetaModel::RetrievePath(const Edge * lastEdge, const ThetaModel::triangleNode & end, const ThetaModel::triangleNode & begin, std::pair<int,std::list<const Edge*> > & path) const
+{
+	triangleNode node = end;
+	const Edge * edge = lastEdge;
+	while( node.triangle != begin.triangle )
+	{
+		for(int i=0;i<2;i++)
+		{
+			edge = edge->getNext();
+
+			triangleNode nextNode(node);			
+			nextNode.triangle = edge->getAdjacent()->getParent();
+			nextNode.distance -= getTheta(edge);
+			nextNode.integral = AddForms( nextNode.integral, dualcohomologybasis_->getOmega(edge) );
+			std::map<IntForm2D,int>::iterator it = distance_[nextNode.triangle->getId()].find(nextNode.integral);
+			if( it != distance_[nextNode.triangle->getId()].end() && nextNode.distance == it->second )
+			{
+				node = nextNode;
+				edge = edge->getAdjacent();
+				path.second.push_front(edge);
+				break;
+			}
+		}
+	}
+
+	path.first = 0;
+	for(std::list<const Edge*>::iterator it = path.second.begin();it!=path.second.end();it++)
+	{
+		path.first += getTheta(*it);
+	}
+}
+
+void ThetaModel::FindAllShortCurves(int maxtheta, std::list<std::pair<int,std::list<const Edge*> > > & paths) const
+{
+	boost::array<bool,3> allfalse = {false,false,false};
+	std::vector<boost::array<bool,3> > used(triangulation_->NumberOfTriangles(),allfalse);
+
+	paths.clear();
+	paths.push_back(std::pair<int,std::list<const Edge*> >());
+	for(int i=0,endi=allfalse.size();i<endi;i++)
+	{
+		Triangle * triangle = triangulation_->getTriangle(i);
+		for(int j=0;j<3;j++)
+		{
+			Edge * edge = triangle->getEdge(j);
+			if( !used[i][j] )
+			{
+				FindShortCurve(edge,maxtheta,paths.back());
+				if( !paths.back().second.empty() )
+				{
+					std::list<const Edge*>::iterator prevIt = boost::prior(paths.back().second.end());
+					for(std::list<const Edge*>::iterator it = paths.back().second.begin(); it!=paths.back().second.end();it++)
+					{
+						std::list<const Edge*>::iterator nextIt = boost::next(it);
+						if( nextIt == paths.back().second.end() )
+						{
+							nextIt = paths.back().second.begin();
+						}
+						if( (*prevIt)->getAdjacent()->getNext() == (*it) && (*it)->getAdjacent()->getPrevious() == (*nextIt) )
+						{
+							used[(*it)->getParent()->getId()][(*it)->getId()] = true;
+							used[(*it)->getAdjacent()->getParent()->getId()][(*it)->getAdjacent()->getId()] = true;
+						}
+						prevIt = it;
+					}
+					paths.push_back(std::pair<int,std::list<const Edge*> >());
+				}
+			}
+		}
+	}
+	paths.pop_back();
+}

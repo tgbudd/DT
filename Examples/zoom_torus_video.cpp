@@ -74,21 +74,24 @@ void Snapshot::Measure()
 		Vector2D center = embedding_->getCoordinate(vertex);
 		std::pair<double,double> moduli = embedding_->CalculateModuli();
 		SetShading(vertex);
-		DiscreteColorScheme::Scheme scheme = static_cast<DiscreteColorScheme::Scheme>(triangulation_->RandomInteger(0,5));
-		for(int i=0;i<200;i++)
+		//DiscreteColorScheme::Scheme scheme = static_cast<DiscreteColorScheme::Scheme>(triangulation_->RandomInteger(0,5));
+		DiscreteColorScheme::Scheme scheme = DiscreteColorScheme::TEMPERATURE_MAP;
+		//for(int i=0;i<200;i++)
+		for(int i=10;i<100;i+=5)
 		{
 			bitmap_.Clear();
 
 			bitmap_.SetPeriodicDomain(moduli,0.1*std::exp(0.06*i),0.5,0.5,center[0],center[1]);
 
 			tridrawer_.DrawShading(bitmap_,scheme);
-			bitmap_.setPenWidth(3);
+			bitmap_.setPenWidth(1);
+			//bitmap_.setPenWidth(3);
 			bitmap_.setPenColor(0,0,0);
 			tridrawer_.Draw(bitmap_);
 			std::ostringstream text;
 			text << "Triangles: " << triangulation_->NumberOfTriangles() << "\n";
 			text << info_;
-			textdrawer_.DrawText(text.str(),bitmap_,30,30,0.93);
+			//textdrawer_.DrawText(text.str(),bitmap_,30,30,0.93);
 
 			Save();
 		}

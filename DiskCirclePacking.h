@@ -16,7 +16,7 @@ class DiskCirclePacking
 public:
 	DiskCirclePacking(Triangulation * const triangulation);
 	~DiskCirclePacking() {}
-	bool FindEmbedding(const std::list<const Edge*> & boundary, const Edge * centerEdge);
+	bool FindEmbedding(const std::list<const Edge*> & boundary, const Edge * centerEdge=NULL);
 	void getCircles(std::vector<std::pair<Vertex*,std::pair<Vector2D,double> > > & circles);
 	void getHyperbolicCoordinates(std::vector<std::pair<Vertex*,Vector2D> > & coor) const;
 	void getBoundaryPositions(std::vector<double> & angles);

@@ -38,7 +38,8 @@ public:
 		COLORS3,
 		COLORS6,
 		COLORS10,
-		CMYK
+		CMYK,
+		TEMPERATURE_MAP
 	};
 
 	DiscreteColorScheme( Scheme scheme );
