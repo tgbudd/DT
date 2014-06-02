@@ -127,6 +127,7 @@
     <ClInclude Include="Embedding.h" />
     <ClInclude Include="HarmonicDiffusion.h" />
     <ClInclude Include="HarmonicEmbedding.h" />
+    <ClInclude Include="Histogram.h" />
     <ClInclude Include="HyperbolicStructure.h" />
     <ClInclude Include="LaplacianDeterminant.h" />
     <ClInclude Include="LaplacianMatrix.h" />
@@ -226,7 +227,11 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (disable asserts)|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="Examples\modulus_constrained_shortest_cycle.cpp" />
+    <ClCompile Include="Examples\modulus_constrained_shortest_cycle.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (disable asserts)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="examples\save_torus_triangulation.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (disable asserts)|Win32'">true</ExcludedFromBuild>
@@ -242,12 +247,13 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (disable asserts)|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="Examples\thetamodel_moduli.cpp">
+    <ClCompile Include="Examples\thetamodel_moduli.cpp" />
+    <ClCompile Include="Examples\thetamodel_simulation_babyuniverses.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (disable asserts)|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="Examples\thetamodel_simulation_babyuniverses.cpp">
+    <ClCompile Include="Examples\thetamodel_snapshots_geodesics.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (disable asserts)|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -279,12 +285,18 @@
     </ClCompile>
     <ClCompile Include="HarmonicDiffusion.cpp" />
     <ClCompile Include="HarmonicEmbedding.cpp" />
+    <ClCompile Include="Histogram.cpp" />
     <ClCompile Include="HyperbolicStructure.cpp" />
     <ClCompile Include="LaplacianDeterminant.cpp" />
     <ClCompile Include="LaplacianMatrix.cpp" />
     <ClCompile Include="LaplacianSpectrum.cpp" />
     <ClCompile Include="LinearAlgebra.cpp" />
     <ClCompile Include="CMinusTwoBuilder.cpp" />
+    <ClCompile Include="liouville_density_image.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (disable asserts)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="ModuliObservable.cpp" />
     <ClCompile Include="PeelingProcedure.cpp" />
     <ClCompile Include="PottsModel.cpp" />
@@ -294,6 +306,11 @@
     <ClCompile Include="SpanningTree.cpp" />
     <ClCompile Include="ThetaHistogram.cpp" />
     <ClCompile Include="ThetaModel.cpp" />
+    <ClCompile Include="thetamodel_snapshots.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (disable asserts)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Triangle.cpp" />
     <ClCompile Include="Triangulation.cpp" />
     <ClCompile Include="TriangulationProperties.cpp" />

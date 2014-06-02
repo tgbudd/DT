@@ -23,7 +23,8 @@ int main(int argc, char* argv[])
 	int thermalizationSweeps = param.Read<int>("thermalization sweeps");
 	int	measurementSweeps = param.Read<int>("measurement sweeps");
 	int secondsperoutput = param.Read<int>("seconds per output");
-	double maxtheta = param.Read<double>("maxtheta (x PI)");
+	//double maxtheta = param.Read<double>("maxtheta (x PI)");
+	double maxlength = param.Read<double>("maxlength");
 //	double pow = param.Read<double>("cosine power");
 //	double c = param.Read<double>("central charge");
 	//int seed = param.Read<int>("seed");
@@ -71,8 +72,9 @@ int main(int argc, char* argv[])
 	//ThetaHistogram theta( &thetamodel );
 	//simulation.AddObservable( &theta, measurementSweeps );
 	
-	HyperbolicStructure hyp(&triangulation,&thetamodel,&circlepattern);
-	hyp.setMaxTheta(maxtheta*PI);
+	HyperbolicStructure hyp(&triangulation,&thetamodel,&circlepattern,&dualcohomologybasis);
+	//hyp.setMaxTheta(maxtheta*PI);
+	hyp.setMaxLength(maxlength);
 	simulation.AddObservable( &hyp, measurementSweeps );
 
 	simulation.Run();

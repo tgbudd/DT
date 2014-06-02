@@ -24,6 +24,17 @@ ColorScheme::ColorScheme( Scheme scheme ) : scheme_(scheme)
 			schemedata_[i].second[1] = data[i][2];
 			schemedata_[i].second[2] = data[i][3];
 		}
+	} else if( scheme_ == RAINBOW )
+	{
+		double data[17][4] = {{0., 0.471412, 0.108766, 0.527016}, {0.0625, 0.31106, 0.11758, 0.664469}, {0.125, 0.250728, 0.225386, 0.769152}, {0.1875, 0.24408, 0.361242, 0.816084}, {0.25, 0.266122, 0.486664, 0.802529}, {0.3125, 0.305919, 0.585575, 0.739666}, {0.375, 0.36048, 0.655759, 0.645692}, {0.4375, 0.429842, 0.701849, 0.540321}, {0.5, 0.513417, 0.72992, 0.440682}, {0.5625, 0.607651, 0.743718, 0.358588}, {0.625, 0.705038, 0.742591, 0.299167}, {0.6875, 0.794549, 0.721158, 0.260829}, {0.75, 0.863512, 0.670771, 0.236564}, {0.8125, 0.901014, 0.582826, 0.216542}, {0.875, 0.902853, 0.453964, 0.192014}, {0.9375, 0.878107, 0.293208, 0.160481}, {1., 0.857359, 0.131106, 0.132128}};
+		schemedata_.resize(17);
+		for(int i=0;i<17;i++)
+		{
+			schemedata_[i].first = data[i][0];
+			schemedata_[i].second[0] = data[i][1];
+			schemedata_[i].second[1] = data[i][2];
+			schemedata_[i].second[2] = data[i][3];
+		}
 	}
 }
 
@@ -179,10 +190,10 @@ void TriangulationDrawer::DrawShading(BitmapDrawer & drawer, ColorScheme::Scheme
 		boost::array<unsigned char,3> color;
 		if( triangle_shade_.empty() )
 		{
-			double area = SignedPolygonArea( polygon );
+			double area = std::fabs(SignedPolygonArea( polygon ));
 			BOOST_ASSERT( area > -1.0e-8 );
-			double minlogarea = std::max(0.0,std::min(8.0,-log(area)));
-			boost::array<unsigned char,3> color = scheme.getColor( (minlogarea+1.0) / 10.0 );
+			double minlogarea = std::max(3.1,std::min(9.9,-log(area)));
+			color = scheme.getColor( (minlogarea-3.0) / 7.0 );
 		} else
 		{
 			color = scheme.getColor( triangle_shade_[i] );

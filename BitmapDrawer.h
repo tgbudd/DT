@@ -19,7 +19,8 @@ class ColorScheme
 public:
 	enum Scheme {
 		TEMPERATURE_MAP,
-		BLUE_GREEN_YELLOW
+		BLUE_GREEN_YELLOW,
+		RAINBOW
 	};
 
 	ColorScheme( Scheme scheme );
