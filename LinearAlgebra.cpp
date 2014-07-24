@@ -221,7 +221,7 @@ linearalgebra::PositiveDefiniteDenseMatrix::PositiveDefiniteDenseMatrix(int n) :
 
 bool linearalgebra::PositiveDefiniteDenseMatrix::ComputeInverse()
 {
-	std::cout << "LU - ";
+/*	std::cout << "LU - ";
 	int info=LAPACKE_dpotrf(LAPACK_COL_MAJOR,'U',size_,&matrix_[0],size_);
 	if( info != 0)
 	{
@@ -231,4 +231,6 @@ bool linearalgebra::PositiveDefiniteDenseMatrix::ComputeInverse()
 	info = LAPACKE_dpotri(LAPACK_COL_MAJOR,'U',size_,&matrix_[0],size_);
 	std::cout << "done.\n";
 	return info == 0;
+*/
+	return false;
 }

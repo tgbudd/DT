@@ -1,7 +1,7 @@
 #ifndef HYPERBOLIC_STRUCTURE_H
 #define HYPERBOLIC_STRUCTURE_H
 
-#include <Eigen/dense>
+#include <Eigen/Dense>
 #include <complex>
 
 #include "Observable.h"

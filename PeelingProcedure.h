@@ -35,7 +35,7 @@ private:
 	bool FirstLoopContainsFinalVertex(std::list<const Edge*>::const_iterator loopBegin) const;
 	bool FirstLoopIsDisk(std::list<const Edge*>::const_iterator loopBegin) const;
 	std::list<const Edge*>::const_iterator FindSecondLoopBegin() const;
-	void ProcessBabyUniverse(std::list<const Edge*>::const_iterator secondLoopBegin, bool FirstLoopContainsBabyUniverse);
+	void ProcessBabyUniverse(std::list<const Edge*>::iterator secondLoopBegin, bool FirstLoopContainsBabyUniverse);
 	Vertex * ChooseFinalVertex();
 	void RandomWalk(bool StayInMotherUniverse);
 	void DualRandomWalk(bool StayInMotherUniverse);

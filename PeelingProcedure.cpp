@@ -348,9 +348,9 @@ std::list<const Edge*>::const_iterator PeelingProcedure::FindSecondLoopBegin() c
 	return frontier_.end();
 }
 
-void PeelingProcedure::ProcessBabyUniverse(std::list<const Edge*>::const_iterator secondLoopBegin, bool FirstLoopContainsBabyUniverse)
+void PeelingProcedure::ProcessBabyUniverse(std::list<const Edge*>::iterator secondLoopBegin, bool FirstLoopContainsBabyUniverse)
 {
-	int firstLoopSize = std::distance(frontier_.cbegin(),secondLoopBegin);
+	int firstLoopSize = std::distance(frontier_.begin(),secondLoopBegin);
 	if( !FirstLoopContainsBabyUniverse )
 	{
 		int volume = babyuniversedetector_.VolumeEnclosed(secondLoopBegin,frontier_.end(),false);

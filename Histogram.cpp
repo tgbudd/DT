@@ -1,12 +1,6 @@
 #include "Histogram.h"
 #include "utilities.h"
 
-// Explicitly instantiate frequently used templates.
-template class Histogram<double>;
-template class Histogram<float>;
-template class Histogram<int>;
-template class ExtendableHistogram<int>;
-template class ExtendableHistogram<double>;
 
 template<typename T>
 Histogram<T>::Histogram(T min, T max, int bins, bool calculateaverage) :
@@ -166,3 +160,10 @@ bool ExtendableHistogram<T>::Insert(T x)
 	}
 	return Histogram<T>::Insert(x);
 }
+
+// Explicitly instantiate frequently used templates.
+template class Histogram<double>;
+template class Histogram<float>;
+template class Histogram<int>;
+template class ExtendableHistogram<int>;
+template class ExtendableHistogram<double>;

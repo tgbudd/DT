@@ -1,15 +1,14 @@
 CXX = g++
 RM=rm -f
-CPPFLAGS=-I/usr/include/ -O2 -D BOOST_DISABLE_ASSERTS
+CPPFLAGS=-I/usr/include/ -I./ -O2 -D BOOST_DISABLE_ASSERTS
 LDFLAGS=-O2
-LDLIBS=-lblas
+LDLIBS=-lblas -llapack
 
-CORESCRS=AngleHistogram.cpp \
+CORESRCS=AngleHistogram.cpp \
 	BabyUniverseDetector.cpp \
 	BabyUniverseDistribution.cpp \
 	BabyUniverseRemover.cpp \
 	BallSizeDistribution.cpp \
-	BitmapDrawer.cpp \
 	BoundaryMeasure.cpp \
 	CMinusTwoBuilder.cpp \
 	CirclePacking.cpp \
@@ -37,7 +36,6 @@ CORESCRS=AngleHistogram.cpp \
 	LoopLength.cpp \
 	MetricGraphObservable.cpp \
 	ModuliObservable.cpp \
-	PeelingProcedure.cpp \
 	PottsModel.cpp \
 	PottsModelOnVertices.cpp \
 	ShortestLoop.cpp \
@@ -52,7 +50,7 @@ CORESCRS=AngleHistogram.cpp \
 
 COREOBJS=$(subst .cpp,.o,$(CORESRCS))
 
-all: core dt-ball
+all: core
 
 core: $(COREOBJS)
 
@@ -253,8 +251,6 @@ LoopLength.o: LoopLength.cpp LoopLength.h
 MetricGraphObservable.o: MetricGraphObservable.cpp MetricGraphObservable.h
 
 ModuliObservable.o: ModuliObservable.cpp ModuliObservable.h
-
-PeelingProcedure.o: PeelingProcedure.cpp PeelingProcedure.h
 
 PottsModel.o: PottsModel.cpp PottsModel.h
 

@@ -202,7 +202,7 @@ void HarmonicDiffusion::DoGraphDistanceMeasurement()
 	std::queue<std::pair<Vertex *,std::pair<IntForm2D,Vector2D> > > queue;
 	IntForm2D ZeroForm = {0,0};
 	Vector2D ZeroVector = {0.0,0.0};
-	queue.push(std::pair<Vertex*,std::pair<IntForm2D,Vector2D>>(startVertex,std::pair<IntForm2D,Vector2D>(ZeroForm,ZeroVector)));
+	queue.push(std::pair<Vertex*,std::pair<IntForm2D,Vector2D> >(startVertex,std::pair<IntForm2D,Vector2D>(ZeroForm,ZeroVector)));
 
 	while( !queue.empty() )
 	{
