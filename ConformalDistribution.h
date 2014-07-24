@@ -4,6 +4,7 @@
 #include "Observable.h"
 #include "Embedding.h"
 #include "utilities.h"
+#include "Histogram.h"
 
 class ConformalDistribution :
 	public Observable
@@ -20,6 +21,7 @@ public:
 	void setRecordBallSizesExponentially(int maxsize, double factor);
 	void setMaxBallTriangles(int n);
 private:
+	//void BuildKdTree();
 	void MeasureRadiusDistribution();
 	void MeasureEuclideanBallSize();
 	void MeasureEuclideanBallSize(Triangle * triangle);

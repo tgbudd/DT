@@ -135,12 +135,15 @@
     <ClInclude Include="LinearAlgebra.h" />
     <ClInclude Include="Matter.h" />
     <ClInclude Include="CMinusTwoBuilder.h" />
+    <ClInclude Include="MetricGraphObservable.h" />
     <ClInclude Include="ModuliObservable.h" />
+    <ClInclude Include="BallSizeDistribution.h" />
     <ClInclude Include="Observable.h" />
     <ClInclude Include="PeelingProcedure.h" />
     <ClInclude Include="PottsModel.h" />
     <ClInclude Include="PottsModelOnVertices.h" />
     <ClInclude Include="ShortestLoop.h" />
+    <ClInclude Include="SimplexAttribute.h" />
     <ClInclude Include="Simulation.h" />
     <ClInclude Include="SpanningTree.h" />
     <ClInclude Include="ThetaHistogram.h" />
@@ -156,6 +159,7 @@
     <ClCompile Include="BabyUniverseDetector.cpp" />
     <ClCompile Include="BabyUniverseDistribution.cpp" />
     <ClCompile Include="BabyUniverseRemover.cpp" />
+    <ClCompile Include="BallSizeDistribution.cpp" />
     <ClCompile Include="BitmapDrawer.cpp" />
     <ClCompile Include="BoundaryMeasure.cpp" />
     <ClCompile Include="CirclePacking.cpp" />
@@ -172,6 +176,11 @@
     <ClCompile Include="DualScalarField.cpp" />
     <ClCompile Include="Edge.cpp" />
     <ClCompile Include="Embedding.cpp" />
+    <ClCompile Include="Examples\ball_sizes_torus.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (disable asserts)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Examples\boundary_measure_on_cminus2_disk.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (disable asserts)|Win32'">true</ExcludedFromBuild>
@@ -199,8 +208,8 @@
     </ClCompile>
     <ClCompile Include="Examples\conformal_distribution_torus.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (disable asserts)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Examples\diffusion_on_cminus2_sphere.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
@@ -227,12 +236,18 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (disable asserts)|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="Examples\metric_graph_geodesics.cpp" />
     <ClCompile Include="Examples\modulus_constrained_shortest_cycle.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (disable asserts)|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="examples\save_torus_triangulation.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (disable asserts)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Examples\test_attributes.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (disable asserts)|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -247,7 +262,11 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (disable asserts)|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="Examples\thetamodel_moduli.cpp" />
+    <ClCompile Include="Examples\thetamodel_moduli.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (disable asserts)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Examples\thetamodel_simulation_babyuniverses.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (disable asserts)|Win32'">true</ExcludedFromBuild>
@@ -297,6 +316,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (disable asserts)|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="MetricGraphObservable.cpp" />
     <ClCompile Include="ModuliObservable.cpp" />
     <ClCompile Include="PeelingProcedure.cpp" />
     <ClCompile Include="PottsModel.cpp" />

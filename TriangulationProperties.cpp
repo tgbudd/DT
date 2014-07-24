@@ -54,3 +54,66 @@ void properties::VertexDistanceList(const Triangulation * const triangulation, c
 		} while( edge->getNext() != vertex->getParent() );
 	}
 }
+
+
+void properties::TriangleDistanceList(const Triangulation * const triangulation, const Triangle * const startTriangle, std::vector<int> & distance)
+{
+	if( distance.size() != triangulation->NumberOfTriangles() )
+	{
+		distance.resize(triangulation->NumberOfTriangles());
+	}
+	std::fill(distance.begin(),distance.end(),-1);
+
+	std::queue<const Triangle *> q;
+	q.push( startTriangle );
+	distance[startTriangle->getId()] = 0;
+
+	while( !q.empty() )
+	{
+		const Triangle * triangle = q.front();
+		q.pop();
+
+		for(int i=0;i<3;i++)
+		{
+			Triangle * nbr = triangle->getEdge(i)->getAdjacent()->getParent();
+			if( distance[nbr->getId()] == -1 )
+			{
+				distance[nbr->getId()] = distance[triangle->getId()] + 1;
+				q.push(nbr);
+			}
+		}
+	}
+}
+
+int properties::TriangleDistance(const Triangulation * const triangulation, const Triangle * const startTriangle, const Triangle * const endTriangle)
+{
+	if( startTriangle == endTriangle )
+	{
+		return 0;
+	}
+	std::vector<int> distance(triangulation->NumberOfTriangles(),-1);
+	std::queue<const Triangle *> q;
+	q.push( startTriangle );
+	distance[startTriangle->getId()] = 0;
+
+	while( !q.empty() )
+	{
+		const Triangle * triangle = q.front();
+		q.pop();
+
+		for(int i=0;i<3;i++)
+		{
+			Triangle * nbr = triangle->getEdge(i)->getAdjacent()->getParent();
+			if( distance[nbr->getId()] == -1 )
+			{
+				distance[nbr->getId()] = distance[triangle->getId()] + 1;
+				if( nbr == endTriangle )
+				{
+					return distance[nbr->getId()];
+				}
+				q.push(nbr);
+			}
+		}
+	}
+	return -1;
+}

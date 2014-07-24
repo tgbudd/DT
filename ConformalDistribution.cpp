@@ -4,6 +4,40 @@
 
 #include "ConformalDistribution.h"
 
+/*class PointCloud {
+public:
+	PointCloud(int n, std::pair<double,double> modulus) 
+		: n_(n), modulus_(modulus), rescale_(1.0/std::sqrt(modulus.second))
+	{
+		pts_.resize(n);
+	}
+	inline void setPoint(int i, Vector2D v) {
+		pts_[i] = ScaleVector2D( TransformByModulus(v,modulus_),  rescale_ );
+	}
+	inline size_t kdtree_get_point_count() const 
+	{ 
+		return pts_.size(); 
+	}
+	inline double kdtree_distance(const double *p, const size_t i, size_t size) const
+	{
+		return (p[0]-pts_[i][0])*(p[0]-pts_[i][0])+(p[1]-pts_[i][1])*(p[1]-pts_[i][1]);
+	}
+	inline double kdtree_get_pt(const size_t i, int dim) const
+	{
+		return pts_[i][dim];
+	}
+	template <class BBOX>
+	bool kdtree_get_bbox(BBOX &bb) const { return false; }
+private:
+	std::vector<Vector2D> pts_;
+	int n_;
+	std::pair<double,double> modulus_;
+	double rescale_;
+};
+
+#include "nanoflann.hpp"
+*/
+
 ConformalDistribution::ConformalDistribution(Embedding * const embedding, const Triangulation * const triangulation) :
 	embedding_(embedding),
 	measurements_(0),
@@ -13,9 +47,9 @@ ConformalDistribution::ConformalDistribution(Embedding * const embedding, const 
 	triangulation_(triangulation),
 	measure_euclidean_ball_size_(false),
 	max_ball_triangles_(200),
-	ball_minlograd_(-25.0),
+	ball_minlograd_(-15.0),
 	ball_maxlograd_(0.0),
-	ball_bins_(125)
+	ball_bins_(150)
 {
 	histogram_.resize(bins_,0);
 	for(int i=1,endi=max_ball_triangles_;i<=endi;i++)
@@ -32,7 +66,9 @@ void ConformalDistribution::Measure()
 {
 	if( embedding_->IsUpToDate() || embedding_->MakeUpToDate() )
 	{
+		modulus_ = embedding_->CalculateModuli();
 		MeasureRadiusDistribution();
+
 
 		if( measure_euclidean_ball_size_ )
 		{
@@ -45,6 +81,48 @@ void ConformalDistribution::Measure()
 		}
 	}
 }
+
+/*
+void ConformalDistribution::BuildKdTree()
+{
+	std::cout << "build - ";
+	std::pair<double,double> modulus = embedding_->CalculateModuli();
+	PointCloud cloud(triangulation_->NumberOfVertices(),modulus);
+	for(int i=0,endi=triangulation_->NumberOfVertices();i<endi;++i)
+	{
+		cloud.setPoint(i,embedding_->getCoordinate(i));
+	}
+
+	nanoflann::KDTreeSingleIndexAdaptor< nanoflann::L2_Simple_Adaptor<double,PointCloud> , PointCloud, 2 > 
+		tree( 2, cloud, nanoflann::KDTreeSingleIndexAdaptorParams(10) );
+	tree.buildIndex();
+
+	std::vector<std::pair<size_t,double> > indices;
+	indices.reserve(triangulation_->NumberOfVertices()/2);
+	double query_point[2] = {0.5,0.3};
+	nanoflann::SearchParams params;
+	params.sorted = false;
+	int num = tree.radiusSearch(&query_point[0], 0.1, indices, params);
+	std::cout << num;
+	std::cout << "\n";
+
+	std::cout << "start - ";
+	for(int j=0,endj=triangulation_->NumberOfVertices();j<endj;++j)
+	{
+		Vector2D pt = embedding_->getCoordinate(j);
+		int num2=0;
+	for(int i=0,endi=triangulation_->NumberOfVertices();i<endi;++i)
+		{
+			if( NormSquaredTransformedByModulus(SubtractVectors2D(embedding_->getCoordinate(i),pt),modulus) < 0.1 )
+				num2++;
+		}
+		if(j==100)
+			std::cout << num2;
+	}
+
+	std::cout << "end\n";
+
+}*/
 
 void ConformalDistribution::MeasureRadiusDistribution()
 {

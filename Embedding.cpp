@@ -236,6 +236,12 @@ bool Embedding::GetRadii(std::vector<double> & radii)
 	return false;
 }
 
+Vector2D Embedding::GetCentroid(const Triangle * triangle)
+{
+	Vector2D x = getCoordinate(triangle->getEdge(0)->getOpposite());
+	x = AddVectors2D(x, AddScaledVectors2D(1/3.0,getForm(triangle->getEdge(1)),-1/3.0,getForm(triangle->getEdge(2))));
+	return x;
+}
 
 void Embedding::SaveEmbedding(std::string filename)
 {

@@ -129,6 +129,7 @@ public:
 		accuracy_=accuracy;
 	}
 	void SaveEmbedding(std::string filename);
+	Vector2D GetCentroid(const Triangle * triangle);
 private:
 	void Coderivative( const std::vector<boost::array<double,3> > & oneform, std::vector<double> & result );
 	void LoadInitialCoordinates( std::vector<double> & coordinates, int i, Vertex * startVertex ) const;
