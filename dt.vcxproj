@@ -318,7 +318,11 @@
     </ClCompile>
     <ClCompile Include="MetricGraphObservable.cpp" />
     <ClCompile Include="ModuliObservable.cpp" />
-    <ClCompile Include="PeelingProcedure.cpp" />
+    <ClCompile Include="PeelingProcedure.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (disable asserts)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="PottsModel.cpp" />
     <ClCompile Include="PottsModelOnVertices.cpp" />
     <ClCompile Include="ShortestLoop.cpp" />

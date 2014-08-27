@@ -55,6 +55,40 @@ void properties::VertexDistanceList(const Triangulation * const triangulation, c
 	}
 }
 
+int properties::VertexDistance(const Triangulation * const triangulation, const Vertex * const startVertex, const Vertex * const endVertex)
+{
+	if( startVertex == endVertex )
+	{
+		return 0;
+	}
+	std::vector<int> distance(triangulation->NumberOfVertices(),-1);
+	std::queue<const Vertex *> q;
+	q.push( startVertex );
+	distance[startVertex->getId()] = 0;
+
+	while( !q.empty() )
+	{
+		const Vertex * vertex = q.front();
+		q.pop();
+
+		Edge * edge = vertex->getParent()->getPrevious();
+		do {
+			Vertex * nbr = edge->getPrevious()->getOpposite();
+
+			if( distance[nbr->getId()] == -1 )
+			{
+				distance[nbr->getId()] = distance[vertex->getId()] + 1;
+				if( nbr == endVertex )
+				{
+					return distance[nbr->getId()];
+				}
+				q.push(nbr);
+			}
+			edge = edge->getPrevious()->getAdjacent();
+		} while( edge->getNext() != vertex->getParent() );
+	}
+	return -1;
+}
 
 void properties::TriangleDistanceList(const Triangulation * const triangulation, const Triangle * const startTriangle, std::vector<int> & distance)
 {
