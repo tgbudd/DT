@@ -32,6 +32,10 @@ public:
 	{
 		return data_;
 	}
+	const simplex_t * getSubject(iterator it)
+	{
+		return GetSimplex(it - data_.begin());
+	}
 protected:
 	SimplexAttribute(size_t size) : data_(size)	{}
 	SimplexAttribute(size_t size, const T & value) : data_(size,value) {}
@@ -62,6 +66,10 @@ public:
 	virtual bool operator[](const simplex_t * simplex) const
 	{
 		return !!data_[GetIndex(simplex)];
+	}
+	const simplex_t * getSubject(iterator it)
+	{
+		return GetSimplex(it - data_.begin());
 	}
 protected:
 	SimplexAttribute(size_t size) : data_(size)	{}

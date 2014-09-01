@@ -98,73 +98,12 @@ void MetricGraphObservable::MeasureTwoPointDistance()
 
 std::pair<double, int> MetricGraphObservable::Distance(const Triangle * t1, const Triangle * t2)
 {
-	std::fill(distance_.begin(),distance_.end(),100.0 * length_max_);
-	std::fill(num_edges_.begin(),num_edges_.end(),0);
-
-	typedef std::pair<const Triangle *,double> TriangleDist;
-
-	std::priority_queue<TriangleDist, std::vector<TriangleDist>, SecondComparator<const Triangle*> > queue;
-	distance_[t1] = 0.0;
-	queue.push(TriangleDist(t1,0.0));
-	while(!queue.empty())
-	{
-		TriangleDist triangle = queue.top();
-		queue.pop();
-		if( triangle.first == t2 )
-		{
-			return std::pair<double,int>(distance_[t2],num_edges_[t2]);
-		}
-
-		for(int i=0;i<3;i++)
-		{
-			TriangleDist neighbour;
-			neighbour.first = triangle.first->getEdge(i)->getAdjacent()->getParent();
-			neighbour.second = triangle.second + dual_edge_length_[triangle.first->getEdge(i)];
-			if( neighbour.second < distance_[neighbour.first] )
-			{
-				distance_[neighbour.first] = neighbour.second;
-				num_edges_[neighbour.first] = num_edges_[triangle.first] + 1;
-				queue.push(neighbour);
-			}
-		}
-	}
-	return std::pair<double,int>(-1.0,-1);
+	return properties::TriangleWeightedDistance(triangulation_,t1,t2,dual_edge_length_);
 }
 
 std::pair<double, int> MetricGraphObservable::TriangulationDistance(const Vertex * v1, const Vertex * v2)
 {
-	std::fill(v_distance_.begin(),v_distance_.end(),100.0 * length_max_);
-	std::fill(v_num_edges_.begin(),v_num_edges_.end(),0);
-
-	typedef std::pair<const Vertex *,double> VertexDist;
-
-	std::priority_queue<VertexDist, std::vector<VertexDist>, SecondComparator<const Vertex *> > queue;
-	v_distance_[v1] = 0.0;
-	queue.push(VertexDist(v1,0.0));
-	while(!queue.empty())
-	{
-		VertexDist vertex = queue.top();
-		queue.pop();
-		if( vertex.first == v2 )
-		{
-			return std::pair<double,int>(v_distance_[v2],v_num_edges_[v2]);
-		}
-
-		const Edge * edge = vertex.first->getParent()->getPrevious();
-		do{
-			VertexDist neighbour;
-			neighbour.first = edge->getPrevious()->getOpposite();
-			neighbour.second = vertex.second + dual_edge_length_[edge];
-			if( neighbour.second < v_distance_[neighbour.first] )
-			{
-				v_distance_[neighbour.first] = neighbour.second;
-				v_num_edges_[neighbour.first] = v_num_edges_[vertex.first] + 1;
-				queue.push(neighbour);
-			}
-			edge = edge->getAdjacent()->getNext();
-		} while( edge != vertex.first->getParent()->getPrevious() );
-	}
-	return std::pair<double,int>(-1.0,-1);
+	return properties::VertexWeightedDistance(triangulation_,v1,v2,dual_edge_length_);
 }
 
 std::string MetricGraphObservable::OutputData() const
