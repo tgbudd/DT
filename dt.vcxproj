@@ -201,6 +201,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (disable asserts)|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="Examples\compare_embeddings_snapshots.cpp" />
     <ClCompile Include="Examples\conformal_distribution_circle_packing_disk.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (disable asserts)|Win32'">true</ExcludedFromBuild>
@@ -241,7 +242,11 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (disable asserts)|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="Examples\largest_triangle_in_radius.cpp" />
+    <ClCompile Include="Examples\largest_triangle_in_radius.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (disable asserts)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Examples\metric_graph_geodesics.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (disable asserts)|Win32'">true</ExcludedFromBuild>

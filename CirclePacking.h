@@ -22,6 +22,10 @@ public:
 	void RadiiToAngles();
 
 	bool GetRadii(std::vector<double> & radii);
+	void setMaxIterations(int max)
+	{
+		max_iterations_ = max;
+	}
 private:
 //	void RadiiToAngles();
 	double AngleSum(int vertexId);

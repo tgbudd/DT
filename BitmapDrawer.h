@@ -70,6 +70,10 @@ public:
 	{
 		image_.clear(255);
 	}
+	void Clear(int grayscale)
+	{
+		image_.clear(grayscale);
+	}
 	void SetPeriodicDomain(const std::pair<double,double> & modulus, double areafraction )
 	{
 		SetPeriodicDomain(modulus,areafraction,fullwidth_/2,fullheight_/2);
@@ -107,11 +111,17 @@ public:
 	int getWidth() const {
 		return width_;
 	}
+	int getFullWidth() const {
+		return fullwidth_;
+	}
 	void setWidth(const int & width) {
 		width_ = width;
 	}
 	int getHeight() const {
 		return height_;
+	}
+	int getFullHeight() const {
+		return fullheight_;
 	}
 	void setHeight(const int & height) {
 		height_ = height;
@@ -145,6 +155,14 @@ public:
 		}
 		Polygon(transPolygon);
 	}
+	void domainDisk(const Vector2D x, double r)
+	{
+		Disk(Transform(x[0],x[1]),static_cast<int>(scale_ * fullwidth_ * r));
+	}
+	void domainDisk(Vector2D center, Vector2D through)
+	{
+		Disk(Transform(center[0],center[1]),Transform(through[0],through[1]));
+	}
 	void LineSegment(std::pair<int,int> p1, std::pair<int,int> p2)
 	{
 		draw_.line_segment(p1.first,p1.second,p2.first,p2.second);
@@ -161,6 +179,10 @@ public:
 			dPolygon.push_back(std::pair<double,double>(polygon[i].first,polygon[i].second));
 		}
 		draw_.polygon(dPolygon);
+	}
+	void Disk(std::pair<int,int> c, std::pair<int,int> through)
+	{
+		Disk(c,static_cast<int>(std::sqrt(static_cast<double>((c.first-through.first)*(c.first-through.first)+(c.second-through.second)*(c.second-through.second)))));
 	}
 	void Disk(std::pair<int,int> c, int r)
 	{
