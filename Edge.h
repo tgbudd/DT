@@ -45,6 +45,12 @@ public:
 	Vertex * const & getOpposite() const {
 		return opposite_;
 	}
+	Vertex * const & getEnd() const {
+		return previous_->getOpposite();
+	}
+	Vertex * const & getStart() const {
+		return next_->getOpposite();
+	}
 	void setOpposite(Vertex * const & opposite) {
 		opposite_ = opposite;
 	}
