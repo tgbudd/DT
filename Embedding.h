@@ -34,7 +34,7 @@ public:
 
 	virtual bool GetRadii(std::vector<double> & radii);
 
-	const Vector2D & getCoordinate(Vertex * const & vertex) const
+	const Vector2D & getCoordinate(const Vertex * const & vertex) const
 	{
 		return coordinate_[vertex->getId()];
 	}
@@ -42,11 +42,11 @@ public:
 	{
 		return coordinate_[i];
 	}
-	void setCoordinate(Vertex * const & vertex, Vector2D coor) 
+	void setCoordinate(const Vertex * const & vertex, Vector2D coor) 
 	{
 		coordinate_[vertex->getId()] = coor;
 	}
-	void setCoordinate(Vertex * const & vertex, int i, double coor) 
+	void setCoordinate(const Vertex * const & vertex, int i, double coor) 
 	{
 		coordinate_[vertex->getId()][i] = coor;
 	}

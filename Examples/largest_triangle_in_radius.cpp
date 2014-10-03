@@ -8,27 +8,32 @@
 #include "CohomologyBasis.h"
 #include "ConnectivityRestrictor.h"
 #include "Histogram.h"
-#include "HarmonicEmbedding.h"
+#include "CirclePacking.h"
 
 class LargestTriangle : public Observable {
 public:
-	LargestTriangle(Triangulation * triangulation, Embedding * embedding, int samples)
+	LargestTriangle(Triangulation * triangulation, CirclePacking * embedding, int samples, double maxInitialRadius)
 		: triangulation_(triangulation), embedding_(embedding), samples_(samples),
-		maxradius_(0.3), radius_bins_(150)
+		max_dist_(0.3),max_radius_ratio_(80),radius_bins_(160), max_initial_radius_(maxInitialRadius),
+		min_initial_radius_(1.0e-6)
 	{
-		triangle_sizes_.resize(radius_bins_,Histogram<double>(0.0,maxradius_,radius_bins_));
+		triangle_sizes_.resize(radius_bins_,Histogram<double>(0.0,static_cast<double>(max_radius_ratio_),radius_bins_));
 	}
 	void Measure();
 	std::string OutputData() const;
 private:
-	void LookAround(Vertex * v);
+	void LookAround(const Vertex * v);
 
-	Embedding * embedding_;
+	CirclePacking * embedding_;
 	Triangulation * triangulation_;
 	std::pair<double,double> modulus_;
 	int samples_;
-	double maxradius_;
+	int max_radius_ratio_;
+	double max_dist_;
+	
 	int radius_bins_;
+	double max_initial_radius_;
+	double min_initial_radius_;
 	std::vector<Histogram<double> > triangle_sizes_;
 	std::vector<double> radii_;
 };
@@ -38,11 +43,19 @@ void LargestTriangle::Measure()
 	if( embedding_->IsUpToDate() || embedding_->MakeUpToDate() )
 	{
 		modulus_ = embedding_->CalculateModuli();
-		embedding_->GetRadii(radii_);
+		embedding_->GetAbsoluteRadii(radii_);
 
-		for(int i=0;i<samples_;++i)
+		int numsamples = 0;
+		while(numsamples < samples_ )
 		{
-			LookAround(triangulation_->getRandomVertex());
+			const Vertex * vertex = triangulation_->getRandomVertex();
+			double initialRadius = radii_[vertex->getId()];
+			if( initialRadius < max_initial_radius_ &&
+				initialRadius > min_initial_radius_ )
+			{
+				LookAround(vertex);
+				numsamples++;
+			}
 		}
 	}
 }
@@ -67,34 +80,42 @@ double NormInDomain(Vector2D v, std::pair<double,double> modulus)
 	return std::sqrt(minsquared);
 }
 
-void LargestTriangle::LookAround(Vertex * v)
+void LargestTriangle::LookAround(const Vertex * v)
 {
+	// Find 
+	
 	Vector2D x0 = embedding_->getCoordinate(v);
+	double initialRadius = radii_[v->getId()];
 	std::vector<double> maxsize(radius_bins_,0.0);
-	for(int i=0,endi=triangulation_->NumberOfTriangles();i<endi;++i)
+	for(int i=0,endi=triangulation_->NumberOfVertices();i<endi;++i)
 	{
-		const Triangle * triangle = triangulation_->getTriangle(i);
-		Vector2D coor = embedding_->GetCentroid(triangle);
+		Vector2D coor = embedding_->getCoordinate(i);
 		double dist = NormInDomain(SubtractVectors2D(coor,x0),modulus_);
-		for(int bin = static_cast<int>(dist/maxradius_*radius_bins_);bin<radius_bins_;++bin)
+		if( dist < max_dist_ )
 		{
-			if( radii_[i] > maxsize[bin] )
+			for(int bin = static_cast<int>(radius_bins_*dist/initialRadius/max_radius_ratio_),lastbin=std::min(radius_bins_,static_cast<int>(radius_bins_*max_dist_/initialRadius/max_radius_ratio_));bin<lastbin;++bin)
 			{
-				maxsize[bin] = radii_[i];
+				if( radii_[i] > maxsize[bin] )
+				{
+					maxsize[bin] = radii_[i];
+				}
 			}
 		}
 	}
 	for(int i=0;i<radius_bins_;++i)
 	{
-		triangle_sizes_[i].Insert(maxsize[i]);
+		triangle_sizes_[i].Insert(maxsize[i]/initialRadius);
 	}
 }
 
 std::string LargestTriangle::OutputData() const
 {
 	std::ostringstream os;
-	os << "{ samples -> " << samples_;
-	os << ", maxradius -> " << maxradius_;
+	os << "largesttriangle -> { samples -> " << samples_;
+	os << ", maxinitialradius -> " << max_initial_radius_;
+	os << ", mininitialradius -> " << min_initial_radius_;
+	os << ", maxdist -> " << max_dist_;
+	os << ", maxradiusratio -> " << max_radius_ratio_;
 	os << ", radiusbins -> " << radius_bins_;
 	os << ", trianglesizes -> {";
 	for(int i=0;i<radius_bins_;++i)
@@ -113,38 +134,34 @@ int main(int argc, char* argv[])
 
 	int w =	param.Read<int>("width");
 	int h = param.Read<int>("height");
-	int method = param.Read<int>("method (0=SQUARE_ROOT_OF_AREA, 1=INSCRIBED_CIRCLE)");
+	double maxinitialradius = param.Read<double>("max initial radius");
 	int samples = param.Read<int>("samples");
 	int thermalizationSweeps = param.Read<int>("thermalization sweeps");
 	int	measurementSweeps = param.Read<int>("measurement sweeps");
 	int secondsperoutput = param.Read<int>("seconds per output");
+	std::string path = param.Read<std::string>("path (\"0\"=\"../../output/\")");
+	if( path == "0" )
+		path = "../../output/";
 	bool output = param.UserInput();
 
 	Triangulation triangulation;
 	triangulation.LoadRegularLattice(w,h);
-
+	ConnectivityRestrictor conn( &triangulation, ConnectivityRestrictor::NO_DOUBLE_EDGES );
+	triangulation.AddMatter( &conn );
+	
 	Simulation simulation( &triangulation, thermalizationSweeps, secondsperoutput, output );
 
 	CohomologyBasis cohom( &triangulation );
 	cohom.SetMakeUpToDateViaReinitialization(true);
 
-	HarmonicEmbedding harm( &triangulation, &cohom );
-	harm.SetAccuracy(1.0e-9);
-	harm.setMaxIterations(20000);
-	if( method == 0 )
-	{
-		harm.SetRadiusDefintion(HarmonicEmbedding::SQUARE_ROOT_OF_AREA);
-		simulation.AddConfigurationInfo("method -> \"SQUARE_ROOT_OF_AREA\"");
-	}else
-	{
-		harm.SetRadiusDefintion(HarmonicEmbedding::INSCRIBED_CIRCLE);
-		simulation.AddConfigurationInfo("method -> \"INSCRIBED_CIRCLE\"");
-	}
+	CirclePacking circle( &triangulation, &cohom );
+	circle.SetAccuracy(1.0e-8);
+	circle.setMaxIterations(50000);
 
-	LargestTriangle largest( &triangulation, &harm, samples );
+	LargestTriangle largest( &triangulation, &circle, samples, maxinitialradius );
 
 	simulation.AddObservable( &largest, measurementSweeps );
-	simulation.SetDirectory("./output/");
+	simulation.SetDirectory(path);
 	simulation.Run();
 	return 0;
 }

@@ -22,6 +22,7 @@ public:
 	void RadiiToAngles();
 
 	bool GetRadii(std::vector<double> & radii);
+	void GetAbsoluteRadii(std::vector<double> & radii);
 	void setMaxIterations(int max)
 	{
 		max_iterations_ = max;

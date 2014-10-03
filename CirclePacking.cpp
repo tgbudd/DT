@@ -3,6 +3,7 @@
 #include "CirclePacking.h"
 #include "TriangulationProperties.h"
 #include "HarmonicEmbedding.h"
+#include "utilities.h"
 
 CirclePacking::CirclePacking(Triangulation * const triangulation, CohomologyBasis * const cohomologybasis)
 	: triangulation_(triangulation), Embedding(triangulation,cohomologybasis), babyuniversedetector_(triangulation)
@@ -174,4 +175,16 @@ bool CirclePacking::GetRadii(std::vector<double> & radii)
 	radii = radius_;
 
 	return true;
+}
+void CirclePacking::GetAbsoluteRadii(std::vector<double>& radii)
+{
+	// return the radii of the circles when they are embedded in a torus of area 1
+	std::pair<double,double> modulus = CalculateModuli();
+	
+	const Edge * edge = triangulation_->getTriangle(0)->getEdge(0);
+	double edgeLength = std::sqrt(NormSquaredTransformedByModulus(getForm(edge),modulus));
+	double fraction = edgeLength / (radius_[edge->getEnd()->getId()]+radius_[edge->getStart()->getId()]);
+	
+	radii.resize(radius_.size());
+	std::transform(radius_.begin(),radius_.end(),radii.begin(),std::bind1st(std::multiplies<double>(),fraction));
 }
