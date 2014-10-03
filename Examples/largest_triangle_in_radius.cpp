@@ -14,7 +14,7 @@ class LargestTriangle : public Observable {
 public:
 	LargestTriangle(Triangulation * triangulation, CirclePacking * embedding, int samples, double maxInitialRadius)
 		: triangulation_(triangulation), embedding_(embedding), samples_(samples),
-		max_dist_(0.3),max_radius_ratio_(80),radius_bins_(160), max_initial_radius_(maxInitialRadius),
+		max_dist_(0.3),max_radius_ratio_(200),radius_bins_(200), max_initial_radius_(maxInitialRadius),
 		min_initial_radius_(1.0e-6)
 	{
 		triangle_sizes_.resize(radius_bins_,Histogram<double>(0.0,static_cast<double>(max_radius_ratio_),radius_bins_));
@@ -111,7 +111,7 @@ void LargestTriangle::LookAround(const Vertex * v)
 std::string LargestTriangle::OutputData() const
 {
 	std::ostringstream os;
-	os << "largesttriangle -> { samples -> " << samples_;
+	os << "largesttriangle -> { samples -> " << std::fixed << samples_;
 	os << ", maxinitialradius -> " << max_initial_radius_;
 	os << ", mininitialradius -> " << min_initial_radius_;
 	os << ", maxdist -> " << max_dist_;

@@ -54,6 +54,9 @@ all: core
 
 core: $(COREOBJS)
 
+largest_triangle_in_radius: Examples/largest_triangle_in_radius.o core
+	 $(CXX) $(LDFLAGS) -o ./bin/largest_triangle_in_radius ./Examples/largest_triangle_in_radius.o $(COREOBJS) $(LDLIBS)
+
 ball_sizes_torus: Examples/ball_sizes_torus.o core
 	 $(CXX) $(LDFLAGS) -o ./bin/ball_sizes_torus ./Examples/ball_sizes_torus.o $(COREOBJS) $(LDLIBS)
 
