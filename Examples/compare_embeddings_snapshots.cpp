@@ -133,7 +133,6 @@ void Snapshot::Measure()
 Vertex * Snapshot::SelectVertex()
 {
 	Vertex * vertex;
-	double minarea = 1.0;
 	std::vector<double> areas;
 	areas.reserve(triangulation_->NumberOfTriangles());
 	for(int i=0;i<triangulation_->NumberOfTriangles();i++)
@@ -186,6 +185,9 @@ int main(int argc, char* argv[])
 
 	int n =	param.Read<int>("triangles");
 	int seed = param.Read<int>("seed");
+	std::string path = param.Read<std::string>("path+prefix (\"0\"=\"/tmp/snapshots/snapshot-\")");
+	if( path == "0" )
+		path = "/tmp/snapshots/snapshot-";
 	int thermalizationSweeps = 0;
 	int	measurementSweeps = 1; 
 	int secondsperoutput = 999999; 
@@ -212,7 +214,7 @@ int main(int argc, char* argv[])
 
 	Snapshot snapshot( &triangulation, &embedding, &circle );
 	std::ostringstream prefix;
-	prefix << "D:/temp/output/snapshot-" << simulation.GetIdentifier() << "-";
+	prefix << path << simulation.GetIdentifier() << "-";
 	snapshot.SetPrefix( prefix.str() );
 	std::ostringstream info;
 	info << "c = -2";

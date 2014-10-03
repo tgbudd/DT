@@ -405,9 +405,9 @@ public:
 		} else
 		{
 			upscale = 1;
-			font_bitmap_ = bitmap_image(osbitmap.str());
+			font_bitmap_ = bitmap_image(osbitmap.str().c_str());
 		}
-		std::ifstream datafile(osdata.str());
+		std::ifstream datafile(osdata.str().c_str());
 		while( !datafile.eof() )
 		{
 			int code;

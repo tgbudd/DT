@@ -55,9 +55,9 @@ int main(int argc, char* argv[])
 
 	std::ofstream file(filename.c_str());
 
-	file << triangulation.NumberOfTriangles() << "\n";
-	file << std::fixed << modulus.first << " " << modulus.second << "\n";
-
+	file << "{\"numtriangles\" -> " << triangulation.NumberOfTriangles();
+	file << ", \"modulus\" -> " << std::fixed << modulus.first << " + I*" << modulus.second;
+	file << ", \"tri\" -> {";
 	for(int i=0;i<triangulation.NumberOfTriangles();i++)
 	{
 		Triangle * t = triangulation.getTriangle(i);
@@ -67,20 +67,20 @@ int main(int argc, char* argv[])
 
 		Vector2D shift = {-std::floor(center[0]),-std::floor(center[1])};
 
-		file << t->getEdge(0)->getOpposite()->getId() << " " << t->getEdge(1)->getOpposite()->getId() << " " << t->getEdge(2)->getOpposite()->getId() << " ";
-
+		file << (i>0?",":"") << "{{" << t->getEdge(0)->getOpposite()->getId()+1 << "," << t->getEdge(1)->getOpposite()->getId()+1 << "," << t->getEdge(2)->getOpposite()->getId()+1 << "},";
 		Vector2D x0 = AddVectors2D(embedding.getCoordinate(t->getEdge(0)->getOpposite()),shift);
-		file << ProperFloor(x0[0]) << " " << ProperFloor(x0[1]) << " ";
+		file << "{{" << x0[0] << "," << x0[1] << "},";
 		x0 = AddVectors2D(x0,embedding.getForm(i,2));
-		file << ProperFloor(x0[0]) << " " << ProperFloor(x0[1]) << " ";
+		file << "{" << x0[0] << "," << x0[1] << "},";
 		x0 = AddVectors2D(x0,embedding.getForm(i,0));
-		file << ProperFloor(x0[0]) << " " << ProperFloor(x0[1]) << "\n";
+		file << "{" << x0[0] << "," << x0[1] << "}}}";
 	}
-
+	file << "}, \"coor\" -> {";
 	for(int i=0;i<triangulation.NumberOfVertices();i++)
 	{
 		Vector2D v = embedding.getCoordinate(i);
-		file << v[0] << " " << v[1] << "\n";
+		file << (i>0?",":"") << "{" << v[0] << "," << v[1] << "}";
 	}
+	file << "}}\n";
 	return 0;
 }
