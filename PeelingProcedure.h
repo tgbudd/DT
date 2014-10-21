@@ -34,7 +34,7 @@ private:
 	bool PeelingStep();
 	bool FirstLoopContainsFinalVertex(std::list<const Edge*>::const_iterator loopBegin) const;
 	bool FirstLoopIsDisk(std::list<const Edge*>::const_iterator loopBegin) const;
-	std::list<const Edge*>::const_iterator FindSecondLoopBegin() const;
+	std::list<const Edge*>::iterator FindSecondLoopBegin();
 	void ProcessBabyUniverse(std::list<const Edge*>::iterator secondLoopBegin, bool FirstLoopContainsBabyUniverse);
 	Vertex * ChooseFinalVertex();
 	void RandomWalk(bool StayInMotherUniverse);
@@ -78,6 +78,8 @@ private:
 	std::vector<int> distance_square_;
 	std::vector<int> distance_square_mother_;
 	std::vector<int> distance_square_mother_effective_;
+	
+	std::vector<Triangle *> triangle_order_;
 
 	bool baby_walk_;
 	int baby_walk_samples_;

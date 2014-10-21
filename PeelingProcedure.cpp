@@ -139,6 +139,8 @@ void PeelingProcedure::InitializePeeling(Triangle * startTriangle)
 	frontier_.push_back(oppositeEdge->getPrevious());
 	frontier_size_=3;
 	volume_within_frontier_=1;
+	triangle_order_.clear();
+	triangle_order_.push_back(startTriangle);
 
 	in_mother_universe_.resize(triangulation_->NumberOfTriangles());
 	std::fill(in_mother_universe_.begin(),in_mother_universe_.end(),false);
@@ -178,7 +180,7 @@ void PeelingProcedure::DoPeeling()
 		if( PeelingStep() )
 		{
 			// Fronteir has a figure-8 form and therefore a baby universe has been encountered.
-			std::list<const Edge*>::const_iterator secondLoopBegin = FindSecondLoopBegin();
+			std::list<const Edge*>::iterator secondLoopBegin = FindSecondLoopBegin();
 			ProcessBabyUniverse(secondLoopBegin,!FirstLoopContainsFinalVertex(secondLoopBegin));
 		}
 		volume_within_frontier_++;
@@ -202,19 +204,11 @@ void PeelingProcedure::PreparePeelingOnSphere(Triangle * startTriangle)
 bool PeelingProcedure::DoPeelingStepOnSphere()
 {
 	volume_within_frontier_++;
-	if(in_frontier_[final_vertex_->getId()])
-	{
-		int hy=0;
-	}
 	if( PeelingStep() )
 	{
 		// Fronteir has a figure-8 form and therefore a baby universe has been encountered.
-		std::list<const Edge*>::const_iterator secondLoopBegin = FindSecondLoopBegin();
+		std::list<const Edge*>::iterator secondLoopBegin = FindSecondLoopBegin();
 		ProcessBabyUniverse(secondLoopBegin,!FirstLoopContainsFinalVertex(secondLoopBegin));
-	}
-	if(in_frontier_[final_vertex_->getId()])
-	{
-		int hy=0;
 	}
 	return in_frontier_[final_vertex_->getId()];
 }
@@ -235,7 +229,7 @@ bool PeelingProcedure::DoPeelingStepOnTorus()
 	if( PeelingStep() )
 	{
 		// Frontier has a figure-8 form
-		std::list<const Edge*>::const_iterator secondLoopBegin = FindSecondLoopBegin();
+		std::list<const Edge*>::iterator secondLoopBegin = FindSecondLoopBegin();
 			
 		//BOOST_ASSERT( (*frontier_.begin())->getNext()->getOpposite() == (*secondLoopBegin)->getNext()->getOpposite() );
 		//BOOST_ASSERT( FormIsZero(cohomologybasis_->Integrate(frontier_.begin(),frontier_.end())) );
@@ -256,6 +250,7 @@ bool PeelingProcedure::PeelingStep()
 	Edge * adjEdge = frontier_.back()->getAdjacent();
 	Triangle * newTriangle = adjEdge->getParent();
 	last_triangle_ = newTriangle;
+	triangle_order_.push_back(newTriangle);
 
 	BOOST_ASSERT( !in_mother_universe_[newTriangle->getId()] );
 	in_mother_universe_[newTriangle->getId()] = true;
@@ -307,7 +302,6 @@ bool PeelingProcedure::FirstLoopContainsFinalVertex(std::list<const Edge*>::cons
 	{
 		minDistanceToFinalVertex = std::min(distance_to_final_[(*it)->getNext()->getOpposite()->getId()],minDistanceToFinalVertex);
 	}
-	bool firstLoopContainsFinalVertex = false; 
 	for(std::list<const Edge*>::const_iterator it=frontier_.begin();it!=loopBegin;it++)
 	{
 		Vertex * vertex = (*it)->getNext()->getOpposite();
@@ -335,10 +329,10 @@ bool PeelingProcedure::FirstLoopContainsFinalVertex(std::list<const Edge*>::cons
 	return false;
 }
 
-std::list<const Edge*>::const_iterator PeelingProcedure::FindSecondLoopBegin() const
+std::list<const Edge*>::iterator PeelingProcedure::FindSecondLoopBegin()
 {
 	Vertex * saddleVertex = frontier_.front()->getNext()->getOpposite();
-	for(std::list<const Edge*>::const_iterator it=boost::next(frontier_.begin());it!=frontier_.end();it++)
+	for(std::list<const Edge*>::iterator it=boost::next(frontier_.begin());it!=frontier_.end();it++)
 	{
 		if( (*it)->getNext()->getOpposite() == saddleVertex )
 		{
@@ -459,7 +453,6 @@ bool PeelingProcedure::FinalVertexInLoop(const std::list<const Edge *> & boundar
 	BabyUniverseDetector babyuniverse(triangulation_);
 	std::vector<Triangle *> triangles;
 	babyuniverse.EnclosedTriangles(boundary,triangles,false);
-	int min=100000;
 	Triangle * finalParent;
 	for(int i=0,endi=distance_to_final_.size();i<endi;i++)
 	{
@@ -630,8 +623,8 @@ void PeelingProcedure::DoMeasurementOnBabyUniverse(const std::list<const Edge*>:
 		baby_universes_[std::min(volume/10,59)][std::min(length/2,24)]++;
 		for(int i=0;i<baby_walk_samples_;i++)
 		{
-			std::list<const Edge*>::const_iterator startEdge = std::next(begin,triangulation_->RandomInteger(0,length-1));
-			const Edge* prevEdge = *std::prev( ( startEdge == begin ? end : startEdge ) );
+			std::list<const Edge*>::const_iterator startEdge = boost::next(begin,triangulation_->RandomInteger(0,length-1));
+			const Edge* prevEdge = *boost::prior( ( startEdge == begin ? end : startEdge ) );
 			const Edge * edge = *startEdge;
 			Vertex * startVertex = edge->getPrevious()->getOpposite();
 			int index = 1;

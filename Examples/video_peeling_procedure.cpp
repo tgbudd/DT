@@ -26,7 +26,8 @@ private:
 	double Area(Triangle * triangle);
 
 	DiscreteColorScheme scheme_;
-
+	ColorScheme cont_scheme_;
+	
 	Triangle * SelectTriangle();
 
 	BitmapDrawer bitmap_;
@@ -49,28 +50,45 @@ private:
 Snapshot::Snapshot(Triangulation * triangulation, Embedding * embedding, CohomologyBasis * cohomologybasis ) 
 	: triangulation_(triangulation), 
 	  embedding_(embedding), 
-	  bitmap_(1920,1080,4), 
+	  bitmap_(2000,2000,4), 
 	  textdrawer_("lucida",2), 
 	  tridrawer_( triangulation, embedding ),
 	  counter_(0),
 	  batch_counter_(0),
 	  peelingprocedure_(triangulation,cohomologybasis),
-	  scheme_(DiscreteColorScheme::Scheme::COLORS8)
+	  scheme_(DiscreteColorScheme::COLORS8),
+	  cont_scheme_(ColorScheme::RAINBOW)
 {
 	textdrawer_.setColor(160,0,30);
 }
 
 void Snapshot::DrawShading()
 {
-	for(int i=0;i<triangulation_->NumberOfTriangles();i++)
+	double totarea=0.0;
+	for(int i=0;i<peelingprocedure_.triangle_order_.size();++i)
+	{
+		Triangle * triangle = peelingprocedure_.triangle_order_[i];
+		totarea += std::sqrt(Area(triangle));
+	}
+	double area=0.0;
+	for(int i=0;i<peelingprocedure_.triangle_order_.size();++i)
+	{
+		Triangle * triangle = peelingprocedure_.triangle_order_[i];
+		area += std::sqrt(Area(triangle));
+		tridrawer_.DrawTriangleShading( bitmap_, triangle->getId(), cont_scheme_.getColor( 0.99*area/totarea ) );		
+	}
+	/*for(int i=0;i<triangulation_->NumberOfTriangles();i++)
 	{
 		if( peelingprocedure_.in_mother_universe_[i] )
 		{
-			Edge * edge = triangulation_->getTriangle(i)->getEdge(0);
-			int dist = std::min(peelingprocedure_.distance_[edge->getOpposite()->getId()],std::min(peelingprocedure_.distance_[edge->getNext()->getOpposite()->getId()],peelingprocedure_.distance_[edge->getPrevious()->getOpposite()->getId()]));
-			tridrawer_.DrawTriangleShading( bitmap_, i, scheme_.getColor( dist ) );
+			//Edge * edge = triangulation_->getTriangle(i)->getEdge(0);
+			int order = peelingprocedure_.triangle_order_[i];
+			//int dist = std::min(peelingprocedure_.distance_[edge->getOpposite()->getId()],std::min(peelingprocedure_.distance_[edge->getNext()->getOpposite()->getId()],peelingprocedure_.distance_[edge->getPrevious()->getOpposite()->getId()]));
+			//tridrawer_.DrawTriangleShading( bitmap_, i, scheme_.getColor( dist ) );
+			double ordertointerval = properfmod(0.002*order,1.0);
+			tridrawer_.DrawTriangleShading( bitmap_, i, cont_scheme_.getColor( ordertointerval ) );
 		}
-	}
+	}*/
 }
 
 void Snapshot::Measure()
@@ -88,15 +106,15 @@ void Snapshot::Measure()
 		double lastarea = -1.0;
 		int steps = 0;
 		do {
-			if( totalarea - lastarea > 0.0015 )
+			if( totalarea - lastarea > 0.02 )
 			{
 				bitmap_.Clear();
 
 				bitmap_.SetPeriodicDomain(moduli,0.85,0.5,0.5,center[0],center[1]);
 
 				DrawShading();
-				bitmap_.setPenWidth(2);
-				bitmap_.setPenColor(50,50,50);
+				bitmap_.setPenWidth(4);
+				bitmap_.setPenColor(30,30,30);
 				tridrawer_.Draw(bitmap_);
 				std::ostringstream text;
 				text << "Triangles: " << triangulation_->NumberOfTriangles() << "\n";
@@ -112,7 +130,7 @@ void Snapshot::Measure()
 			steps++;
 		} while( !peelingprocedure_.DoPeelingStepOnTorus() );
 
-		RunCommand();
+		//RunCommand();
 		batch_counter_++;
 		counter_=0;
 	}
@@ -200,7 +218,7 @@ int main(int argc, char* argv[])
 
 	Snapshot snapshot( &triangulation, &embedding, &cohom );
 	std::ostringstream prefix;
-	prefix << "D:/temp/output/snapshot-" << simulation.GetIdentifier() << "-";
+	prefix << "/tmp/output/snapshot-" << simulation.GetIdentifier() << "-";
 	snapshot.SetPrefix( prefix.str() );
 	std::ostringstream info;
 	info << "c = -2";
