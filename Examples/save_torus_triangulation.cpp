@@ -57,7 +57,15 @@ int main(int argc, char* argv[])
 
 	file << "{\"numtriangles\" -> " << triangulation.NumberOfTriangles();
 	file << ", \"modulus\" -> " << std::fixed << modulus.first << " + I*" << modulus.second;
-	file << ", \"tri\" -> {";
+	file << ", \"adj\" -> {";
+	for(int i=0;i<triangulation.NumberOfTriangles();i++)
+	{
+		Triangle * t = triangulation.getTriangle(i);
+		file << (i>0?",":"") << "{" << t->getEdge(0)->getAdjacent()->getParent()->getId()+1;
+		file << "," << t->getEdge(1)->getAdjacent()->getParent()->getId()+1;
+		file << "," << t->getEdge(2)->getAdjacent()->getParent()->getId()+1 << "}";
+	}	
+	file << "}, \"tri\" -> {";
 	for(int i=0;i<triangulation.NumberOfTriangles();i++)
 	{
 		Triangle * t = triangulation.getTriangle(i);
