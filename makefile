@@ -187,6 +187,10 @@ zoom_torus_video: Examples/zoom_torus_video.o core
 
 Examples/zoom_torus_video.o:Examples/zoom_torus_video.cpp
 
+minimal_simulation_example: Examples/minimal_simulation_example.o core
+	 $(CXX) $(LDFLAGS) -o ./bin/minimal_simulation_example ./Examples/minimal_simulation_example.o $(COREOBJS) $(LDLIBS)
+
+Examples/minimal_simulation_example.o:Examples/minimal_simulation_example.cpp
 
 
 AngleHistogram.o: AngleHistogram.cpp AngleHistogram.h
@@ -281,4 +285,4 @@ clean:
 	$(RM) $(OBJS)
 
 dist-clean: clean
-	$(RM) ./hetws9/dt-ball
+

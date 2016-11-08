@@ -27,8 +27,9 @@ Thumbs.db
 *.eps
 *.txt
 *.pov
-[Bb]in
 [Dd]ebug*/
+[Bb]in/
+!bin/README
 *.sbr
 [Rr]elease*/
 _ReSharper*/

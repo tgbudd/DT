@@ -1,0 +1,17 @@
+For a minimal example of a simulation have a look at 
+
+Examples/minimal_simulation_example.cpp
+
+To compile go to main directory and run
+
+make minimal_simulation_example
+
+The executable will appear in /bin/.
+
+Third-party packages included:
+
+* Eigen
+* BLAS
+* LAPACK
+
+Tested on linux.
